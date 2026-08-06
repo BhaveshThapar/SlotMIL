@@ -43,13 +43,39 @@ RUNS=$PROJ/runs/mosmed
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
 echo "=============== 1/2  training (4-class severity) ==============="
+# div=0.5 included alongside div=0.1: the weight that resolved collapse at K=4 on
+# MedMNIST (max slot cosine 0.997 -> 0.139) may not carry to K=8 on real DINOv2
+# features, and a 1-epoch probe here still showed 0.996. Cheap to settle by
+# measurement rather than assuming the W1 setting transfers.
 python scripts/train_cached.py \
     --cache "$CACHE" --splits "$SPLITS" --out "$RUNS" \
-    --arms mean gated_abmil mh_abmil slot slot:div=0.1 \
+    --arms mean gated_abmil mh_abmil slot slot:div=0.1 slot:div=0.5 \
     --seeds 0 1 2 --epochs 40 --num-classes 4 --num-workers 8
 
 echo "=============== 2/2  alignment (50 expert masks) ==============="
-for PAIR in "slot_div=0.1:slot" "mh_abmil:mh_abmil"; do
+# Alignment is run on whichever slot arm actually kept slots distinct --
+# scoring a collapsed model would measure nothing.
+BEST_SLOT=$(python - <<'EOF'
+import json,pathlib
+p=pathlib.Path("runs/mosmed/summary.json")
+if p.exists():
+    s=json.load(p.open())["summary"]
+    c={k:v for k,v in s.items() if k.startswith("slot") and
+       v.get("max_off_diag_cos",{}).get("mean",1.0) < 0.9}
+    print(max(c, key=lambda k: c[k]["auc"]["mean"]).replace(":","_") if c else "")
+EOF
+)
+# NB: written as `if`, not `[ -z ... ] && ... && ...`. Under `set -e` the latter
+# returns 1 whenever BEST_SLOT is non-empty (the common case) and kills the job
+# right before the alignment step.
+if [ -z "$BEST_SLOT" ]; then
+    echo "NOTE: no slot arm kept max slot cosine < 0.9 -- slots collapsed on"
+    echo "      MosMed at K=8. Alignment below is therefore measuring a"
+    echo "      degenerate model; treat the numbers as a collapse report."
+    BEST_SLOT="slot_div=0.5"
+fi
+echo "alignment slot arm: $BEST_SLOT"
+for PAIR in "$BEST_SLOT:slot" "mh_abmil:mh_abmil"; do
     ARM=${PAIR%%:*}
     POOL=${PAIR##*:}
     CKPT="$RUNS/$ARM/seed0/best.pt"

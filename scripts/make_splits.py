@@ -183,6 +183,17 @@ def main():
         "n_series": len(meta),
         **splits,
     }
+
+    if args.merge_classes:
+        # The remap must travel with the split file. FeatureBagDataset otherwise
+        # reads labels straight from the HDF5 attrs, so a merged class would be
+        # split correctly but still *served* with its original label -- feeding
+        # label=4 to a 4-class model, which dies in the CUDA NLL kernel with an
+        # out-of-range assert rather than anything legible.
+        payload["labels"] = {uid: int(m["label"]) for uid, m in meta.items()}
+        payload["merge_classes"] = args.merge_classes
+        payload["num_classes"] = len({m["label"] for m in meta.values()})
+        print(f"[splits] wrote explicit label map ({payload['num_classes']} classes)")
     blob = json.dumps(payload, sort_keys=True).encode()
     payload["hash"] = hashlib.sha256(blob).hexdigest()[:16]
 

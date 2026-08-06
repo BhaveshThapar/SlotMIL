@@ -99,8 +99,14 @@ def main():
     splits = json.loads(Path(args.splits).read_text())
     device = args.device if torch.cuda.is_available() else "cpu"
 
-    val_ds = FeatureBagDataset(args.cache, keys=splits["val"], return_mask=True)
-    test_ds = FeatureBagDataset(args.cache, keys=splits["test"], return_mask=True)
+    label_map = splits.get("labels")
+    if label_map and "num_classes" in splits:
+        args.num_classes = splits["num_classes"]
+
+    val_ds = FeatureBagDataset(
+        args.cache, keys=splits["val"], labels=label_map, return_mask=True)
+    test_ds = FeatureBagDataset(
+        args.cache, keys=splits["test"], labels=label_map, return_mask=True)
 
     match_to = (
         slot_pooling_param_count(val_ds.dim, args.dim, args.num_slots)

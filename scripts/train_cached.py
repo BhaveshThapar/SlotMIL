@@ -67,8 +67,20 @@ def main():
     out_root = Path(args.out)
     out_root.mkdir(parents=True, exist_ok=True)
 
+    # A split file carrying a label map (from --merge-classes) overrides the
+    # labels stored in the cache. Without this the merge would apply to the
+    # partitioning but not to the labels actually served.
+    label_map = splits.get("labels")
+    if label_map:
+        n_cls = splits.get("num_classes", len(set(label_map.values())))
+        if n_cls != args.num_classes:
+            print(f"[train] splits define {n_cls} classes "
+                  f"(merge_classes={splits.get('merge_classes')}); "
+                  f"overriding --num-classes {args.num_classes} -> {n_cls}")
+            args.num_classes = n_cls
+
     mk = lambda keys, train: FeatureBagDataset(  # noqa: E731
-        args.cache, keys=keys,
+        args.cache, keys=keys, labels=label_map,
         instance_level=args.instance_level,
         max_slices=args.max_slices if train else None,
         train=train, return_mask=False,
@@ -77,6 +89,27 @@ def main():
     input_dim = train_ds.dim
     print(f"[train] cache dim={input_dim} grid={train_ds.grid_h}x{train_ds.grid_w} "
           f"| train={len(train_ds)} val={len(val_ds)} test={len(test_ds)}", flush=True)
+
+    # Verify every served label is in range before touching the GPU. Out-of-range
+    # labels surface as `nll_loss ... Assertion t >= 0 && t < n_classes failed`
+    # deep in a CUDA kernel, with no indication of which dataset or which label.
+    for name, ds in (("train", train_ds), ("val", val_ds), ("test", test_ds)):
+        labels = {
+            (label_map[uid] if label_map else None) for uid in ds.keys
+        } if label_map else None
+        if labels is None:
+            import h5py
+            with h5py.File(args.cache, "r") as f:
+                labels = {int(f[uid].attrs["label"]) for uid in ds.keys}
+        bad = sorted(l for l in labels if not (0 <= l < args.num_classes))
+        if bad:
+            raise SystemExit(
+                f"[train] split '{name}' contains label(s) {bad} outside "
+                f"[0, {args.num_classes}). Either --num-classes is wrong, or the "
+                f"split file needs a label map (make_splits.py --merge-classes "
+                f"writes one)."
+            )
+    print(f"[train] labels validated against num_classes={args.num_classes}", flush=True)
 
     results = {}
     for spec in args.arms:
