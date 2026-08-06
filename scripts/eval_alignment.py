@@ -84,6 +84,9 @@ def main():
     ap.add_argument("--splits", required=True, help="json with {'val': [uids], 'test': [uids]}")
     ap.add_argument("--pooling", default="slot")
     ap.add_argument("--num-slots", type=int, default=8)
+    ap.add_argument("--num-classes", type=int, default=2,
+                    help="must match the checkpoint (MosMed severity is 4 after "
+                         "folding CT-4 into CT-3); a mismatch fails the load")
     ap.add_argument("--dim", type=int, default=256)
     ap.add_argument("--readout", default="gated")
     ap.add_argument("--out", default="runs/alignment")
@@ -106,10 +109,18 @@ def main():
     )
     model = build_model(
         pooling=args.pooling, input_dim=val_ds.dim, dim=args.dim,
-        num_classes=2, num_slots=args.num_slots, readout=args.readout,
-        match_params_to=match_to,
+        num_classes=args.num_classes, num_slots=args.num_slots,
+        readout=args.readout, match_params_to=match_to,
     )
-    model.load_state_dict(torch.load(args.checkpoint, map_location="cpu"))
+    try:
+        model.load_state_dict(torch.load(args.checkpoint, map_location="cpu"))
+    except RuntimeError as e:
+        raise SystemExit(
+            f"could not load {args.checkpoint}: {e}\n"
+            f"Check --num-classes ({args.num_classes}), --num-slots "
+            f"({args.num_slots}), --dim ({args.dim}) and --pooling "
+            f"({args.pooling}) match how the checkpoint was trained."
+        ) from e
 
     # --- step 1: validation ------------------------------------------------
     val_attn, val_masks, val_ns = collect(model, val_ds, device, num_workers=args.num_workers)

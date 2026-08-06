@@ -93,9 +93,24 @@ def main():
     ap.add_argument("--masked-to-eval", action="store_true",
                     help="force every mask-carrying series into val/test, so the "
                          "localisation evaluation is never scored on training data")
+    ap.add_argument("--merge-classes", nargs="+", default=None, metavar="SRC:DST",
+                    help="remap labels before splitting, e.g. '4:3' to fold "
+                         "MosMed CT-4 (n=2) into CT-3")
     args = ap.parse_args()
 
     meta = read_cache_meta(args.cache)
+
+    if args.merge_classes:
+        remap = {}
+        for spec in args.merge_classes:
+            src, _, dst = spec.partition(":")
+            remap[int(src)] = int(dst)
+        n = 0
+        for m in meta.values():
+            if m["label"] in remap:
+                m["label"] = remap[m["label"]]
+                n += 1
+        print(f"[splits] remapped {n} series via {remap}")
     if not meta:
         raise SystemExit(f"no usable series in {args.cache}")
     print(f"[splits] {len(meta)} series, {len({m['patient'] for m in meta.values()})} patients")
