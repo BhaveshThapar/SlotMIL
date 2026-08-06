@@ -106,6 +106,21 @@ def main():
         # Move masked series (and their patients) out of train.
         masked_patients = {meta[u]["patient"] for u in meta if meta[u]["has_mask"]}
         moved = [u for u in splits["train"] if meta[u]["patient"] in masked_patients]
+
+        # This flag is designed for MosMed, where 50 of 1110 series are
+        # annotated. On LIDC essentially every series carries a nodule mask, so
+        # the same flag would empty the training set instead of protecting the
+        # evaluation. Refuse rather than train on whatever is left.
+        frac = len(moved) / max(len(splits["train"]), 1)
+        if frac > 0.5:
+            raise SystemExit(
+                f"--masked-to-eval would move {len(moved)}/{len(splits['train'])} "
+                f"({frac:.0%}) of train into val/test, leaving too little to train "
+                f"on. This flag is for datasets where masks are rare (MosMed: 50 "
+                f"of 1110). On a fully-masked dataset like LIDC, omit it -- "
+                f"localisation there is evaluated on the held-out split, which is "
+                f"already disjoint from train."
+            )
         if moved:
             splits["train"] = [u for u in splits["train"] if u not in set(moved)]
             half = len(moved) // 2
@@ -122,11 +137,29 @@ def main():
             raise SystemExit(f"patient leakage between {a} and {b}: {sorted(overlap)[:5]}")
     print("[splits] no patient overlap between splits")
 
+    all_labels = sorted({m["label"] for m in meta.values()})
+    per_split_dist = {}
     for k, v in splits.items():
-        labels = [meta[u]["label"] for u in v]
+        labels = np.array([meta[u]["label"] for u in v])
         masked = sum(meta[u]["has_mask"] for u in v)
-        dist = {int(c): int((np.array(labels) == c).sum()) for c in sorted(set(labels))}
+        dist = {int(c): int((labels == c).sum()) for c in all_labels}
+        per_split_dist[k] = dist
         print(f"  {k:<6} {len(v):>5} series  {len(pat[k]):>5} patients  labels {dist}  masked {masked}")
+
+    # A class absent from a split silently breaks macro AUC (roc_auc_score with
+    # multi_class='ovr' raises, or the metric quietly stops meaning what it says).
+    # MosMed hits this immediately: CT-4 has 2 volumes in 1,110, so no 70/15/15
+    # split can put one in each partition. Better to say so here than to debug a
+    # metric error mid-run.
+    for k, dist in per_split_dist.items():
+        empty = [c for c, n in dist.items() if n == 0]
+        if empty:
+            print(
+                f"\n  WARNING: split '{k}' contains no examples of class(es) {empty}.\n"
+                f"  Macro AUC is undefined for those classes. Options: merge rare\n"
+                f"  classes (e.g. MosMed CT-3+CT-4 -> 'severe'), binarise the task,\n"
+                f"  or drop them explicitly -- do not leave this to chance."
+            )
 
     payload = {
         "cache": str(Path(args.cache).resolve()),

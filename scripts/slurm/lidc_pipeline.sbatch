@@ -36,9 +36,12 @@ RUNS=$PROJ/runs/lidc
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
 echo "=============== 1/3  splits ==============="
-# Masked series are pushed out of train so localisation is never scored on data
-# the model fitted. On LIDC nearly every series carries a mask, so this is a
-# no-op there; it matters for MosMed, where only 50 of 1110 are annotated.
+# Note: NO --masked-to-eval here. That flag exists for MosMed, where only 50 of
+# 1110 series are annotated and masked scans must be kept out of train. On LIDC
+# essentially every series carries a nodule mask, so the flag would move most of
+# the training set into val/test; make_splits.py now refuses outright above 50%.
+# Localisation on LIDC is evaluated on the held-out split, which is already
+# patient-disjoint from train.
 python scripts/make_splits.py --cache "$CACHE" --out "$SPLITS" --seed 0
 
 echo "=============== 2/3  training ==============="
