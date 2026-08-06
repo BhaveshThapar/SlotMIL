@@ -122,6 +122,43 @@ def test_implicit_and_vanilla_agree_on_forward():
     torch.testing.assert_close(slots_a, slots_b, rtol=1e-5, atol=1e-6)
 
 
+class TestQueryGradientFlow:
+    """Implicit diff detaches the init, so 'learnable' queries only actually
+    learn when BO-QSA straight-through is on. Documented here because running the
+    random-vs-learnable init ablation without knowing this would compare two
+    frozen random inits and conclude the init does not matter."""
+
+    @staticmethod
+    def _query_grad(implicit: bool, st: bool):
+        import warnings
+
+        torch.manual_seed(0)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            m = SlotAttention(
+                num_slots=4, dim=32, input_dim=16, iters=3,
+                implicit=implicit, init="learnable", bo_qsa_straight_through=st,
+            )
+        m(torch.randn(2, 12, 16))[0].sum().backward()
+        return m.slots_query.grad
+
+    def test_implicit_without_straight_through_freezes_queries(self):
+        assert self._query_grad(implicit=True, st=False) is None
+
+    def test_straight_through_restores_the_gradient(self):
+        g = self._query_grad(implicit=True, st=True)
+        assert g is not None and g.abs().sum() > 0
+
+    def test_vanilla_trains_queries_normally(self):
+        g = self._query_grad(implicit=False, st=False)
+        assert g is not None and g.abs().sum() > 0
+
+    def test_the_silent_combination_warns(self):
+        with pytest.warns(RuntimeWarning, match="will NOT train"):
+            SlotAttention(num_slots=4, dim=32, input_dim=16, implicit=True,
+                          init="learnable", bo_qsa_straight_through=False)
+
+
 def test_variable_num_slots_at_inference(sa):
     """K can change without rebuilding -- required by the K-sensitivity sweep."""
     x = torch.randn(1, 20, 32)

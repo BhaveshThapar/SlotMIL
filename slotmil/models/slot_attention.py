@@ -85,6 +85,26 @@ class SlotAttention(nn.Module):
             nn.init.xavier_uniform_(self.slots_mu)
             nn.init.xavier_uniform_(self.slots_logsigma)
 
+        if init == "learnable" and implicit and not bo_qsa_straight_through:
+            # Implicit differentiation consumes the init inside no_grad and then
+            # detaches, so slots_query receives no gradient and stays at its
+            # random initialisation for the whole run. That is faithful to Chang
+            # et al. -- the fixed point is meant to be init-independent -- but it
+            # makes "learnable" a misnomer here, and it silently voids the
+            # random-vs-learnable init ablation (plan.md line 114), because both
+            # arms would then be frozen random inits. BO-QSA's straight-through
+            # estimator is the intended fix.
+            import warnings
+
+            warnings.warn(
+                "init='learnable' with implicit=True and "
+                "bo_qsa_straight_through=False: the slot queries will NOT train "
+                "(no gradient path). Set bo_qsa_straight_through=True to train "
+                "them, or init='random' to be explicit about not doing so.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+
         self.norm_input = nn.LayerNorm(input_dim)
         self.norm_slots = nn.LayerNorm(dim)
         self.norm_pre_ff = nn.LayerNorm(dim)

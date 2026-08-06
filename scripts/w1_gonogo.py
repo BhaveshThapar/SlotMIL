@@ -25,6 +25,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from scipy import stats
 
 from slotmil.data.medmnist3d import MedMNIST3DBags, medmnist_collate
 from slotmil.eval.classification import aggregate_seeds, delong_test
@@ -193,12 +194,25 @@ def main():
         best = slot_arms[best_label]
         verdict["_best_slot_arm"] = best_label
 
-        if "mean" in summary:
-            verdict["beats_mean_pool"] = best["auc"]["mean"] > summary["mean"]["auc"]["mean"]
-        if "gated_abmil" in summary:
-            verdict["beats_gated_abmil"] = (
-                best["auc"]["mean"] > summary["gated_abmil"]["auc"]["mean"]
-            )
+        # A bare mean comparison across 3 seeds says almost nothing -- an 0.003
+        # AUC edge with 0.016 spread is noise, and calling that PASS would set up
+        # a false go decision for the next ten weeks. Every head-to-head is
+        # therefore gated on an actual test.
+        def beats(other: str) -> bool | None:
+            if other not in summary:
+                return None
+            a, b = best["auc"]["values"], summary[other]["auc"]["values"]
+            if len(a) < 2 or len(b) < 2:
+                return None
+            p = float(stats.ttest_ind(a, b, equal_var=False).pvalue)
+            delta = float(np.mean(a) - np.mean(b))
+            verdict[f"_vs_{other}"] = f"delta={delta:+.4f} p={p:.3f}"
+            return bool(delta > 0 and p < 0.05)
+
+        for other in ("mean", "gated_abmil", "mh_abmil"):
+            got = beats(other)
+            if got is not None:
+                verdict[f"beats_{other}"] = got
         if ref:
             verdict["meets_reference_auc"] = best["auc"]["mean"] >= ref["auc"]
         if "active_slots" in best:
