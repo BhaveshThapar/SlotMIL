@@ -1,0 +1,44 @@
+# torch is left unpinned: monai>=1.3 requires torch>=2.8, and the tron drivers
+# (595.71.05) handle the CUDA runtime bundled in current wheels.
+torch
+torchvision
+
+# Core numerics / imaging
+# numpy pinned <2: pylidc 0.2.3 predates the numpy 2 ABI break.
+numpy<2.0
+scipy
+scikit-learn
+scikit-image
+pandas
+
+# Medical imaging
+monai>=1.3
+torchio
+pydicom
+SimpleITK
+nibabel
+# pylidc 0.2.3 uses the SQLAlchemy 1.x declarative API, which 2.0 removed.
+sqlalchemy<2.0
+pylidc
+medmnist
+
+# Models / features
+timm
+
+# TCIA download
+requests
+
+# Config / tracking / storage
+hydra-core
+omegaconf
+wandb
+h5py
+tqdm
+einops
+matplotlib
+
+# pylidc imports pkg_resources at module load; setuptools >=81 removed it.
+setuptools<81
+
+# Dev
+pytest
