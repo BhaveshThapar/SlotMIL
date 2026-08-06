@@ -80,17 +80,9 @@ class DenseNet121Extractor(nn.Module):
         net = torchvision.models.densenet121(
             weights=None if weights_path else torchvision.models.DenseNet121_Weights.IMAGENET1K_V1
         )
-        if weights_path:
-            state = torch.load(weights_path, map_location="cpu")
-            state = state.get("state_dict", state)
-            state = {k.replace("module.", ""): v for k, v in state.items()}
-            missing, unexpected = net.load_state_dict(state, strict=False)
-            if len(missing) > 50:
-                raise RuntimeError(
-                    f"{weights_path} does not look like DenseNet-121 weights "
-                    f"({len(missing)} missing keys)"
-                )
         self.features = net.features
+        if weights_path:
+            self._load_radimagenet(weights_path)
         self.features.eval()
         for p in self.features.parameters():
             p.requires_grad_(False)
@@ -98,12 +90,45 @@ class DenseNet121Extractor(nn.Module):
         self.dim = 1024
         self.image_size = image_size
         self.grid = image_size // 32  # DenseNet-121 total stride
+        self.weights_source = "radimagenet" if weights_path else "imagenet"
         self.register_buffer(
             "mean", torch.tensor(IMAGENET_MEAN).view(1, 3, 1, 1), persistent=False
         )
         self.register_buffer(
             "std", torch.tensor(IMAGENET_STD).view(1, 3, 1, 1), persistent=False
         )
+
+    def _load_radimagenet(self, weights_path: str) -> None:
+        """Load a RadImageNet DenseNet-121 checkpoint.
+
+        RadImageNet ships an OrderedDict whose keys are prefixed ``backbone.0.``
+        and which corresponds to torchvision's ``features`` submodule only (no
+        classifier). Loading it into the full model, or with the wrong prefix,
+        silently leaves an ImageNet-initialised network behind -- which would make
+        the RadImageNet-vs-ImageNet backbone ablation compare two identical
+        backbones. Hence strict loading and an explicit count check.
+        """
+        state = torch.load(weights_path, map_location="cpu", weights_only=False)
+        if hasattr(state, "state_dict"):
+            state = state.state_dict()
+        if isinstance(state, dict) and "state_dict" in state:
+            state = state["state_dict"]
+
+        cleaned = {}
+        for k, v in state.items():
+            for prefix in ("backbone.0.", "module.features.", "features.", "module."):
+                if k.startswith(prefix):
+                    k = k[len(prefix) :]
+                    break
+            cleaned[k] = v
+
+        missing, unexpected = self.features.load_state_dict(cleaned, strict=False)
+        if missing:
+            raise RuntimeError(
+                f"{weights_path}: {len(missing)} DenseNet-121 feature weights were "
+                f"not provided (e.g. {missing[:3]}). The backbone would silently "
+                "stay at its ImageNet init, voiding the backbone ablation."
+            )
 
     @torch.no_grad()
     def forward(self, x: torch.Tensor) -> torch.Tensor:

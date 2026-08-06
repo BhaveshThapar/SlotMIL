@@ -3,7 +3,7 @@
 #SBATCH --account=nexus
 #SBATCH --qos=medium
 #SBATCH --partition=tron
-#SBATCH --gres=gpu:rtxa6000:1
+#SBATCH --gres=gpu:rtxa5000:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=24:00:00
@@ -13,9 +13,10 @@
 #
 # Staged LIDC download + DINOv2 feature extraction.
 #
-# 48 GB rtxa6000 rather than the 24 GB card: extraction is throughput-bound on
-# large slice batches, and the job is mixed CPU (DICOM I/O, pylidc mask
-# construction) / GPU, so bigger batches shorten the wall clock meaningfully.
+# 24 GB rtxa5000. DINOv2 ViT-B/14 over 32 slices at 224px needs only a few GB,
+# and this job is dominated by DICOM download and pylidc mask construction (CPU)
+# rather than by the GPU forward pass. The rtxa6000 nodes are also persistently
+# contended, so asking for one just means queueing for capacity we do not use.
 #
 # --requeue is safe because the script is idempotent: series already in the h5
 # cache are skipped, so a preempted job resumes rather than restarting.
