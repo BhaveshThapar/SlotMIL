@@ -116,6 +116,30 @@ def main():
         label, pooling, ov = parse_arm(spec)
         runs = []
         for seed in args.seeds:
+            # Per-seed resume. The scavenger partition preempts with REQUEUE, so a
+            # job can restart at any time; without this it would redo every
+            # completed seed. Presence of result.json means that seed finished.
+            seed_dir = out_root / label.replace(":", "_") / f"seed{seed}"
+            done_file = seed_dir / "result.json"
+            if done_file.exists():
+                try:
+                    prev = json.loads(done_file.read_text())
+                    if "test" in prev:
+                        runs.append({
+                            "seed": seed,
+                            # Stored via TrainConfig.extra, which fit() persists
+                            # under "config" -- without it a resumed seed would
+                            # report NaN params and corrupt the summary table.
+                            "n_params": prev.get("config", {}).get("extra", {}).get(
+                                "n_params", float("nan")),
+                            **prev["test"]})
+                        print(f"[train] {label} seed={seed} already complete, skipping",
+                              flush=True)
+                        continue
+                except (json.JSONDecodeError, KeyError):
+                    print(f"[train] {label} seed={seed} result.json unreadable, redoing",
+                          flush=True)
+
             match_to = (
                 slot_pooling_param_count(input_dim, args.dim,
                                          int(ov.get("K", args.num_slots)))
@@ -134,6 +158,7 @@ def main():
             cfg = TrainConfig(
                 epochs=args.epochs, lr=args.lr, batch_size=args.batch_size,
                 num_workers=args.num_workers, seed=seed, select_metric="auc",
+                extra={"n_params": n_params, "arm": label},
             )
             res = fit(
                 model, train_ds, val_ds, cfg,

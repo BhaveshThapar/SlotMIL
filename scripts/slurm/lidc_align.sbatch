@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=slotmil-lidc-align
-#SBATCH --account=nexus
-#SBATCH --qos=medium
-#SBATCH --partition=tron
-#SBATCH --gres=gpu:rtxa5000:1
-#SBATCH --cpus-per-task=8
+#SBATCH --account=scavenger
+#SBATCH --qos=scavenger
+#SBATCH --partition=scavenger
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=4
 #SBATCH --mem=64G
 #SBATCH --time=06:00:00
 #SBATCH --output=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%j.out

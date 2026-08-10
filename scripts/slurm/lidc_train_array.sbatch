@@ -1,22 +1,35 @@
 #!/bin/bash
 #SBATCH --job-name=slotmil-lidc-arm
-#SBATCH --account=nexus
-#SBATCH --qos=medium
-#SBATCH --partition=tron
-#SBATCH --gres=gpu:rtxa5000:1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --account=scavenger
+#SBATCH --qos=scavenger
+#SBATCH --partition=scavenger
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=48G
 #SBATCH --time=24:00:00
 #SBATCH --array=0-5
+#SBATCH --requeue
 #SBATCH --output=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.out
 #SBATCH --error=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.err
 #
 # One arm per array task, so the six arms train in parallel.
 #
 # The first attempt trained all six serially in one job and hit the 12 h wall
-# clock partway through the third arm: ~1.6 h per arm/seed x 18 runs is ~29 h.
-# As an array each task runs 3 seeds of one arm (~5 h) and the whole sweep
-# finishes in roughly the time of its slowest arm.
+# clock partway through the third arm. As an array each task runs 3 seeds of one
+# arm.
+#
+# Runs on the SCAVENGER partition, which has its own quota separate from tron.
+# The tron partition caps a user at cpu=32 and gres/gpu=4; this array previously
+# consumed the entire allocation and blocked the user's other (lg-ppo) jobs.
+# Profiling showed the GPUs at 0% utilisation -- the work is I/O bound, not
+# compute bound -- so it was holding four GPUs to do no GPU work.
+#
+# Scavenger is preemptible (PreemptMode=REQUEUE), which is safe here because
+# train_cached.py resumes per seed: a requeued task skips seeds whose
+# result.json already exists, so preemption costs at most one seed rather than
+# the whole arm. --gres=gpu:1 (untyped) so it can land on whatever is free,
+# including the idle a100/h100/l40s nodes -- though given 0% GPU utilisation the
+# card type is irrelevant to throughput.
 
 set -euo pipefail
 PROJ=/fs/nexus-scratch/bthapar/SlotMIL
@@ -55,6 +68,6 @@ fi
 
 python scripts/train_cached.py \
     --cache "$CACHE" --splits "$SPLITS" --out "$PROJ/runs/lidc" \
-    --arms "$ARM" --seeds 0 1 2 --epochs 40 --num-workers 8
+    --arms "$ARM" --seeds 0 1 2 --epochs 40 --num-workers 4
 
 echo "arm '$ARM' complete"
