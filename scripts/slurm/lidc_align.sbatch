@@ -3,7 +3,19 @@
 #SBATCH --account=scavenger
 #SBATCH --qos=scavenger
 #SBATCH --partition=scavenger
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:rtxa5000:1
+# Scavenger contains Maxwell/Pascal cards (gtxtitanx, gtx1080ti, p6000,
+# titanxp, p100) that this torch build has no kernels for -- an untyped
+# gpu:1 landed on a GTX TITAN X (sm_52) and died instantly with
+# 'no kernel image is available for execution on the device'.
+# torch.cuda.get_arch_list() is sm_75/80/86/90/100/120.
+#
+# A node-level --constraint=Turing|Ampere|Hopper is NOT sufficient: nodes
+# like legacygpu12/15 carry both Pascal and Turing cards, so the node
+# matched the feature and SLURM still handed out a GTX 1080 Ti. The GPU
+# type must be pinned in --gres itself. rtxa5000 (Ampere, 24 GB) is widely
+# available in scavenger; since profiling showed 0% GPU utilisation, the
+# specific card is irrelevant to throughput -- it only has to run.
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=64G
 #SBATCH --time=06:00:00
