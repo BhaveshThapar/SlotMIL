@@ -5,10 +5,16 @@ __pycache__/
 .pytest_cache/
 
 # Data, caches and run outputs live in scratch and are never committed.
-data/
-runs/
-logs/
-wandb/
+#
+# Leading slash matters: a bare `data/` matches a directory named `data` at ANY
+# depth, which silently excluded the entire `slotmil/data/` source package --
+# feature_cache.py, lidc.py, mosmed.py, medmnist3d.py were untracked for several
+# commits. Anchor these to the repo root so they only ever match the top-level
+# data/, runs/ and logs/ directories.
+/data/
+/runs/
+/logs/
+/wandb/
 *.h5
 *.pt
 *.ckpt
