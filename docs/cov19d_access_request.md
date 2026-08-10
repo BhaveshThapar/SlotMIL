@@ -1,4 +1,31 @@
-# COV19-CT-DB access request
+# COV19-CT-DB access — GRANTED (2026-08-11)
+
+Kollias replied: nothing further needed. Mohammad previously completed the EULA
+and access persists under those existing terms.
+
+**Still outstanding: the data itself.** The reply grants permission, not files.
+COV19-CT-DB is distributed as download links (historically Dropbox) issued after
+the EULA, and nothing matching `*cov19*` / `*covid*` exists on scratch — the old
+`covid-challenge/` directory was purged along with the rest.
+
+Fastest route, in order:
+1. **Ask Mohammad for the download links** (or a copy of the archives if he still
+   has them). He holds the EULA, so he almost certainly has the links, and this
+   avoids another round-trip with Kollias.
+2. If Mohammad no longer has them, reply to Kollias asking him to re-send the
+   download links, referencing that access was confirmed on 2026-08-11.
+
+Storage is no longer a blocker: 75 GB free vs ~45 GB needed (~26 GB raw
++ ~19 GB DINOv2 features). No need to touch the Lategame checkpoints.
+
+Once the archives land, unpack to `data/cov19d/` and extract features with the
+same pipeline as MosMed (`scripts/extract_mosmed.py` is the closest template —
+COV19D ships JPEG slice folders per patient rather than NIfTI, so the loader
+needs a directory-walking reader instead of nibabel).
+
+---
+
+## Original request (kept for reference)
 
 Draft email for the COV19D / COV19-CT-DB dataset (plan.md line 70, needed ~W10
 for the cross-domain generalisation experiment).
