@@ -103,10 +103,26 @@ def main():
     if label_map and "num_classes" in splits:
         args.num_classes = splits["num_classes"]
 
-    val_ds = FeatureBagDataset(
-        args.cache, keys=splits["val"], labels=label_map, return_mask=True)
-    test_ds = FeatureBagDataset(
-        args.cache, keys=splits["test"], labels=label_map, return_mask=True)
+    # Restrict to annotated bags. Slot-finding affinity is undefined without a
+    # mask, and on a partially-annotated cache (MosMed: 50 of 1110) iterating the
+    # whole split just wastes forward passes on bags that contribute nothing.
+    def masked_subset(keys, name):
+        probe = FeatureBagDataset(
+            args.cache, keys=keys, labels=label_map, return_mask=True)
+        sub = probe.masked_keys()
+        if not sub:
+            raise SystemExit(
+                f"no series in the {name} split carry a lesion mask, so "
+                f"slot-to-finding alignment cannot be computed. Check that the "
+                f"cache was built with masks, and for a partially-annotated "
+                f"dataset build splits with --masked-to-eval."
+            )
+        print(f"[align] {name}: {len(sub)}/{len(keys)} series annotated")
+        return FeatureBagDataset(
+            args.cache, keys=sub, labels=label_map, return_mask=True)
+
+    val_ds = masked_subset(splits["val"], "val")
+    test_ds = masked_subset(splits["test"], "test")
 
     match_to = (
         slot_pooling_param_count(val_ds.dim, args.dim, args.num_slots)

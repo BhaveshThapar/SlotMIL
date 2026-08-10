@@ -95,6 +95,77 @@ caveat rather than present GGO/consolidation as annotated classes. This does not
 cost the ISBI story (plan.md line 142 already scopes ISBI to one localisation
 dataset), but it does mean MosMed cannot be the backup if LIDC disappoints.
 
+## MosMed results (2026-08-08) — negative, and informative
+
+Job 7215380, 6 arms × 3 seeds × 40 epochs, 4-class severity, DINOv2 ViT-B/14
+cached features, K=8, patch-level bags.
+
+| arm | test AUC | test ACC | active slots | max slot cos |
+|---|---|---|---|---|
+| mean pool | 0.7516 ± 0.0031 | 0.6961 | — | — |
+| gated ABMIL | **0.8037 ± 0.0366** | 0.7238 | — | — |
+| multi-head ABMIL (matched) | 0.7882 ± 0.0534 | 0.6906 | — | — |
+| SlotMIL | 0.7758 ± 0.0463 | 0.6317 | 5.91 / 8 | **0.997** |
+| SlotMIL + div 0.1 | 0.7485 ± 0.0678 | 0.6703 | 4.54 / 8 | **0.976** |
+| SlotMIL + div 0.5 | 0.7063 ± 0.0231 | 0.6243 | 4.38 / 8 | **0.735** |
+
+No pairwise difference is significant (all p ≥ 0.10). Best slot arm vs gated
+ABMIL: −0.0279, p = 0.46.
+
+**Slots collapse at every diversity weight tested.** The W1 setting that worked
+at K=4 on MedMNIST (0.997 → 0.139) does not transfer to K=8 on real DINOv2
+features: 0.1 barely moves it (0.976) and even 0.5 only reaches 0.735, while
+costing 0.07 AUC. So the diversity weight is not a constant — it interacts with K
+and with feature statistics, and needs a proper sweep rather than a single value
+carried over from the toy dataset.
+
+### Alignment (fit on 28 annotated val scans, frozen, scored on 22 test)
+
+| metric | SlotMIL (div 0.5) | multi-head ABMIL | chance |
+|---|---|---|---|
+| assigned affinity | 0.5113 | 0.5032 | 0.5000 |
+| lift over chance | **1.02×** | 1.01× | 1.0× |
+| slot purity / NMI | 0.988 / **0.015** | 0.988 / 0.004 | — |
+| best-slot Dice | **0.044 ± 0.041** | 0.007 ± 0.017 | — |
+| pointing game | **0.000** | 0.000 | — |
+| instance AUC | **0.601** | 0.332 | 0.5 |
+| head redundancy (↓) | **0.073** | 0.221 | — |
+
+**Read this as a clear negative on localisation.** Pointing game 0.000 means that
+across 22 annotated test scans, the most-attended patch never once landed inside
+a lesion. Affinity lift of 1.02× is chance. Dice 0.044 is nil.
+
+Two things are nonetheless real and worth keeping:
+- SlotMIL beats the matched control on every localisation metric (Dice 6×,
+  instance AUC 0.601 vs 0.332 — the control is *below* chance), and its slots are
+  markedly less redundant (0.073 vs 0.221). So the competitive mechanism is doing
+  something the extra capacity alone does not.
+- Instance AUC 0.601 is weakly above chance, i.e. there is signal, just far too
+  little to call localisation.
+
+### Two metric caveats that make these numbers look better than they are
+
+**Purity 0.988 is an artefact.** With findings encoded as lesion-vs-background,
+background is ~99% of patches, so a slot that attends nothing in particular is
+"pure" by default. NMI (0.015) is the honest number and it is ~0.
+
+**Consistency 1.000 is the same artefact.** Every slot's dominant finding is
+trivially "background". Both metrics need re-specifying over annotated patches
+only before they mean anything; as computed here they should not be reported.
+
+### Why this is not yet a verdict on the method
+
+MosMed was already downgraded to the *supporting* dataset by the data audit
+above: consolidation is 2.6% of annotated lesion volume, the GGO/consolidation
+split is our own HU threshold rather than an annotated class, and all 50 masked
+scans are CT-1. Add that the task is *severity*, which plausibly does not require
+attending to individual lesions at all — global lung appearance may suffice — and
+a null localisation result is close to what a careful prior would predict.
+
+LIDC is the real test: 4-radiologist consensus masks, a genuine per-nodule
+finding structure, and a task (nodule presence) that cannot be solved without
+looking at nodules.
+
 ## Implementation findings
 
 **Implicit differentiation freezes "learnable" slot queries.** With

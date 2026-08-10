@@ -1,0 +1,81 @@
+#!/bin/bash
+#SBATCH --job-name=slotmil-lidc-align
+#SBATCH --account=nexus
+#SBATCH --qos=medium
+#SBATCH --partition=tron
+#SBATCH --gres=gpu:rtxa5000:1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
+#SBATCH --time=06:00:00
+#SBATCH --output=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%j.out
+#SBATCH --error=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%j.err
+#
+# Merge the training array's results, then run slot-to-finding alignment and
+# faithfulness. Submitted with --dependency=afterany on the array: afterok would
+# block the whole analysis if a single arm failed, and the comparison is still
+# informative with five arms.
+
+set -euo pipefail
+PROJ=/fs/nexus-scratch/bthapar/SlotMIL
+cd "$PROJ"
+
+source /usr/share/Modules/init/bash
+module load Python3/3.11.11
+# shellcheck disable=SC1091
+source "$PROJ/.venv/bin/activate"
+
+export TORCH_HOME=/fs/nexus-scratch/bthapar/.cache/torch
+export TMPDIR=/fs/nexus-scratch/bthapar/.tmp
+export PYTHONUNBUFFERED=1
+
+CACHE=$PROJ/data/lidc/features_dinov2_vitb14.h5
+SPLITS=$PROJ/data/lidc/splits.json
+RUNS=$PROJ/runs/lidc
+
+echo "=============== 1/3  merge ==============="
+python scripts/merge_results.py --runs "$RUNS"
+
+echo "=============== 2/3  alignment ==============="
+BEST_SLOT=$(python - <<'EOF'
+import json, pathlib
+p = pathlib.Path("runs/lidc/summary.json")
+if p.exists():
+    s = json.load(p.open())["summary"]
+    c = {k: v for k, v in s.items() if k.startswith("slot")
+         and v.get("max_off_diag_cos", {}).get("mean", 1.0) < 0.9}
+    print(max(c, key=lambda k: c[k]["auc"]["mean"]) if c else "")
+EOF
+)
+if [ -z "$BEST_SLOT" ]; then
+    echo "NOTE: no slot arm kept max slot cosine < 0.9 -- slots collapsed on LIDC."
+    echo "      Alignment below measures a degenerate model; read it as a"
+    echo "      collapse report, not an alignment result."
+    BEST_SLOT="slot_div=0.5"
+fi
+echo "alignment slot arm: $BEST_SLOT"
+
+for PAIR in "$BEST_SLOT:slot" "mh_abmil:mh_abmil"; do
+    ARM=${PAIR%%:*}
+    POOL=${PAIR##*:}
+    CKPT="$RUNS/$ARM/seed0/best.pt"
+    if [ -f "$CKPT" ]; then
+        echo "--- alignment: $ARM"
+        python scripts/eval_alignment.py \
+            --cache "$CACHE" --checkpoint "$CKPT" --splits "$SPLITS" \
+            --pooling "$POOL" --num-slots 8 --dim 256 \
+            --out "$RUNS/alignment_$ARM" || echo "ALIGNMENT FAILED for $ARM"
+    else
+        echo "missing checkpoint $CKPT -- skipping"
+    fi
+done
+
+echo "=============== 3/3  figures + faithfulness ==============="
+CKPT="$RUNS/$BEST_SLOT/seed0/best.pt"
+if [ -f "$CKPT" ]; then
+    python scripts/make_figures.py \
+        --cache "$CACHE" --checkpoint "$CKPT" --splits "$SPLITS" \
+        --pooling slot --num-slots 8 --dim 256 \
+        --out "$RUNS/figures" || echo "FIGURES FAILED"
+fi
+
+echo "=============== lidc analysis complete ==============="

@@ -143,3 +143,50 @@ class TestAlignment:
     def test_affinity_errors_when_no_annotations(self):
         with pytest.raises(ValueError, match="no bags with annotated findings"):
             slot_finding_affinity([np.ones((2, 5))], [np.zeros((2, 5))])
+
+
+class TestPartiallyAnnotatedCollate:
+    """A cache where only some bags carry masks (MosMed: 50 of 1110).
+
+    collate_bags used to decide whether to emit 'patch_target' from batch[0]
+    alone, so any batch whose first item happened to be unmasked silently
+    dropped the field -- and the alignment evaluation died with a bare KeyError
+    after the training run had already completed.
+    """
+
+    @staticmethod
+    def _bag(n, dim, masked):
+        item = {
+            "features": torch.randn(n, dim),
+            "label": torch.tensor(1),
+            "uid": "m" if masked else "u",
+            "n_slices": 1,
+            "slice_index": torch.arange(1),
+        }
+        if masked:
+            item["patch_target"] = torch.ones(n)
+        return item
+
+    def test_unmasked_first_item_still_emits_target(self):
+        from slotmil.data.feature_cache import collate_bags
+
+        batch = collate_bags([self._bag(5, 8, False), self._bag(5, 8, True)])
+        assert "patch_target" in batch, "field dropped when batch[0] is unmasked"
+        assert batch["has_mask"].tolist() == [False, True]
+        assert batch["patch_target"][0].sum() == 0  # unannotated -> zeros
+        assert batch["patch_target"][1].sum() == 5
+
+    def test_all_unmasked_emits_nothing(self):
+        from slotmil.data.feature_cache import collate_bags
+
+        batch = collate_bags([self._bag(5, 8, False), self._bag(5, 8, False)])
+        assert "patch_target" not in batch
+
+    def test_has_mask_distinguishes_empty_from_unannotated(self):
+        """A zero target must not be readable as 'annotated, no lesion'."""
+        from slotmil.data.feature_cache import collate_bags
+
+        empty = self._bag(5, 8, True)
+        empty["patch_target"] = torch.zeros(5)  # annotated, genuinely no lesion
+        batch = collate_bags([self._bag(5, 8, False), empty])
+        assert batch["has_mask"].tolist() == [False, True]
