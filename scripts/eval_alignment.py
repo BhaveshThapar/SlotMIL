@@ -151,7 +151,10 @@ def main():
 
     # --- step 2: freeze the naming ----------------------------------------
     assignment = fit_slot_assignment(val_affinity)
+    # finding 0 is the lesion channel in binary_finding_masks([lesion, background])
+    lesion_slot = next((k for k, v in assignment.items() if v == 0), None)
     print(f"[align] assignment fit on VAL (frozen): {assignment}")
+    print(f"[align] lesion slot = {lesion_slot} (frozen before test)")
 
     # --- step 3: test, under the frozen assignment ------------------------
     test_attn, test_masks, test_ns = collect(model, test_ds, device, num_workers=args.num_workers)
@@ -168,8 +171,13 @@ def main():
         "test_purity": slot_purity(test_attn, [(m > 0).astype(int) for m in test_masks]),
         "test_consistency": slot_consistency(test_attn, test_findings),
         "test_redundancy": head_redundancy(test_attn),
+        # Pass the frozen lesion slot. Without it instance AUC falls back to
+        # max-over-slots, which for softmax-over-slots attention measures
+        # assignment confidence rather than lesion saliency and reported 0.489
+        # where the frozen slot gives 0.842.
         "test_localization": evaluate_localization(
-            test_attn, test_masks, test_ns, grid=val_ds.grid_h
+            test_attn, test_masks, test_ns, grid=val_ds.grid_h,
+            lesion_slot=lesion_slot,
         ),
     }
 

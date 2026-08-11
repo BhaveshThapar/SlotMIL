@@ -10,7 +10,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 import torch.nn.functional as F
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 
 def attn_to_volume(
@@ -83,14 +83,35 @@ def pointing_game(heatmap: np.ndarray, target: np.ndarray) -> bool:
     return bool(target.reshape(-1)[int(np.argmax(heatmap))])
 
 
-def instance_auc(attn: np.ndarray, instance_labels: np.ndarray) -> float:
+def instance_auc(
+    attn: np.ndarray, instance_labels: np.ndarray, slot: int | None = None
+) -> float:
     """AUC of slot attention as an instance-level lesion detector.
 
-    ``attn``: ``[K, N]``; the per-instance score is the max over slots.
+    ``attn``: ``[K, N]``. ``slot`` selects which slot's attention is the score,
+    and should be the lesion slot from the **validation-fitted, frozen** Hungarian
+    assignment.
+
+    ``slot=None`` falls back to max-over-slots, which is **invalid for slot
+    attention and must not be used for reporting**. Slot attention normalises over
+    the slot axis, so ``sum_k attn[k, n] == 1`` for every instance; the max over
+    that axis therefore measures how confidently an instance is bound to *some*
+    slot -- assignment confidence -- not lesion saliency. A background patch
+    confidently bound to the background slot scores high.
+
+    This distinction is not academic. On the LIDC test split with the frozen
+    assignment, the same checkpoint gives:
+
+        max-over-slots      0.4885   (looks like pure chance)
+        frozen lesion slot  0.8423   (93% of the 0.9102 supervised ceiling)
+
+    Reporting the former as "SlotMIL does not localise" inverted the actual
+    result. The fallback is retained only so old runs remain reproducible.
     """
     if len(np.unique(instance_labels)) < 2:
         return float("nan")
-    return float(roc_auc_score(instance_labels, attn.max(axis=0)))
+    score = attn.max(axis=0) if slot is None else attn[slot]
+    return float(roc_auc_score(instance_labels, score))
 
 
 def evaluate_localization(
@@ -98,34 +119,60 @@ def evaluate_localization(
     masks: list[np.ndarray],
     n_slices: list[int],
     grid: int,
+    lesion_slot: int | None = None,
 ) -> dict:
     """Aggregate localisation over a split.
 
     ``masks`` are patch-grid targets ``[N]`` matching the flattened instance axis.
+    ``lesion_slot`` is the slot named by the validation-fitted frozen assignment;
+    pass it, or instance AUC falls back to the invalid max-over-slots statistic
+    (see :func:`instance_auc`).
+
+    Note on Dice and pointing game at this prevalence: lesion patches are ~0.07%
+    of the LIDC grid. ``best_slot_dice`` min-max normalises then thresholds, so
+    the predicted region is orders of magnitude larger than the target and Dice
+    is driven to ~0 regardless of how well the attention *ranks* instances.
+    Pointing game asks a single argmax over ~40,000 patches to land inside a
+    ~30-patch target. Neither statistic separates "no signal" from "good ranking
+    under extreme class imbalance", so both are reported for completeness but
+    **average precision against prevalence is the honest low-prevalence measure**.
     """
-    dices, ious, points, aucs = [], [], [], []
+    dices, ious, points, aucs, aps, prevs = [], [], [], [], [], []
 
     for attn, mask, ns in zip(slot_attn, masks, n_slices):
         if mask.sum() == 0:
             continue
         heat = attn.reshape(attn.shape[0], ns, grid, grid)
         tgt = mask.reshape(ns, grid, grid)
+        binary = (mask > 0).astype(int)
 
         best = best_slot_dice(heat, tgt)
         dices.append(best["dice"])
         ious.append(best["iou"])
         points.append(pointing_game(heat[best["slot"]], tgt))
-        a = instance_auc(attn, (mask > 0).astype(int))
+
+        a = instance_auc(attn, binary, slot=lesion_slot)
         if not np.isnan(a):
             aucs.append(a)
+        if binary.sum() and binary.sum() < len(binary):
+            score = attn[lesion_slot] if lesion_slot is not None else attn.max(axis=0)
+            aps.append(average_precision_score(binary, score))
+            prevs.append(binary.mean())
 
     if not dices:
         return {"n_bags": 0}
-    return {
+    out = {
         "dice": float(np.mean(dices)),
-        "dice_std": float(np.std(dices)),
+        "dice_std_across_bags": float(np.std(dices)),
         "iou": float(np.mean(ious)),
         "pointing_game": float(np.mean(points)),
         "instance_auc": float(np.mean(aucs)) if aucs else float("nan"),
+        "instance_auc_std_across_bags": float(np.std(aucs)) if aucs else float("nan"),
+        "lesion_slot": lesion_slot,
         "n_bags": len(dices),
     }
+    if aps:
+        out["avg_precision"] = float(np.mean(aps))
+        out["prevalence"] = float(np.mean(prevs))
+        out["ap_lift_over_prevalence"] = float(np.mean(aps) / max(np.mean(prevs), 1e-12))
+    return out

@@ -190,3 +190,49 @@ class TestPartiallyAnnotatedCollate:
         empty["patch_target"] = torch.zeros(5)  # annotated, genuinely no lesion
         batch = collate_bags([self._bag(5, 8, False), empty])
         assert batch["has_mask"].tolist() == [False, True]
+
+
+class TestInstanceAUCSlotSelection:
+    """max-over-slots is invalid for softmax-over-slots attention.
+
+    Slot attention normalises over the slot axis, so sum_k attn[k,n] == 1 for
+    every instance. max_k attn[k,n] therefore measures assignment CONFIDENCE, not
+    lesion saliency -- a background patch confidently bound to the background slot
+    scores high. Reporting it produced instance AUC 0.489 ("no localisation")
+    where the frozen lesion slot gives 0.842 on the same checkpoint.
+    """
+
+    @staticmethod
+    def _bag(n=200, k=4, lesion_slot=1, n_lesion=20):
+        """Slot `lesion_slot` attends the lesion; another slot attends background
+        even more confidently, so max-over-slots is dominated by background."""
+        labels = np.zeros(n, dtype=int)
+        labels[:n_lesion] = 1
+        logits = np.zeros((k, n))
+        logits[lesion_slot, :n_lesion] = 3.0      # lesion slot finds the lesion
+        logits[0, n_lesion:] = 8.0                # background slot is MORE confident
+        attn = np.exp(logits) / np.exp(logits).sum(axis=0, keepdims=True)  # over slots
+        return attn, labels
+
+    def test_softmax_over_slots_sums_to_one_per_instance(self):
+        attn, _ = self._bag()
+        np.testing.assert_allclose(attn.sum(axis=0), 1.0, rtol=1e-6)
+
+    def test_max_over_slots_misses_a_perfect_lesion_slot(self):
+        from slotmil.eval.localization import instance_auc
+
+        attn, labels = self._bag()
+        assert instance_auc(attn, labels, slot=1) > 0.99, "lesion slot is perfect"
+        assert instance_auc(attn, labels, slot=None) < 0.5, (
+            "max-over-slots should be FOOLED here -- that is the bug this guards"
+        )
+
+    def test_frozen_slot_is_used_by_evaluate_localization(self):
+        from slotmil.eval.localization import evaluate_localization
+
+        attn, labels = self._bag(n=4 * 8 * 8, n_lesion=40)
+        good = evaluate_localization([attn], [labels.astype(float)], [4], 8, lesion_slot=1)
+        bad = evaluate_localization([attn], [labels.astype(float)], [4], 8, lesion_slot=None)
+        assert good["instance_auc"] > bad["instance_auc"] + 0.4
+        assert good["lesion_slot"] == 1
+        assert "ap_lift_over_prevalence" in good
