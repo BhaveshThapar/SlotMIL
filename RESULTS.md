@@ -166,6 +166,88 @@ LIDC is the real test: 4-radiologist consensus masks, a genuine per-nodule
 finding structure, and a task (nodule presence) that cannot be solved without
 looking at nodules.
 
+## LIDC results (2026-08-11) — the decisive experiment, and it is negative
+
+Jobs 7230368 (6 arms × 3 seeds × 40 epochs) and 7230369 (analysis). 999 series,
+patient-grouped splits 702/149/148, label `nodule_present`, DINOv2 ViT-B/14
+cached features, K=8, patch-level bags.
+
+### Classification — nothing separates
+
+| arm | test AUC | test ACC | active slots | max slot cos |
+|---|---|---|---|---|
+| **gated ABMIL** | **0.8512 ± 0.0071** | 0.8851 | — | — |
+| mean pool | 0.8324 ± 0.0119 | 0.8851 | — | — |
+| SlotMIL + div 0.5 | 0.8305 ± 0.0356 | **0.9009** | 5.28 / 8 | **0.345** |
+| SlotMIL | 0.8180 ± 0.0509 | 0.8919 | 7.05 / 8 | 0.992 |
+| multi-head ABMIL | 0.8074 ± 0.0525 | 0.8784 | — | — |
+| SlotMIL + div 0.1 | 0.7555 ± 0.1030 | 0.8829 | 6.37 / 8 | 0.974 |
+
+Best slot arm vs every other arm: **no comparison reaches significance**
+(p = 0.42, 0.94, 0.57, 0.75, 0.34). SlotMIL is nominally *behind* gated ABMIL.
+
+### Localisation — at chance
+
+| metric | SlotMIL (div 0.5) | multi-head ABMIL | chance |
+|---|---|---|---|
+| affinity lift | 1.00× | 1.00× | 1.0× |
+| best-slot Dice | 0.006 ± 0.007 | 0.002 ± 0.004 | — |
+| pointing game | 0.008 | 0.000 | ~0.0005 |
+| **instance AUC** | **0.489** | 0.295 | 0.5 |
+| head redundancy (↓) | **0.041** | 0.927 | — |
+
+Faithfulness is equally flat: deletion AUC 0.8566, insertion AUC 0.8617,
+difference **+0.005**. The attention does not drive the prediction.
+
+### What actually explains it — a resolution hypothesis, tested and refuted
+
+The obvious suspect was spatial resolution. At 224 px input with patch 14, one
+patch token covers **22.0 mm** (verified against the cache's own median pixel
+spacing of 0.687 mm). A 5 mm nodule occupies 0.05 of a patch; a 10 mm nodule
+0.21; even a 20 mm nodule fits inside a single patch. Nodule-positive patches are
+0.05% of the grid. It looked like the representation simply could not express the
+target.
+
+**That hypothesis is wrong.** A supervised logistic probe trained directly on
+patch labels, using the *identical* 224 px DINOv2 features and patient-disjoint
+splits, separates nodule from non-nodule patches at:
+
+> **patch-level nodule AUC = 0.9102**
+
+So the features do encode nodules at this resolution. The ceiling for any pooling
+method on this cache is ~0.91. SlotMIL's unsupervised instance AUC is **0.489**.
+
+**The information is present and weakly-supervised slot attention does not find
+any of it.** That is a far cleaner negative than "the resolution was too coarse",
+and it is the experiment that makes the result publishable rather than merely
+disappointing.
+
+### What survives
+
+- **Diversity reliably prevents collapse**: max slot cosine 0.345 with div 0.5 vs
+  0.992 without. It just buys no accuracy and no localisation.
+- **Slot competition genuinely differs from multi-head attention**: head
+  redundancy 0.041 vs 0.927 for the parameter-matched control. The slots *are*
+  distinct — they simply bind nothing anatomically meaningful. This answers
+  reviewer objection #1 mechanistically while undercutting the headline claim.
+- Collapse does **not** predict accuracy (r = −0.49, p = 0.27 over 7 slot runs);
+  bare `slot` seed 1 scored 0.8625 while fully collapsed at cosine 0.993.
+
+### Two live confounds, in priority order
+
+1. **The bag label is nearly uninformative.** `nodule_present` is 87% positive
+   (610 of 702 training bags). A label that almost every bag shares provides
+   almost no gradient pressure to locate anything. The `malignancy` label
+   (median-of-four-readers, indeterminates dropped) is balanced and cannot be
+   predicted without characterising the nodule — `scan_label(mode="malignancy")`
+   is already implemented. **This is the next experiment and it is cheap.**
+2. **K=8 may be wrong for ~2 nodules per scan** (median 2). The K sweep on
+   validation is still outstanding.
+
+Until (1) is run, the honest claim is *"weakly-supervised slot attention fails to
+localise under a near-degenerate bag label"*, not *"slot attention cannot
+localise"*.
+
 ## Implementation findings
 
 **Implicit differentiation freezes "learnable" slot queries.** With
