@@ -96,9 +96,26 @@ def main():
     ap.add_argument("--merge-classes", nargs="+", default=None, metavar="SRC:DST",
                     help="remap labels before splitting, e.g. '4:3' to fold "
                          "MosMed CT-4 (n=2) into CT-3")
+    ap.add_argument("--labels-from", default=None, metavar="JSON",
+                    help="replace cache labels from a JSON {'labels': {uid: int}}; "
+                         "series absent from the file are DROPPED. Used to relabel "
+                         "LIDC by malignancy without re-extracting features.")
     args = ap.parse_args()
 
     meta = read_cache_meta(args.cache)
+
+    if args.labels_from:
+        # Relabelling is also a filter: the malignancy protocol drops scans with
+        # no nodules or only indeterminate ones, and those must leave the study
+        # rather than silently keep their old nodule_present label.
+        ext = json.loads(Path(args.labels_from).read_text())
+        ext_labels = {k: int(v) for k, v in ext["labels"].items()}
+        before = len(meta)
+        meta = {u: {**m, "label": ext_labels[u]} for u, m in meta.items() if u in ext_labels}
+        print(f"[splits] external labels from {args.labels_from}: "
+              f"kept {len(meta)}/{before} series (mode={ext.get('mode','?')})")
+        if not meta:
+            raise SystemExit("no cached series survived the external label map")
 
     if args.merge_classes:
         remap = {}
@@ -184,15 +201,20 @@ def main():
         **splits,
     }
 
-    if args.merge_classes:
-        # The remap must travel with the split file. FeatureBagDataset otherwise
-        # reads labels straight from the HDF5 attrs, so a merged class would be
-        # split correctly but still *served* with its original label -- feeding
-        # label=4 to a 4-class model, which dies in the CUDA NLL kernel with an
-        # out-of-range assert rather than anything legible.
+    if args.merge_classes or args.labels_from:
+        # Any relabelling must travel with the split file. FeatureBagDataset
+        # otherwise reads labels straight from the HDF5 attrs, so a relabelled
+        # series would be split correctly but still *served* with its original
+        # label. For --merge-classes that fed label=4 to a 4-class model and died
+        # in the CUDA NLL kernel; for --labels-from it would silently train on
+        # nodule_present while the results claimed malignancy -- no crash, just a
+        # wrong answer.
         payload["labels"] = {uid: int(m["label"]) for uid, m in meta.items()}
-        payload["merge_classes"] = args.merge_classes
         payload["num_classes"] = len({m["label"] for m in meta.values()})
+        if args.merge_classes:
+            payload["merge_classes"] = args.merge_classes
+        if args.labels_from:
+            payload["labels_from"] = args.labels_from
         print(f"[splits] wrote explicit label map ({payload['num_classes']} classes)")
     blob = json.dumps(payload, sort_keys=True).encode()
     payload["hash"] = hashlib.sha256(blob).hexdigest()[:16]
