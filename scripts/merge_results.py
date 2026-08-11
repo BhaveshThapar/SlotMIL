@@ -70,10 +70,17 @@ def main():
             if len(a) > 1 and len(b) > 1:
                 p = float(stats.ttest_ind(a, b, equal_var=False).pvalue)
                 d = float(np.mean(a) - np.mean(b))
-                sig = bool(d > 0 and p < 0.05)
-                comparisons[other] = {"delta": d, "p": p, "significant": sig}
-                print(f"  vs {other:<16} delta={d:+.4f}  p={p:.3f}  "
-                      f"{'SIGNIFICANT' if sig else 'not significant'}")
+                # Report direction explicitly. A one-sided "significant only if
+                # the slot arm wins" label prints "not significant" when the slot
+                # arm significantly LOSES -- which is the opposite of the truth
+                # and exactly the reading that flatters your own method.
+                wins = bool(d > 0 and p < 0.05)
+                loses = bool(d < 0 and p < 0.05)
+                comparisons[other] = {"delta": d, "p": p,
+                                      "slot_wins": wins, "slot_loses": loses}
+                verdict = ("SIGNIFICANT WIN" if wins else
+                           "SIGNIFICANT LOSS" if loses else "ns")
+                print(f"  vs {other:<16} delta={d:+.4f}  p={p:.3f}  {verdict}")
 
         # Which slot arms stayed non-degenerate -- alignment must not be scored
         # on a collapsed model.

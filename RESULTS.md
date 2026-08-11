@@ -248,6 +248,61 @@ Until (1) is run, the honest claim is *"weakly-supervised slot attention fails t
 localise under a near-degenerate bag label"*, not *"slot attention cannot
 localise"*.
 
+## LIDC malignancy (2026-08-11) — the confound test, and it is inconclusive
+
+Job 7237846/7237847. Relabelled from `nodule_present` (87% positive) to malignancy
+via the standard protocol: median of four readers per nodule, median==3 dropped as
+indeterminate. Result: 734 of 999 scans, **50.4% positive**, test split 55/55.
+Same cached features — only the label changed.
+
+| arm | test AUC | test ACC | max slot cos |
+|---|---|---|---|
+| **mean pool** | **0.5949 ± 0.0100** | 0.5636 | — |
+| gated ABMIL | 0.5803 ± 0.0088 | 0.5303 | — |
+| multi-head ABMIL | 0.5709 ± 0.0210 | 0.5606 | — |
+| SlotMIL + div 0.5 | 0.5645 ± 0.0082 | 0.5667 | 0.718 |
+
+**Every method is near chance**, and SlotMIL is *significantly worse than mean
+pooling* (Δ = −0.0304, p = 0.016).
+
+### Why this does not answer the question
+
+The malignancy probe ceiling explains it. Running the same supervised control,
+now discriminating malignant from benign **nodule tissue**:
+
+| task | supervised probe ceiling | best MIL arm |
+|---|---|---|
+| nodule presence | **0.9102** | — |
+| **malignancy** | **0.6516** | 0.5949 (mean pool) |
+
+At 22 mm per patch a nodule is sub-patch: its *presence* still perturbs patch
+statistics enough to be detected (0.91), but its *margin, spiculation and
+texture* — the features that determine malignancy — are averaged away (0.65).
+The MIL arms reach 0.595 of a 0.652 ceiling, i.e. ~91% of what is achievable.
+They are not failing to learn; there is almost nothing there to learn.
+
+**So the experiment swapped one confound for another.** `nodule_present` had a
+degenerate label but a supported task; `malignancy` has a balanced label but an
+unsupported task. Neither isolates the question.
+
+### What it did show
+
+- Localisation moved off the floor: instance AUC **0.489 → 0.578**. But pointing
+  game is still 0.000, Dice 0.002, affinity lift 1.00×, and the
+  parameter-matched control scores *higher* (0.609) than SlotMIL.
+- Faithfulness went **negative**: insertion − deletion = **−0.0216**. The
+  attention is worse than useless as an explanation of the prediction.
+- The redundancy dissociation persists: 0.145 (SlotMIL) vs 0.893 (multi-head
+  ABMIL).
+
+### The clean experiment that remains
+
+Balanced label **and** a task the representation supports: subsample
+nodule-presence to the 131 no-nodule scans plus 131 with-nodule scans (262 bags,
+50/50). Small, but it is the only condition where the label is balanced and the
+supervised ceiling is known to be 0.91. If SlotMIL still fails to localise there,
+the confound defence is exhausted.
+
 ## Implementation findings
 
 **Implicit differentiation freezes "learnable" slot queries.** With
