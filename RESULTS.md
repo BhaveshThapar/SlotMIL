@@ -1,5 +1,118 @@
 # Results
 
+> **READ THIS FIRST — two reversals, and the current standing claim.**
+>
+> 1. An earlier "SlotMIL does not localise" conclusion was a **metric bug**:
+>    instance AUC scored `attn.max(axis=0)`, but slot attention normalises over
+>    the slot axis, so that statistic measures assignment confidence. Fixed.
+> 2. The corrected number (0.79-0.82) was then read as a **positive** result. It
+>    is not. The arithmetic is right; the **null was wrong**. `chance = 0.5` was
+>    asserted throughout without ever being measured. The real floor for this
+>    protocol on this data is **0.64-0.83**.
+>
+> **Standing claim: SlotMIL's apparent localisation is largely a static in-plane
+> anatomical prior inherited from the frozen DINOv2 features, not learned
+> lesion localisation.** Details in "Null battery" below. Every "above chance"
+> localisation statement elsewhere in this file predates that battery and is
+> mis-calibrated.
+
+## Null battery (2026-08-12) — the positive result does not survive
+
+Two independent adversarial analyses, both executing against the real
+checkpoints. Reproduction first: an independently reimplemented protocol gives
+seed0 0.84229 vs published 0.8423, seed1 0.8679 vs 0.8672, seed2 0.75078 vs
+0.7508. The numbers are correct as computed; the dispute is what they measure.
+
+### What the protocol does right
+
+| null | result |
+|---|---|
+| random attention (4 temperatures, entropy-matched) | **0.501–0.508** |
+| random attention + persistent per-slot bias | 0.505–0.514 |
+| circular-roll mask permutation (strict) | **0.5004** |
+| best-of-8 selected *on test* from pure noise | 0.610–0.616 |
+
+So the metric is sound and the val-fit/freeze step genuinely suppresses ~0.11 of
+selection inflation. The metric-bug fix was real.
+
+### What breaks it: 0.5 is not the floor
+
+| baseline | instance AUC |
+|---|---|
+| **model-free centre-distance prior** (no model, no training, no fitting) | **0.7752** |
+| untrained network, full protocol | 0.6433 / 0.7858 |
+| **static 256-number template** (fit on val, never reads a test image) | **0.7709 / 0.7865 / 0.8299** |
+| **SlotMIL (trained)** | **0.8203** |
+
+SlotMIL beats its own content-free template by **+0.056 / +0.061**, and on seed2
+it **loses** to it (0.7508 vs 0.7709). An untrained init (0.7858) beats trained
+seed2.
+
+### Three decompositions that explain the number
+
+- **No 3D localisation at all.** Flat AUC 0.8424 splits into slice AUC **0.4822**
+  (pure chance at saying *which slice* holds the nodule) and within-slice 0.8411.
+  Whatever the slot does is purely in-plane.
+- **Training adds nothing patient-specific.** Real-minus-cross-patient component:
+  trained **+0.076**, untrained **+0.075**.
+- **Additive:** 0.4965 metric floor + **0.2488 population "nodules live in
+  stereotyped places" prior** + 0.0971 patient-specific = 0.8424. Only ~28% of
+  the above-floor AUC is patient-specific.
+- The freeze does not establish lesion-specific naming: fitting the assignment on
+  **another patient's masks** reproduces the headline exactly (seed1 0.8679,
+  slot 4 in 8/8 reps).
+
+### The control was broken, not null
+
+Every null above sits *above* the multi-head-ABMIL control's 0.4430, so the
+reported +0.377 measured the control's pathology.
+
+- MH-ABMIL attention is near-uniform (normalised entropy 0.98–0.99) and
+  **periphery**-biased (radial profile 0.73/0.75/0.82/0.94/1.42/1.34) while
+  lesions are central (density 2.16/2.42/0.92/0.20/0.01/0.00). Peripheral
+  attention against a central target is below chance *deterministically*.
+- The trained control (0.4216) scores **below its own random initialisation**
+  (0.7045).
+- Direction-calibrated, the control reaches **0.7096** and the pooled delta falls
+  to **+0.095**; **no individual condition remains significant** (nodule p=0.092,
+  malignancy p=0.142, balanced p=0.317).
+- Position-stratified (slice × radial bin): delta 0.3699 → **0.1291**.
+  Sign-calibrated *and* stratified: **+0.063**.
+- Trained SlotMIL vs untrained MH-ABMIL, joint-stratified: **+0.014, p=0.765**.
+
+### What genuinely survives
+
+On `nodule_present` only, SlotMIL beats the centre prior by +0.067 in 74% of bags
+(p=2.8e-12) and beats its own static template by +0.056/+0.061 on 2 of 3 seeds.
+On **malignancy it does not beat the centre prior at all** (50.0% win rate,
+p=0.72). Nothing survives joint stratification.
+
+### Other defects found
+
+- The "Hungarian slot→finding assignment" is, for F=2 complementary masks,
+  algebraically **argmax of the lesion column** (verified 22/22 checkpoints). The
+  framing overstates the naming step.
+- `chance_affinity` is *exactly* 0.5 by construction for complementary columns —
+  the "1.00× lift" was a degenerate baseline, never a measurement.
+- **fp16 attention caching costs seed2 0.034 AUC** (0.7173 vs 0.7508) and AP lift
+  7.10 vs 7.87; peaked-attention seeds need a float32 check.
+- Head-redundancy dissociation (0.041 vs 0.927) is confounded by the
+  normalisation axis: random logits softmaxed over slots give 0.054.
+
+### Scope limits of the battery
+
+The full null battery ran on LIDC `nodule_present` seeds 0–1; static-template and
+crosstab cover all three seeds plus two untrained inits. **Malignancy and
+balanced_presence were not re-tested under the nulls**, and only two untrained
+inits were sampled (0.6433–0.7858 — wide and undersampled). Not yet tested:
+whether any advantage survives restriction to a real lung mask rather than the
+radial-bin proxy, and whether the untrained baseline behaves the same on MosMed.
+
+Reproduction scripts: `scripts/null_battery.py`, `null_static_template.py`,
+`null_decompose.py`, `null_crosstab.py`, `null_fp16_check.py`,
+`diagnose_control.py`, `diagnose_confound.py`, `final_verdict.py`.
+
+
 ## W1 go/no-go — NoduleMNIST3D (2026-08-06)
 
 Job 7214608, tron/RTX A5000. 5 arms × 3 seeds × 30 epochs, official MedMNIST
