@@ -1,0 +1,311 @@
+# Pre-registration -- ISBI 2027 submission
+#
+# This file is the machine-readable half of PREREGISTRATION.md. It is frozen by
+# scripts/prereg_freeze.py, which writes its sha256 into that document; the
+# analysis code reads parameters ONLY from here and raises PreregViolation on
+# anything undeclared. Editing this file after the freeze changes its hash, which
+# breaks the chain and is exactly the signal we want -- amendments go in
+# AMENDMENTS.md and are dated.
+#
+# Do not add a timestamp field. Outputs are stamped with this config's hash, and
+# a timestamp would make otherwise-identical runs differ byte-for-byte, which
+# defeats the reproduction check.
+
+version: isbi2027.v1
+title: >-
+  Position priors dominate instance-level localisation metrics for
+  weakly-supervised MIL in volumetric CT
+target: ISBI 2027, deadline 2026-10-26
+frozen_on: '2026-08-12'
+
+scope: >-
+  Covers the CONFIRMATORY analyses only: the untrained-init reference floor
+  (WP3), the architecture sweep (WP5), the condition/dataset sweep (WP6), and
+  every estimand computed on them. Everything computed before this file was
+  frozen -- the null battery, the static-template analysis, the crosstab, the
+  axis gate -- is EXPLORATORY by construction and must be labelled that way in
+  the paper. Exploratory results set the hypothesis thresholds below; that is
+  legitimate and is stated openly rather than hidden.
+
+# ---------------------------------------------------------------- data
+datasets:
+  lidc:
+    cache: data/lidc/features_dinov2_vitb14.h5
+    grid: [16, 16]
+    patches_per_slice: 256
+    role: primary
+    splits:
+      discovery:
+        path: data/lidc/splits.json
+        seed: 0
+        recorded_hash: 9f468f8bd8a59228
+        role: exploratory
+        note: >-
+          The split every published number so far was computed on. The protocol
+          was developed against it, so it cannot carry confirmatory claims.
+      confirmatory:
+        path: data/lidc/splits_confirmatory.json
+        seed: 2027
+        recorded_hash: efcac704eb540cc8   # filled by prereg_freeze.py --update-splits
+        role: confirmatory
+        note: >-
+          Re-splitting is clean here because the DINOv2 cache is frozen and
+          unsupervised, so no label information crosses the split boundary.
+
+  mosmed:
+    cache: data/mosmed/features_dinov2_vitb14.h5
+    grid: [16, 16]
+    patches_per_slice: 256
+    role: secondary
+    splits:
+      existing:
+        path: data/mosmed/splits.json
+        seed: 0
+        recorded_hash: d8fbffefc2a7134c
+        role: confirmatory_with_caveat
+        note: >-
+          NOT re-split. Only 50 of 1110 MosMed scans carry masks and all are
+          CT-1; a fresh split would leave too few annotated scans in test to
+          estimate anything. MosMed therefore supports the stereotypy contrast
+          (H9) and nothing else, and the paper says so.
+
+conditions:
+  - name: nodule_present
+    dataset: lidc
+    labels: null            # baked into the HDF5 attrs
+    positive_rate: 0.869
+  - name: malignancy
+    dataset: lidc
+    labels: data/lidc/labels_malignancy.json
+    positive_rate: 0.504
+  - name: mosmed_severity
+    dataset: mosmed
+    labels: data/mosmed/splits.json
+    num_classes: 4
+
+# ---------------------------------------------------------------- arms
+#
+# status: implemented | planned. An arm may be unbuilt at freeze time -- that is
+# the point of pre-registering -- but it may never go missing silently, so
+# tests/test_prereg.py asserts every `implemented` arm is constructible and every
+# `planned` arm is declared here.
+#
+# blind: model arms are shown to the analysis layer as opaque codes. Reference
+# baselines are never blinded because the estimands need to know which one is the
+# template.
+#
+# spec strings are parsed by scripts/train_cached.py:34 parse_arm, which coerces
+# every override value to float -- overrides must be numeric `k=v`.
+
+arms:
+  - {name: mean,            spec: 'mean',            status: implemented, blind: true}
+  - {name: abmil,           spec: 'abmil',           status: implemented, blind: true}
+  - {name: gated_abmil,     spec: 'gated_abmil',     status: implemented, blind: true}
+  - {name: mh_abmil,        spec: 'mh_abmil',        status: implemented, blind: true}
+  - {name: slot_div0.5,     spec: 'slot:div=0.5',    status: implemented, blind: true}
+  - name: centre_gaussian
+    spec: 'centre_gaussian'
+    status: planned
+    blind: false
+    note: >-
+      Harvey et al. arXiv:2605.27306 -- a_ij proportional to
+      NormPDF(j | S_i/2, 1) over slice index. Content-free reference, so its
+      identity must stay visible.
+  - name: normal_guidance
+    spec: 'normal_guidance:lam=0.1'
+    status: planned
+    blind: true
+    note: >-
+      KL to a moment-matched Normal over slice index, recomputed under
+      stop-gradient each step. Carries H6.
+  - {name: clam_sb, spec: 'clam_sb', status: planned, blind: true}
+  - {name: dsmil,   spec: 'dsmil',   status: planned, blind: true}
+  - name: transmil
+    spec: 'transmil'
+    status: planned
+    blind: true
+    drop_rule: >-
+      LIDC bags are ~43.8k instances, far beyond the WSI bags TransMIL was
+      designed for. If it is not training by 2026-09-22, cut it and report the
+      arm count achieved. Do not slip the deadline for this arm.
+
+# ---------------------------------------------------------------- references
+reference_baselines:
+  - {name: chance,                 kind: analytic,             impl: null}
+  - {name: centre_prior,           kind: model_free,           impl: 'null_battery.centre_prior_auc'}
+  - name: fitted_template
+    kind: content_free_fitted
+    impl: 'null_static_template.global_template'
+    fit_split: val
+    note: >-
+      A 256-number in-plane map fit on validation that never reads a test image.
+      Tighter than Arun et al.'s unfit AVG mask and than Harvey's fixed sigma=1
+      Gaussian, so it is the right denominator for prior-normalised skill.
+  - {name: cross_patient,          kind: permutation, impl: 'null_battery.shuffle_masks_across_bags'}
+  - {name: roll_permutation,       kind: permutation, impl: 'null_battery.roll_masks'}
+  - {name: entropy_matched_random, kind: random,      impl: 'null_battery.random_attn'}
+  - name: untrained_fleet
+    kind: untrained
+    impl: 'null_collect_attn (no --ckpt)'
+    n_inits: 30
+    init_seed_base: 20270000
+    note: >-
+      Two inits spanning 0.6433-0.7858 cannot support a stated floor. Report the
+      floor as a distribution: median and 5-95th percentile.
+  - {name: supervised_patch_probe, kind: ceiling, impl: 'probe_ceiling'}
+
+# ---------------------------------------------------------------- protocol
+protocol:
+  dtype: float32          # fp16 attention caching cost seed2 0.034 AUC
+  seeds: [0, 1, 2, 3, 4]
+  instance_label:
+    rule: 'patch_lesion_fraction > 0'
+    sensitivity_thresholds: [0.0, 0.005, 0.01, 0.02]
+    note: >-
+      The cached mask is a coverage fraction topping out near 0.05 -- a nodule
+      never fills more than ~5% of a 22mm patch -- so `> 0` means "this patch
+      contains at least one lesion voxel". Generous by default, and part of why
+      position dominates. The sweep is a declared secondary analysis.
+  slot_selection:
+    method: hungarian_on_complementary_findings
+    fit_split: val
+    frozen: true
+    note: >-
+      For F=2 complementary columns this is algebraically argmax of the lesion
+      column. The framing must not overstate the naming step.
+  bag_inclusion:
+    drop_all_positive: true
+    drop_all_negative: true
+    require_multiple_of_patches_per_slice: true
+
+statistics:
+  bootstrap:
+    kind: cluster
+    cluster_by: patient
+    reps: 10000
+    rng_seed: 0
+    ci: percentile_95
+  paired_test: delong
+  multiplicity: holm
+  alpha: 0.05
+
+# ---------------------------------------------------------------- estimands
+estimands:
+  primary:
+    - name: prior_normalised_skill
+      formula: '(auc - auc_fitted_template) / (1 - auc_fitted_template)'
+      prior_art: >-
+        Structurally information gain over a baseline model (Kummerer, Wallis &
+        Bethge, PNAS 2015). Imported, not invented; we claim the construction.
+    - name: patient_specific_skill
+      formula: 'auc_real - auc_cross_patient'
+      prior_art: >-
+        Structurally shuffled AUC (Borji et al. ICCV 2013; Bylinskii et al.
+        TPAMI 2019). Imported, not invented.
+  secondary:
+    - {name: flat_instance_auc,   impl: 'null_battery.score'}
+    - {name: slice_auc,           impl: 'axis_gate.per_bag_axes'}
+    - {name: within_slice_auc,    impl: 'axis_gate.per_bag_axes'}
+    - name: stratified_auc
+      impl: 'diagnose_confound.strat_auc'
+      strata: [normalised_slice, radial_bin]
+      n_radial_bins: 6
+    - {name: ap_lift_over_prevalence, impl: 'localization.evaluate_localization'}
+    - name: in_lung_stratified_auc
+      impl: 'pending WP4'
+      depends_on: lung_mask
+  decomposition:
+    kind: nested_reference_chain
+    chain: [chance, fitted_template, cross_patient, full]
+    note: >-
+      Report differences between adjacent links, not a bare three-term sum. AUC
+      is not naturally additive and a reviewer will attack an additive claim;
+      the nested-chain form is defensible and mirrors Kummerer et al.
+
+# ---------------------------------------------------------------- hypotheses
+#
+# Every hypothesis carries a numeric falsifier. Thresholds are set from the
+# discovery set, which is legitimate and disclosed. A hypothesis with no way to
+# fail is ceremony, not pre-registration.
+
+hypotheses:
+  - id: H1
+    role: primary
+    statement: >-
+      For every arm, |flat instance AUC - within-slice instance AUC| < 0.02:
+      the reported 3D metric is an in-plane metric wearing 3D clothing.
+    threshold: 0.02
+    falsifier: >-
+      Fails for a majority of arms -> the paper's lead claim is withdrawn and
+      the in-plane framing is abandoned.
+  - id: H2
+    role: primary
+    statement: >-
+      The model-free centre prior's slice AUC exceeds every trained arm's slice
+      AUC -- attention MIL is worse than geometry on the axial axis.
+    falsifier: any trained arm beats the centre prior on the slice axis.
+  - id: H3
+    role: primary
+    statement: >-
+      Over >=30 untrained inits the 95th-percentile instance AUC exceeds 0.70,
+      i.e. 0.5 is not the floor.
+    threshold: 0.70
+    falsifier: 95th percentile <= 0.70.
+  - id: H4
+    role: primary
+    statement: >-
+      Every arm's patient-specific skill is < 0.15, and the median across arms
+      is < 0.10.
+    threshold: {per_arm: 0.15, median: 0.10}
+    falsifier: any arm >= 0.15, or median >= 0.10.
+  - id: H5
+    role: secondary
+    statement: No arm's prior-normalised skill exceeds 0.30.
+    threshold: 0.30
+    falsifier: any arm exceeds 0.30.
+  - id: H6
+    role: primary
+    statement: >-
+      Normal Guidance raises slice-level AUC over its base arm but raises
+      patient-specific skill by less than 0.02.
+    threshold: 0.02
+    falsifier: >-
+      Patient-specific skill rises by >= 0.02 -- prior injection would then be
+      adding real information and the critique fails.
+  - id: H7
+    role: power_gate
+    statement: >-
+      The supervised patch probe's prior-normalised skill exceeds 0.50 while
+      every content-free baseline's is below 0.05.
+    threshold: {probe: 0.50, content_free: 0.05}
+    falsifier: >-
+      The probe fails to separate -> the proposed estimands have no power and
+      must not be recommended. This gate blocks the constructive half of the
+      paper.
+  - id: H8
+    role: two_sided
+    statement: In-lung fitted-template AUC exceeds 0.65.
+    threshold: 0.65
+    falsifier: >-
+      None -- reported either way. If restricting to lung removes the prior,
+      that becomes the paper's actionable recommendation instead.
+  - id: H9
+    role: secondary
+    statement: >-
+      MosMed's fitted-template AUC is lower than LIDC's, with correspondingly
+      higher prior-normalised skill -- prior dominance tracks the positional
+      stereotypy of the finding.
+    falsifier: ordering reverses or is indistinguishable.
+
+# ---------------------------------------------------------------- blinding
+blinding:
+  enabled: true
+  scope: model_arms
+  key_path: runs/prereg/unblind_key.json
+  code_prefix: ARM
+  code_nibbles: 6
+  note: >-
+    Procedural, NOT cryptographic. Anyone with filesystem access can read the
+    key. Its value is preventing casual mid-iteration peeking and creating an
+    auditable unblinding event, not making cheating impossible. Claiming more
+    than that would itself be an integrity problem.

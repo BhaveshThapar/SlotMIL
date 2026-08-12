@@ -19,3 +19,7 @@ __pycache__/
 *.pt
 *.ckpt
 env/setup.log
+# Anchored, for the reason spelled out above: a bare `docs/` matches a directory
+# named docs at ANY depth. The pre-registration deliberately lives at the repo
+# root rather than in here, because a record that cannot be committed is not one.
+/docs/

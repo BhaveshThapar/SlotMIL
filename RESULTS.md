@@ -16,6 +16,44 @@
 > localisation statement elsewhere in this file predates that battery and is
 > mis-calibrated.
 
+## Axis gate (2026-08-12) — the "slice AUC 0.4822" framing was too strong; the finding underneath is stronger
+
+`scripts/axis_gate.py` re-runs the frozen-slot protocol over all seven attention
+dumps with a **patient-level cluster bootstrap** (10k reps, 129 patients), because
+the headline `slice_auc = 0.4822` rested on a single seed.
+
+| arm | flat AUC | slice AUC [95% CI] | within-slice AUC |
+|---|---|---|---|
+| real_seed0 | 0.8424 | 0.4822 [0.4392, 0.5215] | 0.8411 |
+| real_seed1 | 0.8679 | 0.5565 [0.5167, 0.5945] | 0.8547 |
+| real_seed2 (fp16) | 0.7173 | 0.5430 [0.5072, 0.5801] | 0.7125 |
+| f32_seed0 | 0.8423 | 0.4822 [0.4392, 0.5215] | 0.8409 |
+| f32_seed2 | 0.7508 | 0.5430 [0.5072, 0.5801] | 0.7447 |
+| untrained_s1234 | 0.6433 | 0.4950 [0.4573, 0.5321] | 0.6490 |
+| untrained_s7 | 0.7858 | 0.4975 [0.4656, 0.5316] | 0.7881 |
+| **centre-distance prior** (no model) | 0.7752 | **0.6026 [0.5696, 0.6359]** | 0.7351 |
+
+**"Slice AUC is chance" does not survive as stated.** Across seeds it ranges
+0.4822–0.5565 and two CIs exclude 0.5 (barely — lower bounds 0.5072 and 0.5167).
+Reporting 0.4822 as *the* number was seed-cherry-picking, the same error class as
+before. Three claims do survive, and they are better:
+
+1. **The axial axis carries real signal, and the networks miss it.** The
+   model-free centre prior scores **0.6026** on the slice axis; every trained and
+   untrained network scores 0.48–0.56. Attention MIL is *worse than geometry*
+   axially. This replicates Harvey et al.'s centred-Gaussian result on our data
+   and on our metric.
+2. **Training does not move the axial axis.** Untrained inits give 0.4950/0.4975;
+   trained seeds give 0.4822/0.5430/0.5565 — trained straddles untrained.
+3. **The reported metric is an in-plane metric wearing 3D clothing.** Flat ≈
+   within-slice for *every* arm (0.8424/0.8411, 0.8679/0.8547, 0.7508/0.7447,
+   0.6433/**0.6490**, 0.7858/**0.7881** — untrained is higher within-slice than
+   flat). Whatever the axial axis contributes to the headline number is ~0.
+
+Claim (3) is the robust form of the lead and does not depend on slice AUC landing
+exactly on 0.5. Also confirms the fp16 defect is seed-specific: seed0 is identical
+in fp16 and fp32 (0.8424/0.8423), seed2 moves 0.7173 → 0.7508.
+
 ## Null battery (2026-08-12) — the positive result does not survive
 
 Two independent adversarial analyses, both executing against the real
