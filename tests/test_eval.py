@@ -22,7 +22,12 @@ from slotmil.eval.alignment import (
     slot_purity,
 )
 from slotmil.eval.classification import bootstrap_ci, classification_metrics, delong_test
-from slotmil.eval.localization import attn_to_volume, dice_iou, pointing_game
+from slotmil.eval.localization import (
+    attn_to_volume,
+    dice_iou,
+    evaluate_localization,
+    pointing_game,
+)
 
 
 class TestClassification:
@@ -82,6 +87,33 @@ class TestLocalization:
     def test_attn_to_volume_rejects_mismatched_length(self):
         with pytest.raises(ValueError, match="instances"):
             attn_to_volume(torch.rand(3, 10), n_slices=5, grid_h=4, grid_w=4, out_hw=(8, 8))
+
+    def test_reporter_reads_keys_that_evaluate_localization_returns(self):
+        """scripts/eval_alignment.py's summary block is not otherwise covered.
+
+        `dice_std` was renamed to `dice_std_across_bags` here and the reporter was
+        missed, so every alignment run raised KeyError *after* writing its JSON --
+        results survived, but the non-zero exit made lidc_align.sbatch's
+        `|| echo "ALIGNMENT FAILED"` fire on runs that had actually succeeded.
+        Pinning the key names is cheaper than noticing that again.
+        """
+        import re
+        from pathlib import Path
+
+        source = Path(__file__).resolve().parents[1] / "scripts" / "eval_alignment.py"
+        used = set(re.findall(r"loc\[['\"](\w+)['\"]\]", source.read_text()))
+
+        rng = np.random.default_rng(0)
+        n_slices, grid = 3, 4
+        n = n_slices * grid * grid
+        attn = rng.random((2, n)).astype(np.float32)
+        masks = [(rng.random(n) > 0.7).astype(np.float32) for _ in range(2)]
+        out = evaluate_localization(
+            [attn, attn], masks, [n_slices, n_slices], grid, lesion_slot=0
+        )
+
+        missing = used - set(out)
+        assert not missing, f"eval_alignment.py reads keys that do not exist: {missing}"
 
 
 class TestAlignment:

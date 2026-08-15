@@ -197,7 +197,13 @@ def main():
     print(f"  head redundancy     {results['test_redundancy']['mean_pairwise_cosine']:.3f}")
     loc = results["test_localization"]
     if loc.get("n_bags"):
-        print(f"  best-slot Dice      {loc['dice']:.3f} +/- {loc['dice_std']:.3f}")
+        # dice_std_across_bags, not dice_std: localization.evaluate_localization
+        # was renamed to say which axis the spread is over, and this print was
+        # missed. It sits after the JSON write above, so results survived -- but
+        # the KeyError exited non-zero and lidc_align.sbatch's
+        # `|| echo "ALIGNMENT FAILED"` then reported a good run as a failure.
+        print(f"  best-slot Dice      {loc['dice']:.3f} "
+              f"+/- {loc['dice_std_across_bags']:.3f}")
         print(f"  pointing game       {loc['pointing_game']:.3f}")
         print(f"  instance AUC        {loc['instance_auc']:.3f}")
     print(f"\nwrote {out}/alignment_{args.pooling}.json")
