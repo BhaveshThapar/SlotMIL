@@ -201,3 +201,42 @@ Template:
 - **Consequence for the paper:** none. H6 and H2 remain confirmatory. The
   departure from Harvey's printed sigma must be stated in the methods section,
   together with the reason it cannot affect a rank-based metric.
+
+---
+
+## 2026-08-15 — lam pre-flight reported; lam unchanged; a scope breach recorded
+
+- **Kind:** deviation (record only — no config change)
+- **Config hash before → after:** `33a55222c853a4cf` → `33a55222c853a4cf` (unchanged)
+- **What changed:** nothing. `lam` stands at the pre-registered 0.1. This entry
+  exists because the calibration pre-flight promised in the previous entry has
+  now reported, and because it showed me more than I said it would.
+- **What the pre-flight showed:** on the discovery split, seed 0, 8 epochs, the
+  KL term is **not inert**. `train_loss_kl_prior` falls 0.0812 → 0.0387 (−52.3%)
+  with validation tracking it (0.0707 → 0.0379). Its contribution to the total
+  loss is small — `lam × KL` of 0.0081 → 0.0039, 1.2–2.0% — which matches the
+  ~0.089-nat estimate for a near-uniform marginal that motivated the pre-flight.
+  Small is not inert, and only inert would have justified changing `lam`.
+
+  What this does **not** establish is attribution: whether the KL drove the drop
+  or merely tracked a drift `gated_abmil` would have shown anyway. Settling that
+  requires the base arm's KL at `lam=0`, which is the H6 comparison itself and
+  belongs in the confirmatory sweep, not here.
+- **The scope breach.** `scripts/slurm/ng_lambda_preflight.sbatch` declared the
+  permitted scope as `loss_kl_prior` and `loss_bag` magnitudes, explicitly
+  excluding "any test-split number". But `scripts/train_cached.py` prints
+  `res["test"]["auc"]` unconditionally on arm completion, so two discovery-split
+  test AUCs were emitted to the job log and seen: `centre_gaussian` 0.8311 and
+  `normal_guidance:lam=0.1` 0.8511 (accuracy 0.8716 for both). A declared scope
+  that the tooling does not enforce is a comment, not a control; recorded here
+  rather than passed over.
+- **Results already seen?** **Yes, and the above is the complete list.** Both
+  numbers are on the **discovery** split, which this pre-registration labels
+  exploratory by construction and which cannot carry confirmatory claims, so no
+  confirmatory result was seen and none was influenced — `lam` is unchanged, and
+  no other parameter was touched after seeing them. No localisation estimand was
+  computed, no attention was dumped, and nothing on `splits_confirmatory.json`
+  was read.
+- **Consequence for the paper:** none. H6 remains confirmatory. Future
+  calibration runs should suppress test metrics at the source rather than declare
+  a scope the driver ignores.
