@@ -177,6 +177,26 @@ protocol:
     drop_all_positive: true
     drop_all_negative: true
     require_multiple_of_patches_per_slice: true
+  lung_mask:
+    # Added by amendment 2026-08-14. Selected on 30 series sampled with seed 2027
+    # with the confirmatory test split excluded, so the choice never saw data
+    # carrying H8. See AMENDMENTS.md.
+    method: fill
+    lung_thresh: 0.0
+    patch_rule: 'a patch is in-lung when it contains any lung at all'
+    selection_rule: >-
+      Among methods reaching containment 1.0, the tightest wins -- a looser mask
+      restricts less and therefore proves less. All four methods reach 1.0 at
+      threshold 0.0, so tightness decides: air 0.24280, fill 0.24306,
+      fill_close 0.24341, fill_hull 0.26893.
+    deviation_from_selection_rule: >-
+      The rule as stated picks `air` (0.00026 tighter than `fill`). Overridden:
+      `air` is the deliberately unrepaired negative control, so it inherits
+      lung_mask_3d's 3x3x3 closing artefact and returns empty first and last
+      slices. The 26 lesion-bearing series sampled happened to carry no lesion
+      patch on an end slice; across 999 that would eventually delete positives.
+      `fill` is 0.1% looser and structurally safe, so it wins on a tiebreak the
+      mechanical rule cannot see.
 
 statistics:
   bootstrap:
@@ -212,7 +232,7 @@ estimands:
       n_radial_bins: 6
     - {name: ap_lift_over_prevalence, impl: 'localization.evaluate_localization'}
     - name: in_lung_stratified_auc
-      impl: 'pending WP4'
+      impl: 'estimands.stratified_auc restricted to protocol.lung_mask'
       depends_on: lung_mask
   decomposition:
     kind: nested_reference_chain

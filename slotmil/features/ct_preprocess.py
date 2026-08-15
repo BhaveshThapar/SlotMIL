@@ -24,17 +24,14 @@ def window_hu(volume: np.ndarray, hu_min: float = HU_MIN, hu_max: float = HU_MAX
     return (v - hu_min) / (hu_max - hu_min)
 
 
-def lung_mask_3d(volume_hu: np.ndarray, air_thresh: float = -320.0) -> np.ndarray:
-    """Coarse binary lung mask from raw HU.
+def _cleared_air_per_slice(volume_hu: np.ndarray, air_thresh: float) -> np.ndarray:
+    """Air voxels that are not connected to the slice border.
 
-    Threshold for air, drop everything connected to the volume border (that is
-    the outside world and the scanner table, not lung), then keep the two largest
-    remaining components. Deliberately crude -- it only has to decide which slices
-    to keep, not to be a segmentation result.
+    The border-connected component is the outside world and the scanner table,
+    not lung. Extracted so the evaluation mask can reuse it to repair slices
+    that :func:`lung_mask_3d`'s 3D closing erodes away.
     """
     air = volume_hu < air_thresh
-
-    # Clear border-connected air in-plane, slice by slice.
     cleared = np.zeros_like(air)
     for z in range(air.shape[0]):
         lab, n = ndimage.label(air[z])
@@ -44,6 +41,18 @@ def lung_mask_3d(volume_hu: np.ndarray, air_thresh: float = -320.0) -> np.ndarra
         border.discard(0)
         keep = np.isin(lab, list(set(range(1, n + 1)) - border))
         cleared[z] = keep
+    return cleared
+
+
+def lung_mask_3d(volume_hu: np.ndarray, air_thresh: float = -320.0) -> np.ndarray:
+    """Coarse binary lung mask from raw HU.
+
+    Threshold for air, drop everything connected to the volume border (that is
+    the outside world and the scanner table, not lung), then keep the two largest
+    remaining components. Deliberately crude -- it only has to decide which slices
+    to keep, not to be a segmentation result.
+    """
+    cleared = _cleared_air_per_slice(volume_hu, air_thresh)
 
     lab, n = ndimage.label(cleared)
     if n == 0:
@@ -53,6 +62,112 @@ def lung_mask_3d(volume_hu: np.ndarray, air_thresh: float = -320.0) -> np.ndarra
     mask = np.isin(lab, keep_labels)
 
     return ndimage.binary_closing(mask, structure=np.ones((3, 3, 3)))
+
+
+def _disk(radius: int) -> np.ndarray:
+    r = int(radius)
+    y, x = np.ogrid[-r : r + 1, -r : r + 1]
+    return (y * y + x * x) <= r * r
+
+
+def lung_mask_for_evaluation(
+    volume_hu: np.ndarray,
+    air_thresh: float = -320.0,
+    method: str = "fill_hull",
+    closing_radius: int = 8,
+    min_component_frac: float = 0.001,
+) -> np.ndarray:
+    """Lung mask suitable for *restricting an evaluation region*.
+
+    Deliberately separate from :func:`lung_mask_3d`, which only has to decide
+    which slices to keep. The difference is load-bearing and easy to get wrong:
+
+    **An air threshold excludes the nodules themselves.** A nodule is soft
+    tissue, not air, so it fails ``volume < -320``. Solitary nodules sitting in
+    parenchyma survive as holes that get filled, but juxtapleural nodules (fused
+    with the chest wall) and juxtavascular ones (fused with a vessel) are
+    connected to non-lung structure and fall *outside* an air mask entirely.
+    Restricting a localisation metric to that mask would delete precisely the
+    targets the metric is meant to score -- turning "does attention find the
+    nodule inside the lung?" into "does attention find the nodule in a region
+    the nodule was removed from". The control would not be conservative; it
+    would be inverted.
+
+    So the mask is grown until it contains the lesions, and the containment
+    fraction is measured rather than assumed -- see ``scripts/lung_mask_lidc.py``,
+    which reports it per series and gates on it.
+
+    ``method``:
+
+    ``air``
+        :func:`lung_mask_3d` unchanged. Kept as the negative control that
+        demonstrates the problem, not as a candidate.
+    ``fill``
+        plus per-slice hole filling. Recovers nodules fully enclosed by
+        parenchyma.
+    ``fill_close``
+        plus morphological closing with ``closing_radius``. Bridges small
+        pleural indentations.
+    ``fill_hull``
+        plus a per-slice convex hull of each lung. Recovers juxtapleural
+        nodules, at the cost of including some mediastinum -- over-inclusion is
+        the safe direction here, since it only weakens the restriction rather
+        than biasing it toward the answer we want.
+
+    Returns a boolean ``(S, H, W)`` array.
+    """
+    if method not in ("air", "fill", "fill_close", "fill_hull"):
+        raise ValueError(
+            f"method must be air|fill|fill_close|fill_hull, got {method!r}"
+        )
+
+    mask = lung_mask_3d(volume_hu, air_thresh=air_thresh)
+    if method == "air":
+        return mask
+
+    # lung_mask_3d closes with a 3x3x3 element, and binary erosion reads outside
+    # the volume as background, so the first and last slices come back empty.
+    # Harmless when the mask only has to pick a slice range -- fatal here, since
+    # an empty slice contains no lung patches and would silently drop every
+    # lesion patch on it from the evaluation region.
+    empty = ~mask.reshape(mask.shape[0], -1).any(axis=1)
+    if empty.any():
+        mask[empty] = _cleared_air_per_slice(volume_hu, air_thresh)[empty]
+
+    for z in range(mask.shape[0]):
+        mask[z] = ndimage.binary_fill_holes(mask[z])
+    if method == "fill":
+        return mask
+
+    if method == "fill_close":
+        se = _disk(closing_radius)
+        for z in range(mask.shape[0]):
+            if mask[z].any():
+                mask[z] = ndimage.binary_fill_holes(
+                    ndimage.binary_closing(mask[z], structure=se)
+                )
+        return mask
+
+    from skimage.morphology import convex_hull_image
+
+    min_area = min_component_frac * mask.shape[1] * mask.shape[2]
+    for z in range(mask.shape[0]):
+        if not mask[z].any():
+            continue
+        lab, n = ndimage.label(mask[z])
+        if n == 0:
+            continue
+        sizes = ndimage.sum(mask[z], lab, range(1, n + 1))
+        out = np.zeros_like(mask[z])
+        # Hull each lung separately -- hulling both together would swallow the
+        # mediastinum wholesale.
+        for li in np.argsort(sizes)[::-1][:2] + 1:
+            comp = lab == li
+            if comp.sum() < min_area:
+                continue
+            out |= convex_hull_image(comp)
+        mask[z] = out | mask[z]
+    return mask
 
 
 def select_lung_slices(
