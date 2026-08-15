@@ -70,7 +70,16 @@ def run_epoch(
         with torch.set_grad_enabled(train):
             with torch.autocast("cuda", enabled=amp and "cuda" in device):
                 out = model(feats, pad_mask)
-                loss, comps = criterion(out, labels, pad_mask=pad_mask)
+                # slice_index reaches the criterion, never the model: only
+                # losses.normal_guidance_loss needs it, and routing it through
+                # the loss leaves MILModel.forward's signature -- and every
+                # eval-time caller of it -- untouched. Absent (older collates,
+                # synthetic fixtures) it falls back to arange(S), which is what
+                # the true index equals at eval time anyway.
+                loss, comps = criterion(
+                    out, labels, pad_mask=pad_mask,
+                    slice_index=batch.get("slice_index"),
+                )
 
         if train:
             optimizer.zero_grad(set_to_none=True)

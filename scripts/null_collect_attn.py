@@ -59,7 +59,9 @@ def main():
     ap.add_argument("--cache", default="data/lidc/features_dinov2_vitb14.h5")
     ap.add_argument("--splits", default="data/lidc/splits.json")
     ap.add_argument("--ckpt", default=None, help="omit for the untrained-model null")
-    ap.add_argument("--pooling", default="slot", choices=["slot", "mh_abmil"])
+    ap.add_argument("--pooling", default="slot",
+                    choices=["slot", "mh_abmil", "centre_gaussian",
+                             "normal_guidance"])
     ap.add_argument("--init-seed", type=int, default=1234,
                     help="torch seed for the untrained-model null")
     ap.add_argument("--tag", required=True)

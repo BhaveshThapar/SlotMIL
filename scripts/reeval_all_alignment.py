@@ -40,7 +40,14 @@ CONDITIONS = [
     ("malignancy", "runs/lidc_malignancy", "data/lidc/splits_malignancy.json", 2),
     ("balanced_presence", "runs/lidc_balanced", "data/lidc/splits_balanced.json", 2),
 ]
-ARMS = [("slot_div=0.5", "slot"), ("mh_abmil", "mh_abmil")]
+# (run-directory name, pooling). train_cached.py writes the directory as the arm
+# spec with ':' replaced by '_', which is why normal_guidance carries its lam.
+ARMS = [
+    ("slot_div=0.5", "slot"),
+    ("mh_abmil", "mh_abmil"),
+    ("centre_gaussian", "centre_gaussian"),
+    ("normal_guidance_lam=0.1", "normal_guidance"),
+]
 
 
 def binary_findings(masks):

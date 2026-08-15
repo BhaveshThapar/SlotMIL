@@ -190,6 +190,23 @@ def collate_bags(batch: list[dict]) -> dict:
         feats[i, :n] = item["features"]
         pad_mask[i, :n] = True
 
+    # True anatomical slice numbers, padded with -1. Carried because
+    # ``--max-slices`` subsampling makes bag position k the true slice sel[k]:
+    # without this, losses.normal_guidance_loss would compute its moments and
+    # apply its 1-slice^2 variance floor in *subsampled* units, i.e. a random
+    # per-bag multiple of the anatomical scale (~3.6x at S=171, ~14.6x at S=700),
+    # so lam would silently mean something different for every bag.
+    #
+    # Only the loss reads it. MILModel.forward is deliberately untouched, which
+    # is what keeps the nine `model(feats, pad_mask)` call sites across
+    # eval_alignment / null_collect_attn / untrained_floor / reeval_all_alignment
+    # / make_figures / audit_independent / faithfulness working unchanged.
+    s_max = max(item["slice_index"].shape[0] for item in batch)
+    slice_index = torch.full((b, s_max), -1, dtype=torch.long)
+    for i, item in enumerate(batch):
+        si = item["slice_index"]
+        slice_index[i, : si.shape[0]] = si
+
     out = {
         "features": feats,
         "pad_mask": pad_mask,
@@ -197,6 +214,7 @@ def collate_bags(batch: list[dict]) -> dict:
         "uid": [item["uid"] for item in batch],
         "n_slices": torch.tensor([item["n_slices"] for item in batch]),
         "lengths": torch.tensor(lengths),
+        "slice_index": slice_index,
     }
 
     # Keyed off ANY item, not batch[0]. In a partially-annotated cache (MosMed:

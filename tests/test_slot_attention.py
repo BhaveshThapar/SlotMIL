@@ -217,7 +217,11 @@ class TestParameterMatching:
         assert attn_b[:, :, 10:].abs().max() == 0
 
 
-@pytest.mark.parametrize("pooling", ["mean", "max", "abmil", "gated_abmil", "mh_abmil", "slot"])
+@pytest.mark.parametrize(
+    "pooling",
+    ["mean", "max", "abmil", "gated_abmil", "mh_abmil", "slot",
+     "centre_gaussian", "normal_guidance"],
+)
 @pytest.mark.parametrize("readout", ["gated", "max"])
 def test_all_poolings_share_the_interface(pooling, readout):
     """Every pooling must be swappable without touching the training loop."""

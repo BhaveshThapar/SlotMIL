@@ -11,7 +11,12 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from .baselines import build_pooling, count_params, matched_multihead_abmil
+from .baselines import (
+    DEFAULT_PATCHES_PER_SLICE,
+    build_pooling,
+    count_params,
+    matched_multihead_abmil,
+)
 from .heads import build_readout
 from .slot_attention import SlotAttention, slot_health
 
@@ -77,6 +82,7 @@ def build_model(
     hidden: int = 128,
     encoder: nn.Module | None = None,
     match_params_to: int | None = None,
+    patches_per_slice: int = DEFAULT_PATCHES_PER_SLICE,
 ) -> MILModel:
     """Factory.
 
@@ -84,6 +90,10 @@ def build_model(
     count to match. Pass the number from a SlotMIL built with the same dim/K --
     :func:`slot_pooling_param_count` computes it without instantiating the whole
     model.
+
+    ``patches_per_slice``: only ``centre_gaussian`` reads it, to map instance ->
+    slice. Must be 1 when ``instance_level="slice"``, or the arm computes its
+    axial geometry against a grid that is not there.
     """
     if pooling == "slot":
         pool = SlotAttention(
@@ -107,7 +117,14 @@ def build_model(
             )
         k_eff = num_slots
     else:
-        pool = build_pooling(pooling, input_dim, dim, hidden=hidden, num_heads=num_slots)
+        pool = build_pooling(
+            pooling,
+            input_dim,
+            dim,
+            hidden=hidden,
+            num_heads=num_slots,
+            patches_per_slice=patches_per_slice,
+        )
         k_eff = 1
 
     head = build_readout(readout, dim, num_classes, k_eff)

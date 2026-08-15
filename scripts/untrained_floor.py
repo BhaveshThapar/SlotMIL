@@ -116,7 +116,12 @@ def main() -> int:
     ap.add_argument("--cache", default="data/lidc/features_dinov2_vitb14.h5")
     ap.add_argument("--splits", default="data/lidc/splits_confirmatory.json")
     ap.add_argument("--meta", default="runs/_audit_meta.json")
-    ap.add_argument("--pooling", default="slot", choices=["slot", "mh_abmil"])
+    # centre_gaussian is accepted but degenerate here: its attention has no
+    # learned parameters, so 30 untrained inits produce 30 identical numbers.
+    # Useful as a smoke check, never reportable as a floor.
+    ap.add_argument("--pooling", default="slot",
+                    choices=["slot", "mh_abmil", "centre_gaussian",
+                             "normal_guidance"])
     ap.add_argument("--num-slots", type=int, default=8)
     ap.add_argument("--dim", type=int, default=256)
     ap.add_argument("--batch-size", type=int, default=4)

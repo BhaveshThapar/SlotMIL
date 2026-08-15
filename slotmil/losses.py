@@ -64,6 +64,115 @@ def attention_entropy_loss(
     return ent.mean()
 
 
+NG_VAR_FLOOR_SLICES2 = 1.0   # Harvey's sigma=1, as a floor rather than a support
+NG_PATCHES_PER_SLICE = 256   # prereg datasets.*.patches_per_slice
+
+
+def normal_guidance_loss(
+    attn: torch.Tensor,
+    pad_mask: torch.Tensor | None = None,
+    slice_index: torch.Tensor | None = None,
+    patches_per_slice: int = NG_PATCHES_PER_SLICE,
+    var_floor: float = NG_VAR_FLOOR_SLICES2,
+    eps: float = 1e-8,
+) -> torch.Tensor:
+    """KL(attention's slice marginal || moment-matched Normal), per bag, per head.
+
+    Harvey et al., arXiv:2605.27306, "Normal Guidance is what Attention Needs".
+    Carries H6.
+
+    The prereg says "KL to a moment-matched Normal over slice index, recomputed
+    under stop-gradient each step" and nothing more, so three things are ruled by
+    amendment 2026-08-15:
+
+    *Matched to what.* To the marginal's own moments, detached. The alternative
+    -- matching a fixed geometric centre -- leaves nothing to recompute, since
+    only S varies and S carries no gradient, which would make "recomputed under
+    stop-gradient each step" empty prose. Reading it as self-matching also makes
+    the term a Gaussian *shape* prior: it forces the axial profile to be unimodal
+    and Normal without saying where, so it is structurally incapable of injecting
+    information about this patient's lesion. That is what makes H6 falsifiable
+    rather than tautological.
+
+    *Direction.* KL(a || q). The reverse diverges wherever a slice is starved and
+    would make the loss scale with the model's peakedness rather than with prior
+    mismatch. This direction also decomposes as -H(a) + CE(a, q), so it is
+    continuous with :func:`attention_entropy_loss` above.
+
+    *Variance floor, and it is not optional.* Unfloored, a single-slice attention
+    is a global minimum at exactly 0 -- a Dirac is the sigma->0 Normal -- so the
+    term would drive attention onto one slice and report the collapse as a
+    localisation triumph. Floored at 1 slice^2 a delta pays 0.9189 nats while a
+    true Gaussian pays 0. This is the one place a raw-slice sigma of 1 is both
+    meaningful and representable, so Harvey's constant survives here.
+
+    Measured on S=48, for the record and for tests/test_losses.py::
+        delta (1 slice)   KL=0.0000 unfloored,  0.9189 floored
+        gaussian sigma=1  KL=0.0000             0.0000
+        uniform           KL=0.0895             0.0895
+        bimodal           KL=1.0624             1.0624
+
+    Bimodal pays most, so NG actively suppresses multi-focal attention. LIDC has
+    multi-nodule cases: that is a real cost of the method, not a defect here.
+
+    ``slice_index`` carries true anatomical slice numbers ([B, S], -1 padded) when
+    ``--max-slices`` subsampled the bag. Without it the moments and the floor land
+    in subsampled units. Absent, it falls back to ``arange(S)``, which is exactly
+    what the true index equals at evaluation time.
+
+    Moments are per-bag and per-head, never per-batch: LIDC bags run 58-700 slices
+    and ``collate_bags`` pads to max(lengths), so a batch-shared mu in slice units
+    would be dominated by the deepest bag. Reduction over the batch is the mean,
+    matching :func:`attention_entropy_loss`.
+    """
+    b, k, n = attn.shape
+    p = max(int(patches_per_slice), 1)
+
+    if pad_mask is not None:
+        attn = attn.masked_fill(~pad_mask.unsqueeze(1), 0.0)
+        lengths = pad_mask.sum(dim=1)
+    else:
+        lengths = torch.full((b,), n, device=attn.device, dtype=torch.long)
+
+    s_max = (n + p - 1) // p
+    idx = torch.div(torch.arange(n, device=attn.device), p, rounding_mode="floor")
+    # index_add_ rather than reshape: collate_bags pads to max(lengths), which is
+    # not guaranteed to be a multiple of patches_per_slice (and is 15 in tests).
+    m = attn.new_zeros(b, k, s_max).index_add_(2, idx, attn)
+    m = m / m.sum(dim=-1, keepdim=True).clamp_min(eps)
+
+    n_slices = torch.div(lengths + p - 1, p, rounding_mode="floor")
+    valid = (
+        torch.arange(s_max, device=attn.device).unsqueeze(0) < n_slices.unsqueeze(1)
+    ).unsqueeze(1)  # B,1,S
+
+    if slice_index is None:
+        coord = torch.arange(s_max, device=attn.device, dtype=attn.dtype)
+        coord = coord.unsqueeze(0).expand(b, s_max)
+    else:
+        coord = slice_index[:, :s_max].to(attn.dtype)
+        if coord.shape[1] < s_max:  # shorter than the padded instance axis
+            coord = F.pad(coord, (0, s_max - coord.shape[1]), value=-1.0)
+        coord = coord.clamp_min(0.0)  # -1 pads are masked out below anyway
+    coord = coord.unsqueeze(1)  # B,1,S
+
+    # The stop-gradient, and its exact placement: on the target's moments only.
+    # Gradient must still flow through m in both the outer factor and log m --
+    # detaching m inside the KL instead would silently give exactly zero
+    # gradient, which tests/test_losses.py pins.
+    md = m.detach()
+    mu = (md * coord).sum(dim=-1, keepdim=True)
+    var = (md * (coord - mu) ** 2).sum(dim=-1, keepdim=True).clamp_min(var_floor)
+
+    logq = -0.5 * (coord - mu) ** 2 / var
+    logq = logq.masked_fill(~valid, float("-inf"))
+    logq = logq - torch.logsumexp(logq, dim=-1, keepdim=True)
+    logq = logq.masked_fill(~valid, 0.0)  # paired with m == 0 on those slices
+
+    kl = (m * (m.clamp_min(eps).log() - logq)).masked_fill(~valid, 0.0).sum(dim=-1)
+    return kl.mean()
+
+
 class SlotFeatureDecoder(nn.Module):
     """DINOSAUR-style broadcast MLP decoder reconstructing input features.
 
@@ -126,6 +235,9 @@ class SlotMILLoss(nn.Module):
         w_entropy: float = 0.0,
         w_recon: float = 0.0,
         label_smoothing: float = 0.0,
+        w_kl: float = 0.0,
+        kl_patches_per_slice: int = NG_PATCHES_PER_SLICE,
+        kl_var_floor: float = NG_VAR_FLOOR_SLICES2,
     ):
         super().__init__()
         self.multilabel = multilabel
@@ -133,6 +245,12 @@ class SlotMILLoss(nn.Module):
         self.w_entropy = w_entropy
         self.w_recon = w_recon
         self.label_smoothing = label_smoothing
+        # w_kl > 0 is what makes an arm Normal Guidance; the module it wraps is
+        # plain gated_abmil. scripts/train_cached.py refuses to run the
+        # normal_guidance arm with lam <= 0 for exactly that reason.
+        self.w_kl = w_kl
+        self.kl_patches_per_slice = kl_patches_per_slice
+        self.kl_var_floor = kl_var_floor
 
     def forward(
         self,
@@ -142,6 +260,7 @@ class SlotMILLoss(nn.Module):
         recon: torch.Tensor | None = None,
         recon_target: torch.Tensor | None = None,
         class_weights: torch.Tensor | None = None,
+        slice_index: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, dict]:
         comps = {}
         loss = bag_loss(
@@ -162,6 +281,15 @@ class SlotMILLoss(nn.Module):
             e = attention_entropy_loss(out["attn"], pad_mask)
             loss = loss + self.w_entropy * e
             comps["entropy"] = e.detach()
+
+        if self.w_kl > 0:
+            g = normal_guidance_loss(
+                out["attn"], pad_mask, slice_index=slice_index,
+                patches_per_slice=self.kl_patches_per_slice,
+                var_floor=self.kl_var_floor,
+            )
+            loss = loss + self.w_kl * g
+            comps["kl_prior"] = g.detach()
 
         if self.w_recon > 0:
             if recon is None or recon_target is None:

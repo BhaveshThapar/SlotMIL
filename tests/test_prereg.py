@@ -154,6 +154,41 @@ class TestArms:
         """The estimands need to know which arm is the content-free reference."""
         assert pre.arm("centre_gaussian")["blind"] is False
 
+    def test_normal_guidance_names_an_implemented_base_arm(self, pre):
+        """H6 is stated against "its base arm" and the frozen text never named
+        one. Leaving it nameless would make the single most consequential choice
+        in the hypothesis a decision taken at analysis time."""
+        base = pre.arm("normal_guidance")["base_arm"]
+        implemented = {a["name"] for a in pre.arms(status="implemented")}
+        assert base in implemented, f"{base!r} not among {sorted(implemented)}"
+
+    def test_declared_constants_match_the_code(self, pre):
+        """A declared value that has drifted from the value actually used is
+        worse than an undeclared one: it reads as a commitment and is not."""
+        from slotmil.losses import NG_PATCHES_PER_SLICE, NG_VAR_FLOOR_SLICES2
+        from slotmil.models.baselines import CENTRE_GAUSSIAN_SIGMA_Z
+
+        assert pre.arm("centre_gaussian")["sigma_z"] == CENTRE_GAUSSIAN_SIGMA_Z
+        assert pre.arm("normal_guidance")["var_floor_slices2"] == NG_VAR_FLOOR_SLICES2
+        assert NG_PATCHES_PER_SLICE == pre.get("datasets.lidc.patches_per_slice")
+
+    def test_normal_guidance_spec_carries_a_positive_lam(self, pre):
+        """Without lam the arm trains as its own base arm and is reported as NG.
+        scripts/train_cached.py refuses to run it that way; this pins the spec
+        that refusal is stated against."""
+        from scripts.train_cached import parse_arm
+
+        _, pooling, overrides = parse_arm(pre.arm("normal_guidance")["spec"])
+        assert pooling == "normal_guidance"
+        assert overrides.get("lam", 0.0) > 0
+
+    def test_h2_scope_excludes_the_content_free_arm(self, pre):
+        """centre_gaussian ties the centre_prior reference by construction, and a
+        tie is not "exceeds". Ruled in the config so it cannot become a post-hoc
+        call once the numbers are in."""
+        h2 = pre.hypothesis("H2")
+        assert "centre_gaussian" in h2["excluded_arms"]
+
 
 class TestHypothesesAndEstimands:
     def test_every_hypothesis_has_a_falsifier(self, pre):

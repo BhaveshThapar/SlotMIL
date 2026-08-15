@@ -26,7 +26,8 @@ from scipy import stats
 
 from slotmil.data.feature_cache import FeatureBagDataset, collate_bags
 from slotmil.eval.classification import aggregate_seeds
-from slotmil.losses import SlotMILLoss
+from slotmil.losses import NG_VAR_FLOOR_SLICES2, SlotMILLoss
+from slotmil.models.baselines import CENTRE_GAUSSIAN_SIGMA_Z, DEFAULT_PATCHES_PER_SLICE
 from slotmil.models.mil import build_model, slot_pooling_param_count
 from slotmil.train import TrainConfig, fit
 
@@ -59,6 +60,9 @@ def main():
     ap.add_argument("--instance-level", default="patch", choices=["patch", "slice"])
     ap.add_argument("--max-slices", type=int, default=48,
                     help="stochastic slice subsampling during training only")
+    ap.add_argument("--patches-per-slice", type=int, default=DEFAULT_PATCHES_PER_SLICE,
+                    help="instance -> slice divisor for centre_gaussian and the "
+                         "normal_guidance KL. Forced to 1 at --instance-level slice.")
     ap.add_argument("--num-workers", type=int, default=4)
     ap.add_argument("--num-classes", type=int, default=2)
     args = ap.parse_args()
@@ -111,9 +115,34 @@ def main():
             )
     print(f"[train] labels validated against num_classes={args.num_classes}", flush=True)
 
+    # instance_level="slice" means N == S, so there is no patch grid to divide
+    # by. Both position-aware arms would otherwise compute their axial geometry
+    # against a grid that is not there.
+    pps = 1 if args.instance_level == "slice" else args.patches_per_slice
+
     results = {}
     for spec in args.arms:
         label, pooling, ov = parse_arm(spec)
+
+        # Normal Guidance is plain gated_abmil plus a loss term. If lam never
+        # reaches SlotMILLoss the arm trains as its own base arm, writes a
+        # perfectly valid result.json, and gets reported as NG -- no crash, and a
+        # fabricated H6. That is not hypothetical: before this guard, `lam` was
+        # parsed by parse_arm and then silently dropped, because the criterion
+        # below only ever wired `div` and `ent`.
+        lam = float(ov.get("lam", 0.0))
+        if pooling == "normal_guidance" and lam <= 0:
+            raise SystemExit(
+                f"[train] arm {label!r} is Normal Guidance but lam is absent or "
+                "zero. It would train as plain gated_abmil and be written out as "
+                "NG. The pre-registered spec is 'normal_guidance:lam=0.1'."
+            )
+        if pooling != "normal_guidance" and lam > 0:
+            raise SystemExit(
+                f"[train] arm {label!r} sets lam={lam} but is not normal_guidance; "
+                "the KL term would be applied to an arm that does not declare it."
+            )
+
         runs = []
         for seed in args.seeds:
             # Per-seed resume. The scavenger partition preempts with REQUEUE, so a
@@ -150,7 +179,7 @@ def main():
                 num_classes=args.num_classes,
                 num_slots=int(ov.get("K", args.num_slots)),
                 readout=args.readout, iters=int(ov.get("iters", args.iters)),
-                match_params_to=match_to,
+                match_params_to=match_to, patches_per_slice=pps,
             )
             n_params = sum(p.numel() for p in model.parameters())
             print(f"[train] {label} seed={seed} params={n_params/1e3:.0f}k", flush=True)
@@ -158,13 +187,20 @@ def main():
             cfg = TrainConfig(
                 epochs=args.epochs, lr=args.lr, batch_size=args.batch_size,
                 num_workers=args.num_workers, seed=seed, select_metric="auc",
-                extra={"n_params": n_params, "arm": label},
+                # Every knob that defines the arm goes in extra, so result.json
+                # records what actually ran rather than what the label implies.
+                extra={"n_params": n_params, "arm": label, "lam": lam,
+                       "patches_per_slice": pps,
+                       "kl_var_floor": NG_VAR_FLOOR_SLICES2,
+                       "sigma_z": CENTRE_GAUSSIAN_SIGMA_Z},
             )
             res = fit(
                 model, train_ds, val_ds, cfg,
                 collate_fn=collate_bags,
                 criterion=SlotMILLoss(w_diversity=ov.get("div", 0.0),
-                                      w_entropy=ov.get("ent", 0.0)),
+                                      w_entropy=ov.get("ent", 0.0),
+                                      w_kl=lam, kl_patches_per_slice=pps,
+                                      kl_var_floor=NG_VAR_FLOOR_SLICES2),
                 test_ds=test_ds,
                 out_dir=out_root / label.replace(":", "_") / f"seed{seed}",
             )

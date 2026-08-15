@@ -1,6 +1,6 @@
 # Pre-registration — ISBI 2027
 
-**Frozen config hash:** `20bdd93b781d950d`
+**Frozen config hash:** `33a55222c853a4cf`
 
 **Config:** [`configs/prereg/isbi2027.yaml`](configs/prereg/isbi2027.yaml) ·
 **Amendments:** [`AMENDMENTS.md`](AMENDMENTS.md) ·
@@ -104,9 +104,18 @@ is `implemented` or `planned`; `tests/test_prereg.py` asserts every implemented
 arm is constructible and every planned arm is listed, so an arm can be unbuilt
 but never silently missing.
 
-Implemented today: `mean`, `abmil`, `gated_abmil`, `mh_abmil`, `slot:div=0.5`.
-Planned: `centre_gaussian` and `normal_guidance` (Harvey et al., and the arms
-that carry H6), `clam_sb`, `dsmil`, `transmil`.
+Implemented today: `mean`, `abmil`, `gated_abmil`, `mh_abmil`, `slot:div=0.5`,
+and — since the 2026-08-15 amendment — `centre_gaussian` and `normal_guidance`,
+the two Harvey et al. arms that carry H6. Planned: `clam_sb`, `dsmil`,
+`transmil`.
+
+The two Harvey arms required four choices this document did not originally fix:
+the base arm `normal_guidance` is compared against (`gated_abmil`), the direction
+of its KL, what the Normal is moment-matched to, and a variance floor without
+which a single-slice attention would be a global minimum of the objective. The
+centre-Gaussian additionally departs from Harvey's printed `sigma = 1`, which is
+not representable over a 171-slice volume in any float format. All of it is
+recorded in `AMENDMENTS.md`, and all of it was ruled before any arm was trained.
 
 **Pre-committed drop rule.** TransMIL faces LIDC bags of ~43.8k instances, an
 order of magnitude beyond the whole-slide bags it was designed for. If it is not

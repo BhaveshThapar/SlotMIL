@@ -19,7 +19,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=48G
 #SBATCH --time=24:00:00
-#SBATCH --array=0-5
+#SBATCH --array=0-7
 #SBATCH --requeue
 #SBATCH --output=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.out
 #SBATCH --error=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.err
@@ -56,7 +56,8 @@ export TORCH_HOME=/fs/nexus-scratch/bthapar/.cache/torch
 export TMPDIR=/fs/nexus-scratch/bthapar/.tmp
 export PYTHONUNBUFFERED=1
 
-ARMS=(mean gated_abmil mh_abmil slot "slot:div=0.1" "slot:div=0.5")
+ARMS=(mean gated_abmil mh_abmil slot "slot:div=0.1" "slot:div=0.5" \
+      centre_gaussian "normal_guidance:lam=0.1")
 ARM=${ARMS[$SLURM_ARRAY_TASK_ID]}
 
 CACHE=$PROJ/data/lidc/features_dinov2_vitb14.h5
