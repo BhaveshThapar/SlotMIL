@@ -823,3 +823,54 @@ here, and the paper reports them whether or not H7 clears:
   rather than left for a reviewer to find. If the probe still fails to separate,
   the pre-registration's original consequence stands: the protocol is not
   recommended.
+
+---
+
+## 2026-08-15 — the H3 floor re-run at the current head; both arms bit-identical
+
+- **Kind:** deviation (record only — no config change)
+- **Config hash before → after:** `de43c8bcdc5053b6` → `de43c8bcdc5053b6` (unchanged)
+- **What changed:** no declared parameter. `runs/untrained_floor{,_mh}_rehash.json`
+  were stamped `33a55222c853a4cf`, which the two amendments above left two
+  transitions behind, so by the literal rule in `PREREGISTRATION.md`'s "Verifying
+  the chain" the project's only confirmatory results were demoted to exploratory
+  for the **third** time over bookkeeping. Both poolings were re-run on
+  `data/lidc/splits_confirmatory.json` under `de43c8bcdc5053b6` and written to
+  `runs/untrained_floor{,_mh}_rehash2.json`, jobs 7256783 and 7256784. The
+  earlier files are kept rather than overwritten so the comparison stays
+  auditable — same handling as the 2026-08-15 re-run.
+
+- **H3 is unchanged and passes.** `slot` p95 **0.7665760928074817**, `mh_abmil`
+  p95 **0.7678969514750311**, both above the pre-registered 0.70 over 30 inits.
+
+- **Both arms reproduced bit-identically this time, and that is worth stating
+  precisely because last time one did not.** 0 of 30 inits differ on either
+  pooling; every frozen slot is the same; median, p5, p95, min and max are equal
+  to every printed digit. The previous re-run had `mh_abmil` differing on 4 of 30
+  inits by at most 2.97e-09, attributed to GPU reduction non-determinism across
+  nodes with `cudnn.deterministic` left off. That attribution survives: the
+  discrepancy is node-dependent, not run-dependent, so "reproduces bit-for-bit"
+  is a claim about a run that happened to land on comparable hardware and **"to
+  3e-9" remains the honest general claim**. Recorded so that a reader comparing
+  the two entries does not conclude the earlier one was wrong.
+
+- **Why the treadmill is being paid down rather than argued away.** Three
+  re-stampings in two days is the visible cost of a rule that reads a stamp
+  against the head hash. The rule is not being relaxed: `classify_hash` already
+  distinguishes `superseded` from `UNKNOWN`, and only `UNKNOWN` fails `--check`,
+  which is the correct division. The cost is ~7 GPU-minutes per pooling, and
+  paying it is strictly cheaper than arguing in the paper about whether an
+  ancestor stamp counts. Both amendments above were deliberately bundled so this
+  happens once rather than twice.
+
+- **Results already seen?** **Yes** — the H3 floor itself, on the confirmatory
+  split, both before and after the re-run, and they are equal. Nothing was chosen
+  against them: this entry changes no parameter, and the re-run was mechanical.
+  No other confirmatory result existed when it ran; the three sweeps submitted
+  the same day (7256785, 7256799, 7256800) had produced no `result.json` yet.
+
+- **Consequence for the paper:** H3 is reported as confirmatory, stamped
+  `de43c8bcdc5053b6`, with the floor as a distribution (median, 5th–95th
+  percentile) rather than a point, as `reference_baselines.untrained_fleet`
+  requires. `prereg_freeze.py --check` now reports 2 current stamps where it
+  reported 0.

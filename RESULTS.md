@@ -16,6 +16,37 @@
 > localisation statement elsewhere in this file predates that battery and is
 > mis-calibrated.
 
+## H3 — the reference floor (2026-08-15) — **CONFIRMATORY**, and it passes
+
+The first pre-registered hypothesis decided on the seed-2027 split, and the only
+result in this file that is not exploratory. Everything below this section is
+discovery-split work and is labelled as such by construction.
+
+`scripts/untrained_floor.py`, 30 untrained initialisations per pooling
+(`init_seed_base` 20270000, both from the frozen config, not the command line),
+scored through the full frozen-slot protocol on
+`data/lidc/splits_confirmatory.json` (hash `efcac704eb540cc8`).
+
+| pooling | median | 5th pct | **95th pct** | min | max | H3 (p95 > 0.70) |
+|---|---|---|---|---|---|---|
+| slot | 0.6739 | 0.6040 | **0.7666** | 0.5322 | 0.8167 | **pass** |
+| mh_abmil | 0.6449 | 0.5825 | **0.7679** | 0.5716 | 0.7942 | **pass** |
+
+**0.5 is not the floor, and the margin is not small.** A 95th-percentile
+untrained init reaches 0.767 instance AUC on both poolings — against trained
+discovery seeds at 0.75–0.87. The floor is reported as a distribution rather
+than a point because `reference_baselines.untrained_fleet` requires it: two
+inits spanning 0.6433–0.7858 could not support a stated floor, which is what
+the earlier version of this file was doing.
+
+Provenance: `runs/untrained_floor{,_mh}_rehash2.json`, `analysis_role:
+confirmatory`, stamped `de43c8bcdc5053b6` — the current frozen hash, so these
+count under `PREREGISTRATION.md`'s "Verifying the chain" rather than being
+demoted to exploratory. Re-run three times as the config moved; both poolings
+came back bit-identical this time (0 of 30 inits differ). The honest
+reproducibility claim across nodes is "to 3e-9", not bit-for-bit — see
+`AMENDMENTS.md`.
+
 ## Axis gate (2026-08-12) — the "slice AUC 0.4822" framing was too strong; the finding underneath is stronger
 
 `scripts/axis_gate.py` re-runs the frozen-slot protocol over all seven attention
@@ -175,7 +206,10 @@ p=0.72). Nothing survives joint stratification.
 The full null battery ran on LIDC `nodule_present` seeds 0–1; static-template and
 crosstab cover all three seeds plus two untrained inits. **Malignancy and
 balanced_presence were not re-tested under the nulls**, and only two untrained
-inits were sampled (0.6433–0.7858 — wide and undersampled). Not yet tested:
+inits were sampled (0.6433–0.7858 — wide and undersampled). **The undersampling
+is fixed**: 30 inits per pooling on the confirmatory split, at the top of this
+file under H3. The two-init range is superseded and is left here only because
+this section's other numbers were computed against it. Not yet tested:
 whether any advantage survives restriction to a real lung mask rather than the
 radial-bin proxy, and whether the untrained baseline behaves the same on MosMed.
 
