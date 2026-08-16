@@ -98,6 +98,8 @@ metric rather than about any model.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from .nulls import GRID, N_PATCH
@@ -370,9 +372,13 @@ def separable_scores(masks, axial: TemplateFit, inplane: TemplateFit):
     return _shape_like_attention(masks, out)
 
 
+# Not dict[str, TemplateFit]: the returned mapping carries a "source" string alongside the three
+# fits, so that a family always travels with the record of what it was fit to. Losing that would
+# make an attention-fitted family and a mask-fitted one indistinguishable downstream, and they
+# mean opposite things -- one is content-free, the other is an oracle.
 def fit_family(masks, attns=None, slot: int | None = None,
                source: str = "attention", n_patch: int = N_PATCH,
-               n_bins: int = DEFAULT_DEPTH_BINS) -> dict[str, TemplateFit]:
+               n_bins: int = DEFAULT_DEPTH_BINS) -> dict[str, Any]:
     """Fit the family on one split. **Call this on validation only.**
 
     ``source="attention"`` reproduces the pre-registered ``fitted_template`` and

@@ -82,7 +82,7 @@ def report_stamp_lineage(runs: Path, current: str, amendments: Path) -> int:
 
     Returns the number of stamps that could not be placed, which is what should
     fail the check. Superseded is *not* a failure: an amendment is expected to
-    leave ancestors behind, and PREREGISTRATION.md:189-191 read mechanically
+    leave ancestors behind, and PREREGISTRATION.md's "Verifying the chain" read mechanically
     ("hash does not match the frozen config -> exploratory") would demote
     runs/untrained_floor.json -- the only confirmatory results on disk, carrying
     H3 -- over two amendments that never touched what it computes. UNKNOWN is a

@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it as below."
+type: software
+title: "SlotMIL"
+abstract: >-
+  A pre-registered evaluation of instance-level localisation metrics for
+  weakly-supervised multiple-instance learning in volumetric CT. Reports the
+  extent to which such metrics are dominated by an anatomical position prior,
+  decomposes that prior into its axial and in-plane parts, and proposes a
+  prior-normalised skill estimand validated against a supervised patch ceiling.
+  Every claim is gated on a hypothesis frozen before the confirmatory runs;
+  the analysis plan and its amendment chain ship with the code.
+authors:
+  - family-names: "Thapar"
+    given-names: "Bhavesh"
+    affiliation: "University of Maryland"
+version: "0.1.0"
+date-released: "2026-08-15"
+license: MIT
+url: "https://github.com/BhaveshThapar/SlotMIL"
+repository-code: "https://github.com/BhaveshThapar/SlotMIL"
+keywords:
+  - multiple-instance-learning
+  - weakly-supervised-localisation
+  - computed-tomography
+  - attention
+  - pre-registration
+  - evaluation-methodology

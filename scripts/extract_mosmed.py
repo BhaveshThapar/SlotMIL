@@ -20,9 +20,7 @@ from __future__ import annotations
 import argparse
 import sys
 import traceback
-from pathlib import Path
 
-import numpy as np
 import torch
 
 
@@ -41,7 +39,12 @@ def main():
 
     from slotmil.data.mosmed import MosMedIndex, load_mask, load_volume
     from slotmil.features.backbones import build_backbone
-    from slotmil.features.extract import cache_size_report, cached_uids, extract_volume, write_series
+    from slotmil.features.extract import (
+        cache_size_report,
+        cached_uids,
+        extract_volume,
+        write_series,
+    )
 
     ix = MosMedIndex(args.root)
     print(f"[mosmed] {ix.summary()}", flush=True)

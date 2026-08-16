@@ -5,12 +5,107 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "slotmil"
 version = "0.1.0"
-description = "Slot attention as an interpretable MIL pooling bottleneck for volumetric CT"
+description = "Pre-registered evaluation of instance-level localisation metrics for weakly-supervised MIL in volumetric CT"
 requires-python = ">=3.10"
+# PEP 639: an SPDX expression, not the deprecated table/classifier form.
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Bhavesh Thapar" }]
+
+# Declared as of 2026-08-15. These were absent, which is why
+# slotmil/eval/classification.py hand-implements DeLong and Holm rather than
+# importing statsmodels -- an empty dependency set made every third-party import
+# a liability. The bounds below are the three that are load-bearing; exact
+# resolved versions live in env/requirements.lock.
+dependencies = [
+    "torch",
+    "torchvision",
+    # pylidc 0.2.3 predates the numpy 2 ABI break.
+    "numpy<2.0",
+    "scipy",
+    "scikit-learn",
+    "scikit-image",
+    "pandas",
+    "monai>=1.3",
+    "torchio",
+    "pydicom",
+    "SimpleITK",
+    "nibabel",
+    # pylidc 0.2.3 uses the SQLAlchemy 1.x declarative API, which 2.0 removed.
+    "sqlalchemy<2.0",
+    "pylidc",
+    "medmnist",
+    "timm",
+    "requests",
+    "hydra-core",
+    "omegaconf",
+    "wandb",
+    "h5py",
+    "tqdm",
+    "einops",
+    "matplotlib",
+    "PyYAML",
+    # pylidc imports pkg_resources at module load; setuptools >=81 removed it.
+    "setuptools<81",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "mypy"]
+
+[project.urls]
+Homepage = "https://github.com/BhaveshThapar/SlotMIL"
+Repository = "https://github.com/BhaveshThapar/SlotMIL"
 
 [tool.setuptools.packages.find]
 include = ["slotmil*"]
 
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# Enabled 2026-08-15 on a codebase that had never been linted. F401/I001/F541/E401 were fixed
+# outright; the rest are ignored with a reason each rather than silently dropped from `select`,
+# so the debt stays greppable. None of them is ignored because it is tedious.
+ignore = [
+    # zip() without strict=. 37 sites, and NOT a formality here: several are
+    # `zip(attns, masks)` over per-bag lists, where a length mismatch would silently truncate the
+    # analysis rather than raise. That makes this a defect class worth auditing deliberately --
+    # turning it on wholesale mid-sweep would convert a silently-wrong number into a crash at an
+    # unpredictable point. Tracked as its own task; see the plan's Phase 3.
+    "B905",
+    # Function defined in a loop uses a loop variable. All 6 sites (diagnose_confound.py:96-97,
+    # diagnose_control.py:98-99, reeval_all_alignment.py:114-115) define a helper and CALL it on
+    # the next line inside the same iteration, so the late-binding hazard cannot fire. False
+    # positive; restructuring three analysis scripts to satisfy it is not worth the diff.
+    "B023",
+    # Semicolon-joined statements, 29 sites, almost all the `print(...); continue` guard idiom in
+    # scripts/. Cosmetic, and the rewrite would touch nearly every analysis driver.
+    "E702",
+    "E701",
+    # Lines over 100 chars, 28 sites, mostly long f-strings in error messages that read worse
+    # wrapped.
+    "E501",
+    # Unused loop variable / unused local / ambiguous name `l` / assigned lambda. 9 sites total,
+    # all in scripts/, none load-bearing.
+    "B007",
+    "F841",
+    "E741",
+    "E731",
+]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning"]
+# tests/test_lung_mask_io.py imports from scripts/, which has no __init__.py and
+# is not installed -- packages.find ships slotmil* only. So the repo root reaches
+# sys.path only when the interpreter puts it there, which `python -m pytest` does
+# and a bare `pytest` does not. CI runs the bare form; without this line that
+# module raises ModuleNotFoundError at COLLECTION and aborts the whole run.
+pythonpath = ["."]

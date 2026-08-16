@@ -24,11 +24,10 @@ import json
 from pathlib import Path
 
 import numpy as np
-import torch
 from scipy import stats
 
 from slotmil.data.medmnist3d import MedMNIST3DBags, medmnist_collate
-from slotmil.eval.classification import aggregate_seeds, delong_test
+from slotmil.eval.classification import aggregate_seeds
 from slotmil.losses import SlotMILLoss
 from slotmil.models.encoders import SliceCNNEncoder
 from slotmil.models.mil import build_model, slot_pooling_param_count

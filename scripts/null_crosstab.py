@@ -31,12 +31,10 @@ import json
 from pathlib import Path
 
 import numpy as np
+from null_battery import N_PATCH, load, pick_lesion_slot, roll_masks, shuffle_masks_across_bags
+from null_static_template import global_template
 from scipy.stats import ttest_rel
 from sklearn.metrics import roc_auc_score
-
-from null_battery import (N_PATCH, load, pick_lesion_slot, roll_masks,
-                          shuffle_masks_across_bags)
-from null_static_template import global_template
 
 GRID = 16
 SCORERS = ["slot", "residual", "bag_static", "global_static", "centre_prior"]

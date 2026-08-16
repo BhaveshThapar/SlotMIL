@@ -14,8 +14,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import numpy as np
-
 from null_battery import load, pick_lesion_slot, score
 from null_static_template import evaluate, global_template
 

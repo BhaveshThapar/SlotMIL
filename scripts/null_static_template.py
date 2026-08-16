@@ -35,10 +35,9 @@ import json
 from pathlib import Path
 
 import numpy as np
+from null_battery import N_PATCH, load, pick_lesion_slot
 from scipy.stats import ttest_rel, wilcoxon
 from sklearn.metrics import roc_auc_score
-
-from null_battery import N_PATCH, load, pick_lesion_slot
 
 GRID = 16
 

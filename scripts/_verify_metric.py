@@ -1,6 +1,10 @@
-import json, torch, numpy as np
+import json
+
+import numpy as np
+import torch
+from sklearn.metrics import average_precision_score, roc_auc_score
 from torch.utils.data import DataLoader
-from sklearn.metrics import roc_auc_score, average_precision_score
+
 from slotmil.data.feature_cache import FeatureBagDataset, collate_bags
 from slotmil.models.mil import build_model
 
@@ -32,6 +36,6 @@ print(f"\nover {len(frozen)} annotated test bags:")
 print(f"  max-over-slots (what I reported) : {f(maxslot)}")
 print(f"  FROZEN lesion slot {LES}            : {f(frozen)}")
 print(f"  oracle best slot (upper bound)   : {f(oracle)}")
-print(f"\n  supervised probe ceiling         : 0.9102")
+print("\n  supervised probe ceiling         : 0.9102")
 print(f"  avg precision (frozen)           : {np.mean(apf):.5f}  vs prevalence {np.mean(prev):.5f}"
       f"  = {np.mean(apf)/np.mean(prev):.1f}x lift")

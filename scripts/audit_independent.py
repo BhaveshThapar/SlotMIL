@@ -16,8 +16,8 @@ from pathlib import Path
 import h5py
 import numpy as np
 import torch
-from scipy.optimize import linear_sum_assignment
 from scipy import stats
+from scipy.optimize import linear_sum_assignment
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader

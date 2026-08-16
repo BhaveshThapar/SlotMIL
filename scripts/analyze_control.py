@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import glob
 import sys
-from itertools import combinations
 
 import numpy as np
 from scipy import stats

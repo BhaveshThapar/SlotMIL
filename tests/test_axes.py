@@ -27,7 +27,6 @@ is the right thing to look at and a high flat AUC is not.
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from slotmil.eval.axes import per_bag_axes
 from slotmil.eval.nulls import N_PATCH

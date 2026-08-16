@@ -4,9 +4,21 @@ Contracts and procedures only. **Results live in `RESULTS.md`; do not duplicate
 them here.** A second copy of a number goes stale silently, and this file is
 loaded into every session, so a stale line here is worse than no line.
 
-Run everything through the venv: `source .venv/bin/activate`. Tests need
-`python -m pytest`, not bare `pytest` — `tests/test_lung_mask_io.py` imports from
-`scripts/`, which has no `__init__.py`, so the repo root must be on `sys.path`.
+Run everything through the venv: `source .venv/bin/activate`. Either `pytest` or
+`python -m pytest` works as of 2026-08-15: `tests/test_lung_mask_io.py` imports
+from `scripts/`, which has no `__init__.py`, so the repo root has to be on
+`sys.path` — `python -m pytest` puts it there and a bare `pytest` does not, so
+`pyproject.toml` now sets `pythonpath = ["."]` and both forms collect. CI runs
+the bare form; do not remove that line or CI fails at collection with 0 passed
+rather than 1 failed.
+
+`ruff check .` and the scoped `mypy` invocation in `.github/workflows/ci.yml`
+must both stay clean. Ruff's ignore list carries a reason per rule; `B905`
+(`zip()` without `strict=`) is ignored **pending an audit, not permanently** —
+several sites zip per-bag `attns` against `masks`, where a length mismatch would
+truncate the analysis silently rather than raise. Mypy is scoped to the eight
+modules that compute the reported numbers, and that scope is a floor to raise,
+not a convenience to preserve.
 
 ## The pooling contract
 
@@ -159,7 +171,10 @@ and you want all of them:
 - Every `result.json` and `summary.json` opens with `analysis_role`, `splits`,
   `splits_hash`, `splits_file_sha256` and a `prereg` stamp. Without this a
   confirmatory result is indistinguishable from a discovery one on inspection,
-  which `PREREGISTRATION.md` line 189 says decides whether it counts.
+  which `PREREGISTRATION.md`'s closing "Verifying the chain" section says decides
+  whether it counts. (Cited by section, not line number — the line moved once
+  already and a stale pointer to the rule that decides what is confirmatory is a
+  bad thing to have.)
 - **Test metrics are suppressed on stdout under `--role confirmatory`** unless
   `--report-test` is passed. A declared scope the tooling ignores is a comment,
   not a control — that is exactly how two discovery test AUCs reached a job log

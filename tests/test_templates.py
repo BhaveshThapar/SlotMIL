@@ -35,7 +35,6 @@ from sklearn.metrics import roc_auc_score
 from slotmil.eval.nulls import global_template
 from slotmil.eval.templates import (
     DEFAULT_DEPTH_BINS,
-    axial_template,
     depth_bins_for,
     fit_family,
     inplane_template,

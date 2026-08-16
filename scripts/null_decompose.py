@@ -25,10 +25,8 @@ import json
 from pathlib import Path
 
 import numpy as np
+from null_battery import N_PATCH, load, pick_lesion_slot, roll_masks, shuffle_masks_across_bags
 from sklearn.metrics import roc_auc_score
-
-from null_battery import (N_PATCH, load, pick_lesion_slot, roll_masks,
-                          shuffle_masks_across_bags)
 
 from slotmil.eval.axes import per_bag_axes
 

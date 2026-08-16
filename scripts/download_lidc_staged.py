@@ -28,7 +28,6 @@ import sys
 import traceback
 from pathlib import Path
 
-import numpy as np
 import torch
 
 
@@ -66,9 +65,14 @@ def main():
     configure_pylidc(dicom_root)
 
     from slotmil.features.backbones import build_backbone
-    from slotmil.features.extract import cache_size_report, cached_uids, extract_volume, write_series
+    from slotmil.features.extract import (
+        cache_size_report,
+        cached_uids,
+        extract_volume,
+        write_series,
+    )
 
-    print(f"[lidc] querying TCIA for LIDC-IDRI CT series ...", flush=True)
+    print("[lidc] querying TCIA for LIDC-IDRI CT series ...", flush=True)
     series = list_ct_series()
     print(f"[lidc] {len(series)} CT series available", flush=True)
 

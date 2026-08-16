@@ -59,7 +59,6 @@ import json
 from pathlib import Path
 
 import numpy as np
-
 from null_battery import load, pick_lesion_slot
 from null_decompose import centre_prior_scores
 

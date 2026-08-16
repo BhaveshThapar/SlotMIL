@@ -22,7 +22,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import torch
 from scipy import stats
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -104,7 +103,7 @@ def main():
     show_test = args.report_test if args.report_test is not None else (
         args.role != "confirmatory")
 
-    # Provenance. PREREGISTRATION.md:189-191 makes this the difference between a
+    # Provenance. PREREGISTRATION.md's "Verifying the chain" makes this the difference between a
     # result that can carry a confirmatory claim and one that cannot, and until
     # now training wrote none of it: the only record of the split was
     # summary.json["args"]["splits"], a bare path, which merge_results.py then

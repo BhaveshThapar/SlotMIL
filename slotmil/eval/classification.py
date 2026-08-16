@@ -201,12 +201,12 @@ def bootstrap_ci(
         except ValueError:
             continue
 
-    vals = np.array(vals)
+    arr = np.asarray(vals, dtype=float)
     return {
-        "mean": float(vals.mean()),
-        "lo": float(np.percentile(vals, 100 * alpha / 2)),
-        "hi": float(np.percentile(vals, 100 * (1 - alpha / 2))),
-        "n_boot": len(vals),
+        "mean": float(arr.mean()),
+        "lo": float(np.percentile(arr, 100 * alpha / 2)),
+        "hi": float(np.percentile(arr, 100 * (1 - alpha / 2))),
+        "n_boot": int(arr.size),
     }
 
 

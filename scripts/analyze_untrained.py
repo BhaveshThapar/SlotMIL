@@ -8,7 +8,6 @@ from __future__ import annotations
 import sys
 
 import numpy as np
-from scipy import stats
 from scipy.optimize import linear_sum_assignment
 
 D = dict(np.load(sys.argv[1] if len(sys.argv) > 1 else "runs/control_untrained.npz",
