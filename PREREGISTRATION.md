@@ -143,13 +143,22 @@ ceremony.
 | **H5** | no arm's prior-normalised skill — the mean over that arm's float32 seeds — exceeds 0.30; per-seed values are reported regardless | any arm's mean over seeds exceeds 0.30 |
 | **H6** | Normal Guidance raises slice-level AUC over its base arm but raises patient-specific skill by < 0.02 | skill rises ≥ 0.02 — prior injection would be adding real information and the critique fails |
 | **H7** *(power gate)* | the supervised patch probe's prior-normalised skill > 0.50 while every content-free baseline's is < 0.05 | the probe fails to separate → **the proposed estimands have no power and must not be recommended** |
-| **H8** *(two-sided)* | in-lung fitted-template AUC > 0.65 | none — reported either way; if restricting to lung removes the prior, that becomes the paper's recommendation |
+| **H8** *(two-sided)* | in-lung fitted-template AUC > 0.65 — the plain AUC (`in_lung_auc`), with `in_lung_stratified_auc` reported beside it and no threshold on it | none — reported either way; if restricting to lung removes the prior, that becomes the paper's recommendation |
 | **H9** | MosMed's fitted-template AUC is lower than LIDC's, with correspondingly higher prior-normalised skill | ordering reverses or is indistinguishable |
 | **H10** | per seed, the paired `separable − trained` flat-axis difference scores as oracle-wins / indistinguishable / trained-wins | trained-wins takes a majority of seeds — and *only* that; an oracle win is stronger than the claim, not a failure of it |
 
 H7 is the one that matters most for the constructive half. A metric that scores
 zero for everything is not a fix, it is nihilism; if the supervised probe does not
 clear it, we do not recommend the protocol.
+
+Two of these are scored against a stated *pair* of numbers rather than one, and
+the pairing is deliberate in both. H8 reports the plain and the stratified
+in-lung AUC and attaches its threshold only to the plain one, because a fitted
+template is purely positional and stratifying by position collapses it toward
+0.5 by construction. H7 reports the mask-fitted family and `centre_prior` beside
+its gate without letting either into it. In both cases the number that is
+excluded from the verdict is still published; an exclusion a reader cannot check
+is indistinguishable from a number that was never computed.
 
 ## Blinding — what it is and what it is not
 
