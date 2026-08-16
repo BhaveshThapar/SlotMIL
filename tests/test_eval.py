@@ -21,7 +21,13 @@ from slotmil.eval.alignment import (
     slot_finding_affinity,
     slot_purity,
 )
-from slotmil.eval.classification import bootstrap_ci, classification_metrics, delong_test
+from slotmil.eval.classification import (
+    bootstrap_ci,
+    classification_metrics,
+    delong_test,
+    holm_adjust,
+    holm_reject,
+)
 from slotmil.eval.localization import (
     attn_to_volume,
     dice_iou,
@@ -59,6 +65,136 @@ class TestClassification:
         s = np.stack([1 - (y + rng.normal(0, 0.4, 200)), y + rng.normal(0, 0.4, 200)], 1)
         ci = bootstrap_ci(y, s, n_boot=200)
         assert ci["lo"] <= ci["mean"] <= ci["hi"]
+
+
+class TestHolm:
+    """Holm-Bonferroni over the nine pre-registered hypotheses.
+
+    Paired, per the rule in tests/test_estimands.py. A multiplicity correction is
+    the easy thing to fake in both directions: `return np.ones_like(p)` rejects
+    nothing and passes every scepticism check, and `return p` rejects everything
+    and passes every power check. So each property is pinned twice -- the
+    correction must actually suppress a family of null p-values *and* still let a
+    genuinely small one through, and each of the two steps that are easy to get
+    wrong (running maximum, order restoration) is tested against the specific
+    wrong answer it replaces, so the test would fail if the step were dropped.
+    """
+
+    # p = 0.01 .. 0.05, n = 5. Chosen because the raw scaling
+    # [0.05, 0.08, 0.09, 0.08, 0.05] is non-monotone at both tail entries, so this
+    # one family exercises the running maximum and the step-down rule together.
+    FAMILY = np.array([0.01, 0.02, 0.03, 0.04, 0.05])
+    EXPECTED = np.array([0.05, 0.08, 0.09, 0.09, 0.09])
+
+    def test_worked_example_matches_the_hand_calculation(self):
+        np.testing.assert_allclose(holm_adjust(self.FAMILY), self.EXPECTED)
+
+    def test_a_family_of_ones_collapses_to_ones(self):
+        """The other half: nothing to find, nothing found, and no value above 1."""
+        np.testing.assert_allclose(holm_adjust(np.ones(9)), np.ones(9))
+
+    def test_uniform_null_pvalues_produce_no_rejections(self):
+        """20 p-values drawn under the global null. Four of them clear a raw 0.05
+        -- which is the whole reason the correction is pre-registered -- and Holm
+        rejects none of them."""
+        u = np.random.default_rng(0).random(20)
+        assert (u < 0.05).sum() == 4
+        assert holm_reject(u)["n_reject"] == 0
+
+    def test_a_genuinely_small_pvalue_still_survives_the_correction(self):
+        """The power half. A correction that suppressed this too would be useless."""
+        u = np.random.default_rng(0).random(20)
+        u[7] = 1e-6
+        r = holm_reject(u)
+        assert r["reject"][7] and r["n_reject"] == 1
+
+    def test_adjusted_pvalues_are_monotone_in_the_sorted_order(self):
+        rng = np.random.default_rng(3)
+        p = rng.random(30)
+        adj = holm_adjust(p)[np.argsort(p)]
+        assert np.all(np.diff(adj) >= 0)
+
+    def test_the_running_maximum_is_what_makes_it_monotone(self):
+        """Teeth for the test above: the unaccumulated scaling it replaces is not
+        monotone on the same family, and would report the 5th hypothesis as more
+        significant than the 2nd."""
+        naive = self.FAMILY * (len(self.FAMILY) - np.arange(len(self.FAMILY)))
+        assert not np.all(np.diff(naive) >= 0)
+        assert naive[4] < naive[1]
+
+    def test_output_order_matches_a_shuffled_input(self):
+        p = np.array([0.04, 0.01, 0.05, 0.02, 0.03])
+        adj = holm_adjust(p)
+        # Same family as FAMILY, permuted; each entry must carry its own hypothesis'
+        # adjusted value, not the value that landed in its sorted position.
+        expected = self.EXPECTED[np.argsort(np.argsort(p))]
+        np.testing.assert_allclose(adj, expected)
+        np.testing.assert_allclose(adj, [0.09, 0.05, 0.09, 0.08, 0.09])
+
+    def test_resorting_instead_of_unsorting_would_mislabel_the_hypotheses(self):
+        """Teeth for the test above. `adjusted[order]` is the natural typo and it
+        agrees with the correct answer whenever `order` is its own inverse -- so a
+        suite that only tried sorted or reversed input would never catch it."""
+        p = np.array([0.04, 0.01, 0.05, 0.02, 0.03])
+        order = np.argsort(p)
+        wrong = holm_adjust(p)[order]
+        assert not np.allclose(wrong, holm_adjust(p))
+
+    def test_holm_is_never_more_conservative_than_bonferroni(self):
+        rng = np.random.default_rng(11)
+        p = rng.random(12) * 0.2
+        bonf = np.minimum(p * p.size, 1.0)
+        holm = holm_adjust(p)
+        assert np.all(holm <= bonf + 1e-12)
+
+    def test_and_agrees_with_bonferroni_exactly_at_the_smallest_pvalue(self):
+        """The pair: strictly less everywhere else, equal at the minimum, because
+        the smallest hypothesis still pays the full family size. If Holm were also
+        cheaper there it would not control the family-wise error rate."""
+        rng = np.random.default_rng(11)
+        p = rng.random(12) * 0.2
+        bonf = np.minimum(p * p.size, 1.0)
+        holm = holm_adjust(p)
+        smallest = int(np.argmin(p))
+        assert holm[smallest] == pytest.approx(bonf[smallest])
+        others = np.setdiff1d(np.arange(p.size), [smallest])
+        assert np.all(holm[others] < bonf[others])
+
+    def test_a_family_of_one_is_the_identity(self):
+        np.testing.assert_allclose(holm_adjust([0.037]), [0.037])
+
+    def test_an_empty_family_is_empty_rather_than_an_error(self):
+        r = holm_reject([])
+        assert r["p_adjusted"].shape == (0,) and r["n_family"] == 0
+
+    def test_rejection_stops_at_the_first_failure(self):
+        """The step-down rule. 0.01 clears 0.05/5, so H0 is rejected; 0.02 does not
+        clear 0.05/4, so testing stops -- and 0.05, which would clear its own
+        0.05/1 threshold if tested in isolation, is not rejected."""
+        r = holm_reject(self.FAMILY, alpha=0.05)
+        assert r["reject"].tolist() == [True, False, False, False, False]
+        assert self.FAMILY[4] <= 0.05, "the last one would pass an uncorrected test"
+
+    def test_a_nan_hypothesis_propagates_and_is_never_rejected(self):
+        r = holm_reject([0.02, 0.03, np.nan])
+        assert np.isnan(r["p_adjusted"][2]) and not r["reject"][2]
+        assert np.all(np.isfinite(r["p_adjusted"][:2]))
+
+    def test_a_nan_hypothesis_still_costs_the_others_their_family_size(self):
+        """The pair, and the reason NaN is not simply dropped: with the
+        uncomputable hypothesis counted the family is 3 and neither survivor is
+        rejected; drop it and both are. Silently shrinking n would manufacture two
+        significant results out of a failed computation."""
+        assert holm_reject([0.02, 0.03, np.nan])["n_reject"] == 0
+        assert holm_reject([0.02, 0.03])["n_reject"] == 2
+
+    def test_pvalues_outside_the_unit_interval_raise(self):
+        with pytest.raises(ValueError, match=r"outside \[0, 1\]"):
+            holm_adjust([0.01, 1.7])
+
+    def test_a_two_dimensional_family_raises_rather_than_sorting_per_row(self):
+        with pytest.raises(ValueError, match="1-D family"):
+            holm_adjust(np.array([[0.01, 0.02], [0.03, 0.04]]))
 
 
 class TestLocalization:

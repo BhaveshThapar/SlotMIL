@@ -7,7 +7,7 @@ something is a frozen config that the analysis code physically cannot deviate
 from, committed before the confirmatory runs, with its hash stamped into every
 result so a stranger can check the chain with ``git log``.
 
-Three guarantees, and one non-guarantee:
+Four guarantees, and one non-guarantee:
 
 1. **Strict access.** :meth:`Prereg.get` raises :class:`PreregViolation` on any
    undeclared key, so a script cannot quietly introduce an arm, a seed or a
@@ -19,6 +19,17 @@ Three guarantees, and one non-guarantee:
 3. **Hash.** ``sha256(canonical json)[:16]``, the same construction
    ``scripts/make_splits.py:220`` already uses for split files, so split hashes
    and config hashes are the same species and can be eyeballed side by side.
+4. **Lineage.** :func:`amendment_chain` reads the ``before -> after`` hashes out
+   of ``AMENDMENTS.md`` and :func:`classify_hash` answers the question a bare
+   equality test cannot: *is this stamp an ancestor of the frozen config, or a
+   hash from nowhere?* ``PREREGISTRATION.md:189`` states the rule mechanically
+   -- "if a result's hash does not match the frozen config, that result is
+   exploratory" -- and mechanically applied it demotes every prior result on
+   every amendment. Today it demotes ``runs/untrained_floor.json``, stamped
+   ``20bdd93b781d950d`` and carrying H3 on ``splits_confirmatory.json``, over
+   two amendments that touched arm declarations and a train-only ``max_slices``
+   -- nothing the untrained floor reads. Ancestry is not a match and must not be
+   reported as one; it is also not nothing, and the two are kept apart here.
 
 The non-guarantee is blinding. :class:`BlindKey` maps model arms to opaque codes
 so the analysis layer does not casually reveal which method is which mid-
@@ -33,8 +44,10 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import re
 import secrets
 import subprocess
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -42,6 +55,7 @@ from typing import Any
 import yaml
 
 DEFAULT_CONFIG = "configs/prereg/isbi2027.yaml"
+DEFAULT_AMENDMENTS = "AMENDMENTS.md"
 _MISSING = object()
 
 
@@ -97,6 +111,174 @@ def git_state(repo: str | Path = ".") -> dict:
     commit = run("rev-parse", "HEAD")
     status = run("status", "--porcelain")
     return {"commit": commit, "dirty": None if status is None else bool(status)}
+
+
+# ------------------------------------------------------------------- lineage
+# The template at the top of AMENDMENTS.md is, to a regex, a perfectly good
+# dated entry. Fenced blocks are stripped before parsing so the documentation of
+# the format cannot become a link in the chain it documents.
+_FENCED = re.compile(r"^```.*?^```", re.M | re.S)
+_ENTRY = re.compile(r"^## (\d{4}-\d{2}-\d{2})\s*[—-]\s*(.+?)\s*$", re.M)
+_TRANSITION = re.compile(
+    r"^-\s+\*\*Config hash before\s*(?:→|->)\s*after:\*\*\s*`([^`]*)`"
+    r"\s*(?:→|->)\s*`([^`]*)`",
+    re.M,
+)
+_UNBLINDING = re.compile(r"^-\s+\*\*Config hash at unblinding:\*\*\s*`([^`]*)`", re.M)
+_KIND = re.compile(r"^-\s+\*\*Kind:\*\*\s*(.+?)\s*$", re.M)
+_IS_HASH = re.compile(r"^[0-9a-f]{16}$")
+
+
+@dataclass(frozen=True)
+class Amendment:
+    """One recorded ``before -> after`` transition of the frozen config hash."""
+
+    date: str
+    title: str
+    kind: str
+    before: str
+    after: str
+
+    @property
+    def changed_the_config(self) -> bool:
+        """False for a record-only entry, which supersedes nothing.
+
+        The 2026-08-15 ``lam`` pre-flight entry is a ``deviation`` with
+        ``before == after``: it discloses what was seen and changes no
+        parameter. Listing it as something that superseded an earlier hash would
+        overstate the record, so it stays in the chain (it must, or the chain
+        would read as having a gap) but out of the ancestry report.
+        """
+        return self.before != self.after
+
+
+@dataclass(frozen=True)
+class Lineage:
+    """Where a stamped hash sits relative to the frozen one."""
+
+    status: str  # "current" | "superseded" | "unknown"
+    superseded_by: tuple[Amendment, ...] = ()
+
+    @property
+    def label(self) -> str:
+        """One token for a report line. ``UNKNOWN`` shouts because it should.
+
+        A superseded stamp is informational -- an amendment is *expected* to
+        leave ancestors behind. An unknown stamp means a result was produced
+        under a config that is not on the recorded chain at all, which is the
+        case no amount of prose can explain away.
+        """
+        if self.status == "superseded":
+            return f"superseded-by-{self.superseded_by[0].date}"
+        return "current" if self.status == "current" else "UNKNOWN"
+
+
+def amendment_chain(path: str | Path = DEFAULT_AMENDMENTS) -> list[Amendment]:
+    """Parse the ordered hash transitions out of ``AMENDMENTS.md``.
+
+    Strict on purpose. A lineage mechanism that silently accepts a broken chain
+    is worse than no mechanism at all, because it launders provenance: it would
+    report a stamp as "ancestral" on the strength of a record with a hole in it.
+    So a dated entry that records no hash at all, a hash that is not 16 hex
+    (an amendment drafted ``before -> PENDING`` and not yet filled in), and a
+    gap where one entry's ``after`` is not the next entry's ``before`` all raise
+    :class:`PreregViolation` rather than being skipped.
+
+    Unblinding entries are the one exception, and they are not an exception to
+    the rule: ``scripts/prereg_unblind.py`` writes ``Config hash **at**
+    unblinding``, a dated marker of when someone looked rather than a
+    transition. It is not a link and does not break the chain either side of it.
+    """
+    p = Path(path)
+    if not p.exists():
+        raise PreregViolation(f"amendment log not found at {p}")
+    text = _FENCED.sub("", p.read_text())
+
+    heads = list(_ENTRY.finditer(text))
+    if not heads:
+        raise PreregViolation(
+            f"no '## YYYY-MM-DD - title' entries in {p}. Either the log is empty "
+            "or its heading format has drifted from what the template declares; "
+            "either way the chain cannot be read and nothing can be called "
+            "ancestral."
+        )
+
+    chain: list[Amendment] = []
+    for i, head in enumerate(heads):
+        end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
+        body, date, title = text[head.end():end], head.group(1), head.group(2)
+
+        m = _TRANSITION.search(body)
+        if m is None:
+            if _UNBLINDING.search(body):
+                continue
+            raise PreregViolation(
+                f"amendment {date} ({title!r}) in {p} records no config hash "
+                "transition. Every entry must carry '**Config hash before -> "
+                "after:** `xxxx` -> `yyyy`' or the chain is not verifiable."
+            )
+        before, after = m.group(1), m.group(2)
+        for which, value in (("before", before), ("after", after)):
+            if not _IS_HASH.match(value):
+                raise PreregViolation(
+                    f"amendment {date} ({title!r}) in {p} records {which}-hash "
+                    f"{value!r}, which is not 16 hex digits. A half-recorded "
+                    "amendment leaves provenance undetermined -- fill in the "
+                    "real hash (scripts/prereg_freeze.py --amend prints it)."
+                )
+        kind = _KIND.search(body)
+        if kind is None:
+            raise PreregViolation(
+                f"amendment {date} ({title!r}) in {p} declares no '**Kind:**'. "
+                "Whether an entry is an amendment, a deviation or an unblinding "
+                "is part of what the record is for."
+            )
+        chain.append(Amendment(date=date, title=title, kind=kind.group(1),
+                               before=before, after=after))
+
+    for prev, nxt in zip(chain, chain[1:]):
+        if prev.after != nxt.before:
+            raise PreregViolation(
+                f"gap in the amendment chain in {p}: {prev.date} ({prev.title!r}) "
+                f"ends at {prev.after} but {nxt.date} ({nxt.title!r}) starts from "
+                f"{nxt.before}. A config state exists that no entry accounts for, "
+                "so no stamp can be called ancestral until it is recorded."
+            )
+    return chain
+
+
+def classify_hash(stamped: str, current: str,
+                  chain: Sequence[Amendment]) -> Lineage:
+    """Place a stamped config hash on the recorded chain.
+
+    The chain's *first* ``before`` is the origin freeze and counts as an
+    ancestor, which is the whole reason this is not a scan of ``after`` values:
+    five stamped results on disk carry ``2b580fa93894d86f``, the hash the first
+    recorded entry amended *away from*. Reading only the ``after`` side would
+    call them unknown -- a lie about files whose provenance the log states
+    outright.
+
+    Everything genuinely off the chain is ``"unknown"`` and stays that way. The
+    classifier does not guess that an unrecognised hash is merely old; that
+    guess is exactly how a result produced under an unrecorded config would slip
+    through wearing an ancestor's clothes.
+    """
+    lineage = [chain[0].before, *(a.after for a in chain)] if chain else [current]
+    if lineage[-1] != current:
+        raise PreregViolation(
+            f"the amendment chain ends at {lineage[-1]} but the config now "
+            f"hashes to {current}. The config was changed without an entry "
+            "logging it, so the chain does not describe the config it claims "
+            "to -- add the entry before trusting any ancestry claim."
+        )
+    if stamped == current:
+        return Lineage("current")
+    if stamped not in lineage:
+        return Lineage("unknown")
+    # First occurrence: the point at which this hash stopped being current.
+    cut = lineage.index(stamped)
+    return Lineage("superseded",
+                   tuple(a for a in chain[cut:] if a.changed_the_config))
 
 
 @dataclass(frozen=True)

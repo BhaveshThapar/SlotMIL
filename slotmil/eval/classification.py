@@ -3,6 +3,11 @@
 plan.md line 116 asks for >=5 seeds, paired significance testing (DeLong for AUC)
 and bootstrap CIs. Reporting a bare point estimate against the 0.879 MedMNIST
 reference would not survive review.
+
+Multiplicity lives here too: nine pre-registered hypotheses (H1-H9) are read at
+alpha = 0.05, so an uncorrected family would run roughly a 37% chance of at least
+one spurious rejection under the global null. `configs/prereg/isbi2027.yaml:265`
+declares `multiplicity: holm`; :func:`holm_adjust` is that declaration.
 """
 
 from __future__ import annotations
@@ -92,6 +97,83 @@ def delong_test(
         "delta": auc_a - auc_b,
         "z": float(z),
         "p": float(2 * (1 - stats.norm.cdf(abs(z)))),
+    }
+
+
+def holm_adjust(pvalues) -> np.ndarray:
+    """Holm-Bonferroni step-down adjusted p-values for a family of tests.
+
+    The pre-registration declares `multiplicity: holm` over the nine-hypothesis
+    family H1-H9 at alpha = 0.05 and nothing implemented it. Hand-rolled for the
+    same reason :func:`delong_test` is: `pyproject.toml` declares no dependencies
+    at all, and a scavenger node that has to resolve statsmodels at job start is a
+    failure mode, not an inconvenience.
+
+    Sort ascending, scale the i-th smallest (0-indexed) by ``n - i``, take the
+    running maximum, clip at 1.0, restore the caller's order. The two middle steps
+    are the whole job. Without the running maximum the output can be non-monotone:
+    p = [0.03, 0.04] scales to [0.06, 0.04], which reads as "the larger raw p is
+    the more significant" and lets a caller reject a hypothesis whose predecessor
+    in the step-down order was not rejected. Enforcing monotonicity is exactly what
+    makes ``p_adjusted <= alpha`` equivalent to walking the step-down rule by hand,
+    which is why :func:`holm_reject` needs no loop.
+
+    NaN in, NaN out -- **and the NaN still counts toward the family size**. A
+    hypothesis that could not be computed (a degenerate stratum, a bag with one
+    class) must not be free: dropping it shrinks n and makes every surviving
+    hypothesis easier to reject, the one direction a multiplicity correction must
+    never move. NaN sorts last, so the finite p-values keep multipliers n, n-1,
+    ... -- the smallest still pays full Bonferroni -- and the uncomputable
+    hypothesis is simply never rejected. Reporting it as NaN rather than 1.0 keeps
+    "we could not test this" distinguishable from "we tested it and it failed".
+
+    n = 1 is the identity, since the only multiplier is ``1 - 0``. p-values outside
+    [0, 1] raise: 1.7 is an upstream bug, and clipping it here would hide it.
+    """
+    p = np.asarray(pvalues, dtype=float)
+    if p.ndim != 1:
+        raise ValueError(f"holm_adjust needs a 1-D family, got shape {p.shape}")
+    if p.size == 0:
+        return p.copy()
+
+    # NaN is exempted from the range check, not from the family -- see above.
+    bad = ~np.isnan(p) & ((p < 0.0) | (p > 1.0))
+    if bad.any():
+        raise ValueError(f"p-values outside [0, 1]: {p[bad].tolist()}")
+
+    n = p.size
+    order = np.argsort(p)  # numpy sorts NaN to the end, which is the behaviour above
+    scaled = p[order] * (n - np.arange(n))
+    adjusted = np.minimum(np.maximum.accumulate(scaled), 1.0)
+
+    out = np.empty(n, dtype=float)
+    # Inverse permutation. `adjusted[order]` is the classic wrong answer: it sorts
+    # a second time instead of un-sorting, and happens to agree only when `order`
+    # is its own inverse -- so it passes on sorted and reversed inputs and silently
+    # mislabels every hypothesis on any other.
+    out[order] = adjusted
+    return out
+
+
+def holm_reject(pvalues, alpha: float = 0.05) -> dict:
+    """:func:`holm_adjust` plus the decision, so alpha never meets a raw p-value.
+
+    Returning the adjusted vector without the rejections invites the one mistake
+    the correction exists to prevent -- reading `p` off `delong_test` and comparing
+    it to 0.05 directly. Callers should take ``reject`` from here rather than
+    thresholding anything themselves.
+
+    ``alpha`` defaults to the pre-registered 0.05. NaN adjusted p-values compare
+    False, so a hypothesis that could not be computed is never rejected.
+    """
+    p_adjusted = holm_adjust(pvalues)
+    reject = p_adjusted <= alpha
+    return {
+        "p_adjusted": p_adjusted,
+        "reject": reject,
+        "alpha": float(alpha),
+        "n_family": int(p_adjusted.size),
+        "n_reject": int(reject.sum()),
     }
 
 

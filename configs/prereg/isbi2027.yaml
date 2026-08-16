@@ -159,8 +159,62 @@ arms:
       that collapse as localisation. Floored at 1 slice^2 (Harvey's sigma, in the
       one place a raw-slice sigma is both meaningful and representable) a delta
       pays 0.9189 nats while a true Gaussian pays 0.
-  - {name: clam_sb, spec: 'clam_sb', status: planned, blind: true}
-  - {name: dsmil,   spec: 'dsmil',   status: planned, blind: true}
+  - name: clam_sb
+    spec: 'clam_sb'
+    status: implemented
+    blind: true
+    base_arm: gated_abmil
+    topk_b: 8
+    bag_weight: 0.7
+    instance_loss: cross_entropy
+    subtyping: false
+    attn_norm_axis: instance
+    k_tokens: 1
+    rationale: >-
+      Implemented as a subclass of gated_abmil, so the attention path is
+      bit-identical and the whole difference between the two arms is the
+      clustering objective -- the same construction that makes the H6 comparison
+      attributable for normal_guidance. hidden therefore stays at the project's
+      128 rather than CLAM's 256.
+    topk_rationale: >-
+      B stays at CLAM's printed 8 rather than a fraction of the bag. LIDC bags
+      reach 43.8k instances against a WSI's few thousand, so a proportional k
+      would make this term's effective weight scale with scan depth -- roughly
+      12x across the cohort -- and the branch exists to sharpen attention's
+      extremes, not to label the bag. On a bag too short for 2k disjoint
+      instances, k falls to n_valid // 2 for that bag so the top and bottom sets
+      cannot overlap and train the classifier on contradictory labels for the
+      same instance.
+    instance_loss_rationale: >-
+      Cross-entropy on the pseudo-labels, not the reference implementation's
+      smooth top-1 SVM. The SVM surrogate arrives as a third-party package for a
+      margin no pre-registered estimand reads -- the branch shapes attention and
+      attention is scored by rank -- so CE is the standard surrogate for the same
+      2k pseudo-labels and keeps the dependency set auditable.
+  - name: dsmil
+    spec: 'dsmil'
+    status: implemented
+    blind: true
+    q_hidden: 128
+    dropout_v: 0.0
+    bag_weight: 0.5
+    attn_norm_axis: instance
+    k_tokens: num_classes
+    rationale: >-
+      K = num_classes, not 1: DSMIL selects a critical instance per class and
+      builds one bag embedding per class, so collapsing to a single token would
+      be a different method. The frozen-slot protocol already handles K > 1
+      (Hungarian on validation; argmax of the lesion column for F=2), so the
+      published shape costs nothing here.
+    departures: >-
+      Two, both stated rather than absorbed. The bag score comes from the
+      project's shared gated readout rather than DSMIL's per-class Conv1d, and
+      the instance stream is supervised through the loss at weight 0.5 rather
+      than being averaged into the reported logits. Both exist so that the
+      classification head is identical across every arm and a difference is
+      attributable to pooling; averaging the streams would give DSMIL a
+      classifier no other arm has and confound the H1/H2 comparisons. The
+      fidelity cost is real and is reported as one.
   - name: transmil
     spec: 'transmil'
     status: planned
@@ -349,9 +403,24 @@ hypotheses:
     falsifier: any arm >= 0.15, or median >= 0.10.
   - id: H5
     role: secondary
-    statement: No arm's prior-normalised skill exceeds 0.30.
+    statement: >-
+      No arm's prior-normalised skill, taken as the mean over that arm's
+      float32 seeds, exceeds 0.30.
     threshold: 0.30
-    falsifier: any arm exceeds 0.30.
+    unit: mean_over_seeds
+    report_per_seed: true
+    falsifier: any arm's mean over seeds exceeds 0.30.
+    unit_rationale: >-
+      The original statement named a threshold and not a unit, which leaves the
+      arm's number free to be a per-seed value or an aggregate -- the same hole
+      H2's "every trained arm" had. Ruled as the mean because that is the
+      statement's own noun ("no ARM's skill") and because H4 is already per-arm;
+      a per-seed-max rule instead takes five draws at the threshold rather than
+      one, which is the best-of-k inflation the template family already refuses
+      when it declines to promote the strongest reference to denominator.
+      report_per_seed is not decoration: a seed above 0.30 appears in the paper
+      whether or not it falsifies, because the unit ruling must not become a way
+      of not reporting a number.
   - id: H6
     role: primary
     statement: >-
@@ -385,6 +454,36 @@ hypotheses:
       higher prior-normalised skill -- prior dominance tracks the positional
       stereotypy of the finding.
     falsifier: ordering reverses or is indistinguishable.
+  - id: H10
+    role: secondary
+    statement: >-
+      Per seed, the paired per-bag difference between the mask-fitted separable
+      template and the trained arm on the flat axis does not favour the trained
+      arm. Each seed scores as one of three outcomes and the claim survives
+      unless trained-wins takes a majority.
+    estimand: template_family.paired_flat_auc['masks:separable - trained']
+    member: separable
+    axis: flat
+    statistic: patient_clustered_bootstrap
+    reps: 10000
+    bootstrap_seed: 0
+    outcomes:
+      oracle_wins: CI entirely above 0 -- the content-free reference beats the network.
+      indistinguishable: CI contains 0.
+      trained_wins: CI entirely below 0 -- the network beats the reference.
+    aggregation: majority over seeds
+    falsifier: trained-wins is the majority outcome across seeds.
+    rationale: >-
+      Drafted first as a two-outcome test ("the interval contains zero for a
+      majority"), which mis-scores its own evidence: on the discovery dumps the
+      interval crosses zero on three and puts the oracle strictly ahead on two,
+      and BOTH of those are stronger than the claim being made, not weaker. A
+      two-outcome form would have recorded an oracle win as a failure. Only
+      trained-wins withdraws anything.
+    member_rationale: >-
+      separable is pinned, not selected. All four family members are reported;
+      choosing whichever of them wins on test would be the best-of-k error the
+      denominator ruling already refuses.
 
 # ---------------------------------------------------------------- blinding
 blinding:

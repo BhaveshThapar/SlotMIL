@@ -61,7 +61,7 @@ def main():
     ap.add_argument("--ckpt", default=None, help="omit for the untrained-model null")
     ap.add_argument("--pooling", default="slot",
                     choices=["slot", "mh_abmil", "centre_gaussian",
-                             "normal_guidance"])
+                             "normal_guidance", "clam_sb", "dsmil"])
     ap.add_argument("--init-seed", type=int, default=1234,
                     help="torch seed for the untrained-model null")
     ap.add_argument("--tag", required=True)

@@ -13,6 +13,7 @@ import torch.nn as nn
 
 from .baselines import (
     DEFAULT_PATCHES_PER_SLICE,
+    InstanceScoringPool,
     build_pooling,
     count_params,
     matched_multihead_abmil,
@@ -65,6 +66,12 @@ class MILModel(nn.Module):
         }
         if self.is_slot:
             out["health"] = slot_health(tokens, attn)
+        if isinstance(self.pooling, InstanceScoringPool):
+            # CLAM's clustering branch and DSMIL's max stream are supervised on
+            # per-instance logits, which the pooling contract does not carry.
+            # Surfaced here rather than widened into the contract, and recomputed
+            # rather than cached -- see InstanceScoringPool.
+            out["instance_logits"] = self.pooling.instance_logits(feats, pad_mask)
         return out
 
 
@@ -124,8 +131,12 @@ def build_model(
             hidden=hidden,
             num_heads=num_slots,
             patches_per_slice=patches_per_slice,
+            num_classes=num_classes,
         )
-        k_eff = 1
+        # DSMIL is the one non-slot arm that emits more than one token: it picks a
+        # critical instance per class and builds a bag embedding per class, so
+        # sizing the readout at K=1 would silently drop half of it.
+        k_eff = num_classes if pooling == "dsmil" else 1
 
     head = build_readout(readout, dim, num_classes, k_eff)
     return MILModel(pool, head, pooling_name=pooling, encoder=encoder)

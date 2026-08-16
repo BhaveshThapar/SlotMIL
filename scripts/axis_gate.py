@@ -22,7 +22,16 @@ The centre-distance prior goes through the identical decomposition as a
 reference row -- it has no model and no fitting, so whatever it scores on the
 slice axis is what geometry alone buys.
 
-    python scripts/axis_gate.py --out runs/nulls/axis_gate.json
+The decomposition itself is :func:`slotmil.eval.axes.per_bag_axes` and the
+interval is :func:`slotmil.eval.estimands.cluster_bootstrap`; both used to be
+defined here. This file is now the driver only -- it finds the dumps, freezes a
+slot per tag, and maps bags to patients.
+
+``runs/nulls/axis_gate.json`` was written with ``--reps 2000``, not the 10000
+default. Re-run it with anything else and the CIs will legitimately differ from
+the stored ones, which looks exactly like a regression and is not:
+
+    python scripts/axis_gate.py --reps 2000 --out runs/nulls/axis_gate.json
 """
 
 from __future__ import annotations
@@ -32,76 +41,13 @@ import json
 from pathlib import Path
 
 import numpy as np
-from sklearn.metrics import roc_auc_score
 
-from null_battery import N_PATCH, load, pick_lesion_slot
+from null_battery import load, pick_lesion_slot
 from null_decompose import centre_prior_scores
 
 from slotmil import prereg
-
-
-def per_bag_axes(attns, masks, slot):
-    """Per-bag flat / slice / within-slice AUC, plus the bag index each came from.
-
-    Bags are dropped from an axis when that axis is degenerate for them (a bag
-    whose every slice holds a nodule has no slice-axis contrast). Keeping the
-    indices lets the bootstrap resample patients rather than rows.
-    """
-    rows = []
-    for i, (a, m) in enumerate(zip(attns, masks)):
-        t = (m > 0).astype(np.int8)
-        s = int(t.sum())
-        if s == 0 or s == len(t):
-            continue
-        n = len(m)
-        ns = n // N_PATCH
-        if ns * N_PATCH != n:
-            continue
-
-        flat = roc_auc_score(t, a[slot])
-
-        sc = a[slot][: ns * N_PATCH].reshape(ns, N_PATCH)
-        st = t[: ns * N_PATCH].reshape(ns, N_PATCH)
-        has = (st.sum(axis=1) > 0).astype(np.int8)
-
-        sl = np.nan
-        if 0 < has.sum() < ns:
-            sl = roc_auc_score(has, sc.mean(axis=1))
-
-        wi = np.nan
-        sel = has.astype(bool)
-        sub_t, sub_s = st[sel].ravel(), sc[sel].ravel()
-        if 0 < sub_t.sum() < len(sub_t):
-            wi = roc_auc_score(sub_t, sub_s)
-
-        rows.append((i, flat, sl, wi, ns, int(has.sum())))
-    return rows
-
-
-def cluster_bootstrap(values, clusters, reps=10000, seed=0):
-    """Mean and percentile CI, resampling *clusters* (patients) with replacement."""
-    values, clusters = np.asarray(values, float), np.asarray(clusters)
-    ok = np.isfinite(values)
-    values, clusters = values[ok], clusters[ok]
-    if values.size == 0:
-        return {"mean": None, "lo": None, "hi": None, "n": 0, "n_clusters": 0}
-
-    uniq = np.unique(clusters)
-    by = {c: np.flatnonzero(clusters == c) for c in uniq}
-    rng = np.random.default_rng(seed)
-    boot = np.empty(reps)
-    for r in range(reps):
-        pick = rng.choice(uniq, size=uniq.size, replace=True)
-        idx = np.concatenate([by[c] for c in pick])
-        boot[r] = values[idx].mean()
-    lo, hi = np.percentile(boot, [2.5, 97.5])
-    return {
-        "mean": float(values.mean()),
-        "lo": float(lo),
-        "hi": float(hi),
-        "n": int(values.size),
-        "n_clusters": int(uniq.size),
-    }
+from slotmil.eval.axes import per_bag_axes
+from slotmil.eval.estimands import cluster_bootstrap
 
 
 def analyse(tag, val_npz, test_npz, uid_to_pat, reps, seed):

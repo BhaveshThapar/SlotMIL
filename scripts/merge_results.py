@@ -27,6 +27,7 @@ def main():
 
     root = Path(args.runs)
     results: dict[str, list[dict]] = {}
+    provenance: dict[str, dict] = {}
 
     for arm_dir in sorted(p for p in root.iterdir() if p.is_dir()):
         rows = []
@@ -38,11 +39,35 @@ def main():
             if "test" not in r:
                 continue
             rows.append({"seed": int(seed_dir.name.replace("seed", "")), **r["test"]})
+            # Carry provenance up. This rewrite used to emit only
+            # {summary, comparisons}, which is how runs/lidc/summary.json lost
+            # even the bare split path the training driver had recorded -- so the
+            # discovery sweep's provenance is now unrecoverable from its own
+            # summary. Keyed per run so a heterogeneous directory is visible as
+            # heterogeneous rather than collapsing to whichever file was read last.
+            prov = {k: r[k] for k in
+                    ("analysis_role", "splits", "splits_hash",
+                     "splits_file_sha256", "prereg") if k in r}
+            if prov:
+                provenance[f"{arm_dir.name}/{seed_dir.name}"] = prov
         if rows:
             results[arm_dir.name] = rows
 
     if not results:
         raise SystemExit(f"no completed runs under {root}")
+
+    roles = {p.get("analysis_role") for p in provenance.values()}
+    hashes = {p.get("splits_hash") for p in provenance.values()}
+    if len(roles) > 1 or len(hashes) > 1:
+        raise SystemExit(
+            f"[merge] {root} mixes runs: analysis_role={sorted(map(str, roles))}, "
+            f"splits_hash={sorted(map(str, hashes))}. A single summary.json "
+            "cannot honestly describe more than one split or role."
+        )
+    if provenance and len(provenance) != sum(len(v) for v in results.values()):
+        print(f"[merge] warning: {sum(len(v) for v in results.values())} runs but "
+              f"{len(provenance)} carry provenance -- the unstamped ones predate "
+              "stamping and cannot be attributed to a split.", flush=True)
 
     summary = {k: aggregate_seeds(v) for k, v in results.items()}
 
@@ -89,7 +114,11 @@ def main():
         print(f"\nslot arms with max cosine < 0.9: {healthy or 'NONE (all collapsed)'}")
 
     out = Path(args.out) if args.out else root / "summary.json"
-    out.write_text(json.dumps({"summary": summary, "comparisons": comparisons}, indent=2, default=str))
+    out.write_text(json.dumps(
+        {"analysis_role": (roles.pop() if len(roles) == 1 else None),
+         "splits_hash": (hashes.pop() if len(hashes) == 1 else None),
+         "provenance": provenance,
+         "summary": summary, "comparisons": comparisons}, indent=2, default=str))
     print(f"\nwrote {out}")
 
 

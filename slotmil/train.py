@@ -126,7 +126,16 @@ def fit(
     test_ds=None,
     out_dir: str | Path | None = None,
     multilabel: bool = False,
+    provenance: dict | None = None,
 ) -> dict:
+    """``provenance``: merged into the top level of ``result.json``.
+
+    PREREGISTRATION.md:189 promises every result file carries the config hash and
+    the git commit that produced it, and training results carried neither -- so a
+    confirmatory ``result.json`` was indistinguishable from a discovery one on
+    inspection. The caller assembles the block (it knows the split and the role);
+    this function only persists it, so the loop stays model- and study-agnostic.
+    """
     set_seed(cfg.seed)
     device = cfg.device if torch.cuda.is_available() else "cpu"
     model = model.to(device)
@@ -157,6 +166,13 @@ def fit(
     t0 = time.time()
 
     for epoch in range(cfg.epochs):
+        # Before the iterator is created, so the value is copied into each worker
+        # at fork. Duck-typed: synthetic fixtures and any dataset without slice
+        # subsampling need nothing here.
+        if hasattr(train_ds, "set_epoch"):
+            train_ds.set_epoch(epoch)
+
+        t_epoch = time.time()
         tr = run_epoch(
             model, train_loader, criterion, optimizer, device,
             cfg.amp, cfg.grad_clip, multilabel,
@@ -166,6 +182,10 @@ def fit(
 
         row = {
             "epoch": epoch,
+            # Recorded per epoch rather than left as total/len(history): sweep
+            # scheduling needs the distribution, and an early-stopped run makes
+            # the division silently wrong.
+            "seconds": time.time() - t_epoch,
             **{f"train_{k}": v for k, v in tr.items()},
             **{f"val_{k}": v for k, v in va.items()},
         }
@@ -185,6 +205,10 @@ def fit(
                 break
 
     result = {
+        # Provenance first, so `head result.json` shows the role and the split
+        # before it shows a number. Merged rather than nested under one key
+        # because that is the shape untrained_floor.py already writes.
+        **(provenance or {}),
         "best_epoch": best["epoch"],
         f"best_val_{cfg.select_metric}": best["score"],
         "history": history,

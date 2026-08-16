@@ -224,6 +224,122 @@ class CentreGaussianPool(nn.Module):
         return torch.bmm(attn, x), attn  # B,1,D  B,1,N
 
 
+class InstanceScoringPool:
+    """Marker for poolings that also score individual instances.
+
+    CLAM's clustering branch and DSMIL's max stream are both supervised on
+    per-instance logits, which the ``(feats, pad_mask) -> (tokens, attn)``
+    contract has no room for. Rather than widen the contract for two arms,
+    :class:`~slotmil.models.mil.MILModel` surfaces them as
+    ``out["instance_logits"]`` for any pooling marked here -- the same route
+    ``out["health"]`` already takes for slot attention.
+
+    The cost is one extra ``proj`` pass per forward, because the hook recomputes
+    from ``feats`` rather than caching state on the module. Caching would make
+    the value depend on whether ``forward`` had been called first, which is the
+    kind of ordering dependency that produces a wrong number rather than a crash.
+    """
+
+    def instance_logits(self, feats: torch.Tensor,
+                        pad_mask: torch.Tensor | None = None) -> torch.Tensor:
+        raise NotImplementedError
+
+
+class CLAMSB(GatedABMIL, InstanceScoringPool):
+    """CLAM-SB (Lu et al., Nature BME 2021): gated attention + instance clustering.
+
+    Subclassed from :class:`GatedABMIL` for the same reason ``normal_guidance``
+    is an alias of it -- the attention path is bit-identical, so the whole
+    difference between the two arms is the clustering objective, and any gap
+    between them is attributable to that and nothing else. ``hidden`` therefore
+    stays at the project default rather than CLAM's 256.
+
+    Single-branch means one attention distribution, so ``K = 1``; the branch that
+    varies with class in CLAM-MB is the part this arm does not have.
+
+    The instance classifiers are per class (``num_classes`` of them, packed into
+    one ``Linear`` and viewed apart), which is what makes "in-the-class"
+    clustering well defined: for a bag of class *c*, classifier *c* is trained
+    to call the top-attention instances *c*-evidence and the bottom-attention
+    ones not. A single shared classifier would invert that meaning on negative
+    bags. ``subtyping`` is off, as in CLAM's default, so out-of-class
+    classifiers are left unsupervised.
+    """
+
+    def __init__(self, input_dim: int, dim: int, hidden: int = 128,
+                 num_classes: int = 2):
+        super().__init__(input_dim, dim, hidden=hidden)
+        self.num_classes = int(num_classes)
+        self.inst = nn.Linear(dim, self.num_classes * 2)
+
+    def instance_logits(self, feats, pad_mask=None):
+        x = self.proj(feats)
+        return self.inst(x).view(*x.shape[:2], self.num_classes, 2)  # B,N,C,2
+
+
+DSMIL_Q_HIDDEN = 128     # prereg arms[dsmil].q_hidden -- DSMIL's printed width
+DSMIL_DROPOUT_V = 0.0    # prereg arms[dsmil].dropout_v
+
+
+class DSMIL(nn.Module, InstanceScoringPool):
+    """DSMIL (Li, Li & Eliceiri, CVPR 2021): dual-stream, critical-instance MIL.
+
+    Stream one scores every instance and takes the argmax as the bag's critical
+    instance. Stream two attends every instance against that critical one --
+    a non-local similarity, not a learned scalar per instance -- and pools.
+
+    ``K = num_classes``, not 1. DSMIL selects a critical instance *per class* and
+    builds one bag embedding per class, so collapsing to a single token would be
+    a different method. The frozen-slot protocol already handles K > 1 arms
+    (Hungarian on validation, argmax of the lesion column for F=2), so keeping
+    the published shape costs nothing here.
+
+    Attention normalises over the **instance** axis, like every other arm in this
+    file and unlike slot attention -- so ``localization.instance_auc(slot=None)``
+    is valid for it.
+
+    Two declared departures, both in ``AMENDMENTS.md``: the bag score comes from
+    the project's shared readout rather than DSMIL's per-class ``Conv1d``, and
+    the instance stream enters through the loss (``dsmil_max_loss``, weight 0.5)
+    rather than being averaged into the reported logits. Both exist so the
+    classification head is identical across all arms and a difference is
+    attributable to pooling; the fidelity cost is stated rather than hidden.
+    """
+
+    def __init__(self, input_dim: int, dim: int, num_classes: int = 2,
+                 q_hidden: int = DSMIL_Q_HIDDEN, dropout_v: float = DSMIL_DROPOUT_V):
+        super().__init__()
+        self.proj = nn.Linear(input_dim, dim)
+        self.inst = nn.Linear(dim, num_classes)
+        self.q = nn.Sequential(nn.Linear(dim, q_hidden), nn.Tanh())
+        self.v = nn.Sequential(nn.Dropout(dropout_v), nn.Linear(dim, dim))
+        self.num_classes = int(num_classes)
+        self.q_hidden = int(q_hidden)
+
+    def instance_logits(self, feats, pad_mask=None):
+        return self.inst(self.proj(feats))  # B,N,C
+
+    def forward(self, feats, pad_mask=None):
+        b, n, _ = feats.shape
+        x = self.proj(feats)
+        s = self.inst(x)  # B,N,C
+
+        # Critical instance per class. Padded instances must never win the
+        # argmax: a pad's score is whatever proj(0-ish features) happens to give,
+        # and on a batch of mixed-depth bags that is most of the tensor.
+        if pad_mask is not None:
+            s = s.masked_fill(~pad_mask.unsqueeze(-1), float("-inf"))
+        crit = s.argmax(dim=1)  # B,C
+
+        qq = self.q(x)  # B,N,H
+        q_m = torch.gather(
+            qq, 1, crit.unsqueeze(-1).expand(b, self.num_classes, self.q_hidden)
+        )  # B,C,H
+        logits = torch.einsum("bnh,bch->bcn", qq, q_m) / (self.q_hidden ** 0.5)
+        attn = _masked_softmax(logits, pad_mask)  # B,C,N over instances
+        return torch.bmm(attn, self.v(x)), attn  # B,C,D  B,C,N
+
+
 def count_params(module: nn.Module) -> int:
     return sum(p.numel() for p in module.parameters() if p.requires_grad)
 
@@ -300,4 +416,19 @@ def build_pooling(name: str, input_dim: int, dim: int, **kw) -> nn.Module:
         # attributable to the KL alone), and is the study's strongest classifier
         # (so a localisation gain cannot be dismissed as rescuing a weak arm).
         return GatedABMIL(input_dim, dim, hidden=kw.get("hidden", 128))
+    if name == "clam_sb":
+        return CLAMSB(
+            input_dim,
+            dim,
+            hidden=kw.get("hidden", 128),
+            num_classes=kw.get("num_classes", 2),
+        )
+    if name == "dsmil":
+        return DSMIL(
+            input_dim,
+            dim,
+            num_classes=kw.get("num_classes", 2),
+            q_hidden=kw.get("q_hidden", DSMIL_Q_HIDDEN),
+            dropout_v=kw.get("dropout_v", DSMIL_DROPOUT_V),
+        )
     raise ValueError(f"unknown pooling {name!r}")

@@ -30,30 +30,28 @@ from sklearn.metrics import roc_auc_score
 from null_battery import (N_PATCH, load, pick_lesion_slot, roll_masks,
                           shuffle_masks_across_bags)
 
+from slotmil.eval.axes import per_bag_axes
+
 
 def decompose(attns, masks, slot):
-    slice_auc, within, flat = [], [], []
-    for a, m in zip(attns, masks):
-        t = (m > 0).astype(np.int8)
-        s = int(t.sum())
-        if s == 0 or s == len(t):
-            continue
-        n = len(m)
-        ns = n // N_PATCH
-        if ns * N_PATCH != n:
-            continue
-        flat.append(roc_auc_score(t, a[slot]))
+    """Pooled means of the per-bag axis split.
 
-        sc = a[slot][: ns * N_PATCH].reshape(ns, N_PATCH)
-        st = t[: ns * N_PATCH].reshape(ns, N_PATCH)
-        has = (st.sum(axis=1) > 0).astype(np.int8)
-        if 0 < has.sum() < ns:
-            slice_auc.append(roc_auc_score(has, sc.mean(axis=1)))
+    The split itself is :func:`slotmil.eval.axes.per_bag_axes`; this file used to
+    carry a second copy of it that had drifted into pooling as it went, which is
+    why the two could not be compared. Pooling here rather than in the library is
+    deliberate: the per-bag rows are what a patient-level bootstrap needs, and
+    ``axis_gate.py`` wants them, so the library returns rows and the averaging
+    stays at the call site that actually wants an average.
 
-        sel = has.astype(bool)
-        sub_t, sub_s = st[sel].ravel(), sc[sel].ravel()
-        if 0 < sub_t.sum() < len(sub_t):
-            within.append(roc_auc_score(sub_t, sub_s))
+    A bag that is degenerate on one axis carries ``nan`` in that column, so each
+    axis is averaged over its own finite rows -- not over a common subset. That
+    is what the original did by appending to three separate lists, and it is why
+    ``n_flat``, ``n_slice`` and ``n_within`` are reported separately.
+    """
+    rows = per_bag_axes(attns, masks, slot)
+    flat = [r[1] for r in rows]
+    slice_auc = [r[2] for r in rows if np.isfinite(r[2])]
+    within = [r[3] for r in rows if np.isfinite(r[3])]
     return {
         "instance_auc_flat": float(np.mean(flat)), "n_flat": len(flat),
         "slice_auc": float(np.mean(slice_auc)), "n_slice": len(slice_auc),

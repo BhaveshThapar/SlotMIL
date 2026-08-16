@@ -1,6 +1,6 @@
 # Pre-registration — ISBI 2027
 
-**Frozen config hash:** `33a55222c853a4cf`
+**Frozen config hash:** `93e006fd8c7d8a57`
 
 **Config:** [`configs/prereg/isbi2027.yaml`](configs/prereg/isbi2027.yaml) ·
 **Amendments:** [`AMENDMENTS.md`](AMENDMENTS.md) ·
@@ -105,9 +105,16 @@ arm is constructible and every planned arm is listed, so an arm can be unbuilt
 but never silently missing.
 
 Implemented today: `mean`, `abmil`, `gated_abmil`, `mh_abmil`, `slot:div=0.5`,
-and — since the 2026-08-15 amendment — `centre_gaussian` and `normal_guidance`,
-the two Harvey et al. arms that carry H6. Planned: `clam_sb`, `dsmil`,
+and — since the 2026-08-15 amendments — `centre_gaussian` and `normal_guidance`,
+the two Harvey et al. arms that carry H6, plus `clam_sb` and `dsmil`. Planned:
 `transmil`.
+
+`clam_sb` and `dsmil` each departed from their paper in one respect that could
+not be avoided here, and both departures are recorded in `AMENDMENTS.md` rather
+than absorbed: CLAM's instance branch uses cross-entropy on its pseudo-labels
+instead of a third-party smooth top-1 SVM, and DSMIL's instance stream is
+supervised through the loss rather than averaged into the reported logits, so
+that every arm shares one classification head.
 
 The two Harvey arms required four choices this document did not originally fix:
 the base arm `normal_guidance` is compared against (`gated_abmil`), the direction
@@ -133,11 +140,12 @@ ceremony.
 | **H2** | the model-free centre prior's slice AUC exceeds every trained arm's | any trained arm beats it on the slice axis |
 | **H3** | over ≥30 untrained inits, 95th-percentile instance AUC > 0.70 | 95th percentile ≤ 0.70 |
 | **H4** | every arm's patient-specific skill < 0.15; median < 0.10 | any arm ≥ 0.15, or median ≥ 0.10 |
-| **H5** | no arm's prior-normalised skill exceeds 0.30 | any arm exceeds 0.30 |
+| **H5** | no arm's prior-normalised skill — the mean over that arm's float32 seeds — exceeds 0.30; per-seed values are reported regardless | any arm's mean over seeds exceeds 0.30 |
 | **H6** | Normal Guidance raises slice-level AUC over its base arm but raises patient-specific skill by < 0.02 | skill rises ≥ 0.02 — prior injection would be adding real information and the critique fails |
 | **H7** *(power gate)* | the supervised patch probe's prior-normalised skill > 0.50 while every content-free baseline's is < 0.05 | the probe fails to separate → **the proposed estimands have no power and must not be recommended** |
 | **H8** *(two-sided)* | in-lung fitted-template AUC > 0.65 | none — reported either way; if restricting to lung removes the prior, that becomes the paper's recommendation |
 | **H9** | MosMed's fitted-template AUC is lower than LIDC's, with correspondingly higher prior-normalised skill | ordering reverses or is indistinguishable |
+| **H10** | per seed, the paired `separable − trained` flat-axis difference scores as oracle-wins / indistinguishable / trained-wins | trained-wins takes a majority of seeds — and *only* that; an oracle win is stronger than the claim, not a failure of it |
 
 H7 is the one that matters most for the constructive half. A metric that scores
 zero for everything is not a fix, it is nihilism; if the supervised probe does not

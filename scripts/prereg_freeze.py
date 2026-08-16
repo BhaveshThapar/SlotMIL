@@ -28,7 +28,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from slotmil.prereg import PreregViolation, file_sha256, load  # noqa: E402
+from slotmil.prereg import (  # noqa: E402
+    PreregViolation,
+    amendment_chain,
+    classify_hash,
+    file_sha256,
+    load,
+)
 
 DOC_PATTERN = re.compile(r"(\*\*Frozen config hash:\*\* `)([0-9a-f]{16}|PENDING_FREEZE)(`)")
 PENDING = re.compile(r"^(\s*recorded_hash:\s*)null(\s*(?:#.*)?)$", re.M)
@@ -71,10 +77,64 @@ def fill_pending_split_hash(cfg_path: Path) -> str | None:
     return recorded
 
 
+def report_stamp_lineage(runs: Path, current: str, amendments: Path) -> int:
+    """Place every stamped result under ``runs`` on the amendment chain.
+
+    Returns the number of stamps that could not be placed, which is what should
+    fail the check. Superseded is *not* a failure: an amendment is expected to
+    leave ancestors behind, and PREREGISTRATION.md:189-191 read mechanically
+    ("hash does not match the frozen config -> exploratory") would demote
+    runs/untrained_floor.json -- the only confirmatory results on disk, carrying
+    H3 -- over two amendments that never touched what it computes. UNKNOWN is a
+    failure, because a stamp that is on no recorded config state means a result
+    was produced under a plan nobody wrote down.
+    """
+    chain = amendment_chain(amendments)
+    print(f"[freeze] lineage {len(chain)} recorded transition(s): "
+          f"{chain[0].before} -> {chain[-1].after}")
+    for a in chain:
+        note = "" if a.changed_the_config else "  (no config change)"
+        print(f"[freeze]   amend {a.date}  {a.before} -> {a.after}{note}")
+
+    if not runs.exists():
+        print(f"[freeze]   no {runs}/ directory; no stamped results to place")
+        return 0
+
+    counts = {"current": 0, "superseded": 0, "unknown": 0}
+    unreadable = 0
+    for p in sorted(runs.rglob("*.json")):
+        try:
+            obj = json.loads(p.read_text())
+        except (OSError, ValueError):
+            unreadable += 1
+            continue
+        stamp = obj.get("prereg") if isinstance(obj, dict) else None
+        if not isinstance(stamp, dict) or "prereg_hash" not in stamp:
+            continue
+        lin = classify_hash(stamp["prereg_hash"], current, chain)
+        counts[lin.status] += 1
+        print(f"[freeze]   stamp {str(p):44s} {stamp['prereg_hash']}  {lin.label}")
+
+    total = sum(counts.values())
+    print(f"[freeze] stamps {total} placed: {counts['current']} current, "
+          f"{counts['superseded']} superseded, {counts['unknown']} UNKNOWN")
+    if unreadable:
+        print(f"[freeze] {unreadable} unreadable json under {runs} (skipped, "
+              "not treated as stamped)", file=sys.stderr)
+    if counts["unknown"]:
+        print(f"[freeze] {counts['unknown']} stamp(s) carry a hash on no recorded "
+              f"config state; record the missing transition in {amendments} or "
+              "re-run them", file=sys.stderr)
+    return counts["unknown"]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/prereg/isbi2027.yaml")
     ap.add_argument("--doc", default="PREREGISTRATION.md")
+    ap.add_argument("--amendments", default="AMENDMENTS.md")
+    ap.add_argument("--runs", default="runs",
+                    help="tree of stamped result files to place on the chain")
     ap.add_argument("--update-splits", action="store_true",
                     help="resolve a pending recorded_hash from the split file on disk")
     ap.add_argument("--amend", action="store_true",
@@ -123,7 +183,17 @@ def main() -> int:
         ok = existing == pre.hash
         print(f"[freeze] doc hash {existing} vs config {pre.hash}: "
               f"{'MATCH' if ok else 'MISMATCH'}")
-        return 0 if ok and not bad else 1
+        # Lineage is reported only under --check. A half-written amendment
+        # (`before -> PENDING`) makes the chain unreadable by design, and that
+        # is exactly the state --amend exists to leave, so the write path must
+        # not depend on it.
+        try:
+            lineage_ok = report_stamp_lineage(
+                Path(args.runs), pre.hash, Path(args.amendments)) == 0
+        except PreregViolation as exc:
+            print(f"[freeze] amendment chain unusable: {exc}", file=sys.stderr)
+            lineage_ok = False
+        return 0 if ok and not bad and lineage_ok else 1
 
     if existing not in ("PENDING_FREEZE", pre.hash) and not args.amend:
         print(

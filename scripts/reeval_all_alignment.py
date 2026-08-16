@@ -47,6 +47,8 @@ ARMS = [
     ("mh_abmil", "mh_abmil"),
     ("centre_gaussian", "centre_gaussian"),
     ("normal_guidance_lam=0.1", "normal_guidance"),
+    ("clam_sb", "clam_sb"),
+    ("dsmil", "dsmil"),
 ]
 
 

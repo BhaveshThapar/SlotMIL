@@ -34,8 +34,34 @@ __all__ = [
     "patient_specific_skill",
     "reference_chain",
     "cluster_bootstrap",
+    "h10_outcome",
     "stratified_auc",
 ]
+
+
+def h10_outcome(ci: dict) -> str | None:
+    """Score one seed's paired interval against H10's three outcomes.
+
+    ``ci`` is a :func:`cluster_bootstrap` result for the paired per-bag
+    ``separable - trained`` difference. Returns ``oracle_wins`` when the
+    interval sits entirely above zero, ``trained_wins`` entirely below, and
+    ``indistinguishable`` when it contains zero; ``None`` when the interval is
+    undefined.
+
+    Written as code rather than left to a reader's eye, for the reason H5's unit
+    was a hole: a pre-registered verdict that exists only as an interval someone
+    interprets can be interpreted differently later. H10 was in fact drafted
+    with two outcomes and mis-scored its own evidence -- an oracle win is
+    *stronger* than the claim, not a failure of it -- so the three are
+    enumerated here and only ``trained_wins`` falsifies.
+    """
+    if ci.get("lo") is None or ci.get("hi") is None:
+        return None
+    if ci["lo"] > 0.0:
+        return "oracle_wins"
+    if ci["hi"] < 0.0:
+        return "trained_wins"
+    return "indistinguishable"
 
 
 def prior_normalised_skill(auc: float, auc_prior: float) -> float:

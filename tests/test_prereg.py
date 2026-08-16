@@ -9,6 +9,8 @@ while continuing to look rigorous -- which is worse than not having one.
 So each test here pins one way the mechanism could rot:
 
 * the hash chain (config <-> document <-> split files) actually holds
+* the *lineage* of that chain is readable, so a result stamped with an ancestor
+  of the frozen hash is reported as an ancestor rather than silently demoted
 * strict lookup really raises instead of defaulting
 * every declared arm is either constructible or explicitly marked planned
 * every hypothesis has a numeric way to fail
@@ -30,7 +32,9 @@ from slotmil.prereg import (
     BlindKey,
     Prereg,
     PreregViolation,
+    amendment_chain,
     canonical_hash,
+    classify_hash,
     file_sha256,
     git_state,
     load,
@@ -39,6 +43,15 @@ from slotmil.prereg import (
 REPO = Path(__file__).resolve().parents[1]
 CONFIG = REPO / "configs/prereg/isbi2027.yaml"
 DOC = REPO / "PREREGISTRATION.md"
+AMENDMENTS = REPO / "AMENDMENTS.md"
+RUNS = REPO / "runs"
+
+# The two ancestral hashes actually stamped into result files on disk. Neither
+# can drift: the log is append-only, so the origin is fixed forever, and the
+# floor hash is baked into runs/untrained_floor*.json, which are results and are
+# never rewritten.
+ORIGIN_HASH = "2b580fa93894d86f"
+FLOOR_HASH = "20bdd93b781d950d"
 
 
 @pytest.fixture(scope="module")
@@ -83,6 +96,219 @@ class TestHashChain:
         so it cannot pin a file on its own. The byte hash can."""
         path = Path(pre.split("lidc", "confirmatory")["path"])
         assert file_sha256(REPO / path) != json.loads((REPO / path).read_text())["hash"]
+
+
+ENTRY = """
+## {date} — {title}
+
+- **Kind:** {kind}
+- **Config hash before → after:** `{before}` → `{after}`
+- **What changed:** irrelevant to the chain
+- **Results already seen?** no
+"""
+
+UNBLINDING = """
+## {date} — unblinding
+
+- **Config hash at unblinding:** `{hash}`
+- **Git commit:** `0123456789abcdef0123456789abcdef01234567`
+- **Results in scope:** (unspecified)
+- **Reason:** writing Table 1
+- **Arms revealed:** 1 (ARM-ABCDEF)
+"""
+
+
+def write_log(tmp_path, *entries) -> Path:
+    p = tmp_path / "AMENDMENTS.md"
+    p.write_text("# Amendments\n\nAppend-only.\n" + "".join(entries))
+    return p
+
+
+def amend(date, before, after, title="t", kind="amendment") -> str:
+    return ENTRY.format(date=date, title=title, kind=kind,
+                        before=before, after=after)
+
+
+class TestAmendmentLineage:
+    """Ancestry is not a match, and it is not nothing either.
+
+    PREREGISTRATION.md:189-191 states one rule: a result whose hash is not the
+    frozen hash is exploratory. Applied literally that demotes every result the
+    moment anything is amended -- today it demotes runs/untrained_floor.json,
+    the project's only confirmatory results, over two amendments that touched
+    arm declarations and a train-only max_slices and nothing the untrained floor
+    reads.
+
+    The fix is a chain reader, and a chain reader is the kind of instrument that
+    is trivial to write uselessly: return "ancestral" for everything and no
+    result is ever demoted again. So these come in pairs. Every test that the
+    mechanism *recognises* an ancestor is matched by one that it *refuses* --
+    a fabricated hash, a gap, a half-written entry, a chain that does not reach
+    the config it claims to describe. A lineage that accepts a broken chain is
+    worse than none, because it launders provenance instead of flagging it.
+    """
+
+    # ------------------------------------------------------- reading the chain
+    def test_the_recorded_chain_parses_and_is_contiguous(self, pre):
+        chain = amendment_chain(AMENDMENTS)
+        assert chain, "AMENDMENTS.md records no hash transitions"
+        for prev, nxt in zip(chain, chain[1:]):
+            assert prev.after == nxt.before
+        assert chain[-1].after == pre.hash, (
+            "the chain does not end at the frozen config hash -- the config was "
+            "changed without an entry recording it"
+        )
+
+    def test_a_gap_in_the_chain_raises(self, tmp_path):
+        """The null case for the parser: a config state no entry accounts for.
+
+        Papering over it would report the orphaned hash as ancestral on the
+        strength of a record with a hole in it."""
+        log = write_log(
+            tmp_path,
+            amend("2026-01-01", "a" * 16, "b" * 16),
+            amend("2026-01-02", "c" * 16, "d" * 16),
+        )
+        with pytest.raises(PreregViolation, match="gap in the amendment chain"):
+            amendment_chain(log)
+
+    def test_the_ascii_arrow_spelling_also_parses(self, tmp_path):
+        """The log is hand-edited, so `->` typed for the em arrow must not
+        silently drop an entry out of the chain."""
+        log = write_log(tmp_path, amend("2026-01-01", "a" * 16, "b" * 16)
+                        .replace("→", "->"))
+        assert amendment_chain(log)[0].after == "b" * 16
+
+    def test_a_half_recorded_amendment_raises_rather_than_guessing(self, tmp_path):
+        """ENGINEERING.md's procedure drafts the entry as `before -> PENDING` before
+        the new hash exists. In that window provenance genuinely is undetermined
+        and the reader must say so, not skip the entry and read the chain as
+        contiguous."""
+        log = write_log(tmp_path, amend("2026-01-01", "a" * 16, "PENDING"))
+        with pytest.raises(PreregViolation, match="not 16 hex digits"):
+            amendment_chain(log)
+
+    def test_a_dated_entry_with_no_hash_line_raises(self, tmp_path):
+        log = write_log(
+            tmp_path, "\n## 2026-01-01 — prose only\n\n- **Kind:** amendment\n")
+        with pytest.raises(PreregViolation, match="no config hash transition"):
+            amendment_chain(log)
+
+    def test_the_template_block_is_not_read_as_an_entry(self):
+        """AMENDMENTS.md documents its own format in a fenced block, and to a
+        regex that template is a perfectly good entry. If it were read as one it
+        would sit at the head of the chain with hashes `xxxx` -> `yyyy`."""
+        chain = amendment_chain(AMENDMENTS)
+        assert all(a.date != "YYYY-MM-DD" for a in chain)
+        assert chain[0].before == ORIGIN_HASH
+
+    def test_an_unblinding_entry_is_a_marker_not_a_link(self, tmp_path):
+        """prereg_unblind.py appends `Config hash **at** unblinding` -- a record
+        of when someone looked, not a transition. It must neither become a link
+        nor break contiguity across itself."""
+        log = write_log(
+            tmp_path,
+            amend("2026-01-01", "a" * 16, "b" * 16),
+            UNBLINDING.format(date="2026-01-02", hash="b" * 16),
+            amend("2026-01-03", "b" * 16, "c" * 16),
+        )
+        chain = amendment_chain(log)
+        assert [a.after for a in chain] == ["b" * 16, "c" * 16]
+
+    # --------------------------------------------------------- classification
+    def test_the_frozen_hash_classifies_as_current(self, pre):
+        lin = classify_hash(pre.hash, pre.hash, amendment_chain(AMENDMENTS))
+        assert lin.status == "current" and lin.label == "current"
+        assert lin.superseded_by == ()
+
+    def test_a_fabricated_hash_classifies_as_unknown(self, pre):
+        """The null half of the pair. A hash on no recorded config state must
+        not be guessed to be merely old -- that guess is how a result produced
+        under a plan nobody wrote down would pass as an ancestor."""
+        lin = classify_hash("deadbeefdeadbeef", pre.hash, amendment_chain(AMENDMENTS))
+        assert lin.status == "unknown" and lin.label == "UNKNOWN"
+
+    def test_the_predecessor_hash_is_superseded_and_names_the_amendment(self, pre):
+        """The list grows by one for every amendment that actually changes the
+        config -- record-only deviations (before == after) are in the chain but
+        supersede nothing, which is why three of the six entries are absent
+        here. The label names the *first* amendment past the hash, so it is
+        stable as the list lengthens."""
+        lin = classify_hash(FLOOR_HASH, pre.hash, amendment_chain(AMENDMENTS))
+        assert lin.status == "superseded"
+        assert [a.date for a in lin.superseded_by] == [
+            "2026-08-15",  # the two Harvey arms
+            "2026-08-15",  # H5's unit and H10
+            "2026-08-15",  # CLAM-SB and DSMIL
+        ]
+        assert lin.label == "superseded-by-2026-08-15"
+
+    def test_the_origin_hash_is_ancestral_not_unknown(self, pre):
+        """The trap this whole function exists to avoid. ORIGIN_HASH is the
+        first entry's *before*, so it appears nowhere among the `after` values;
+        a reader that scanned only those would call five stamped results on disk
+        UNKNOWN -- a lie about files whose provenance the log states outright."""
+        lin = classify_hash(ORIGIN_HASH, pre.hash, amendment_chain(AMENDMENTS))
+        assert lin.status == "superseded"
+        assert [a.date for a in lin.superseded_by] == [
+            "2026-08-14",  # lung-mask method and the in-lung patch rule
+            "2026-08-15",  # the two Harvey arms
+            "2026-08-15",  # H5's unit and H10
+            "2026-08-15",  # CLAM-SB and DSMIL
+        ]
+        assert lin.label == "superseded-by-2026-08-14"
+
+    def test_a_record_only_entry_supersedes_nothing(self, tmp_path):
+        """The 2026-08-15 lam pre-flight entry is a deviation with
+        before == after: it discloses what was seen and changes no parameter.
+        It stays in the chain -- removing it would read as a gap -- but naming
+        it as something that superseded an earlier hash overstates the record."""
+        log = write_log(
+            tmp_path,
+            amend("2026-01-01", "a" * 16, "b" * 16),
+            amend("2026-01-02", "b" * 16, "b" * 16, kind="deviation"),
+        )
+        chain = amendment_chain(log)
+        assert len(chain) == 2 and not chain[1].changed_the_config
+        lin = classify_hash("a" * 16, "b" * 16, chain)
+        assert [a.date for a in lin.superseded_by] == ["2026-01-01"]
+
+    def test_a_chain_that_does_not_reach_the_config_raises(self, tmp_path):
+        """Running prereg_freeze.py --amend without logging the entry leaves the
+        doc and config agreeing while the chain describes neither. Nothing can
+        be called ancestral against a chain that stops somewhere else."""
+        log = write_log(tmp_path, amend("2026-01-01", "a" * 16, "b" * 16))
+        chain = amendment_chain(log)
+        with pytest.raises(PreregViolation, match="chain ends at"):
+            classify_hash("a" * 16, "c" * 16, chain)
+
+    # ------------------------------------------------------- results on disk
+    def test_every_stamped_result_on_disk_is_placeable(self, pre):
+        """The payoff. Sixteen stamped files exist and none carries the frozen
+        hash; every one of them must resolve to a recorded config state."""
+        chain = amendment_chain(AMENDMENTS)
+        placed = {}
+        for p in sorted(RUNS.rglob("*.json")):
+            try:
+                obj = json.loads(p.read_text())
+            except ValueError:
+                continue  # unreadable, so it carries no readable stamp either
+            stamp = obj.get("prereg") if isinstance(obj, dict) else None
+            if isinstance(stamp, dict) and "prereg_hash" in stamp:
+                placed[p] = classify_hash(stamp["prereg_hash"], pre.hash, chain)
+        assert placed, f"no stamped results under {RUNS}; this test proves nothing"
+        unknown = {str(p): lin.label for p, lin in placed.items()
+                   if lin.status == "unknown"}
+        assert not unknown, f"stamps on no recorded config state: {unknown}"
+
+    def test_the_confirmatory_floor_is_ancestral_not_orphaned(self, pre):
+        """runs/untrained_floor.json carries H3 and ran on the confirmatory
+        split. The mechanical rule demotes it to exploratory over two amendments
+        it does not read; the lineage says which ancestor it is instead."""
+        stamp = json.loads((RUNS / "untrained_floor.json").read_text())["prereg"]
+        assert stamp["prereg_hash"] != pre.hash
+        lin = classify_hash(stamp["prereg_hash"], pre.hash, amendment_chain(AMENDMENTS))
+        assert lin.status == "superseded", lin
 
 
 class TestStrictLookup:
@@ -181,6 +407,54 @@ class TestArms:
         _, pooling, overrides = parse_arm(pre.arm("normal_guidance")["spec"])
         assert pooling == "normal_guidance"
         assert overrides.get("lam", 0.0) > 0
+
+    def test_the_auxiliary_stream_weights_are_pinned_in_code(self, pre):
+        """clam_sb without its clustering term is gated_abmil and dsmil without
+        its max term is a single-stream pooling. Both would train and be reported
+        under a published name, so the printed splits are asserted, not trusted."""
+        from slotmil.losses import CLAM_BAG_WEIGHT, CLAM_TOPK_B, DSMIL_BAG_WEIGHT
+        from slotmil.models.baselines import DSMIL_DROPOUT_V, DSMIL_Q_HIDDEN
+
+        assert pre.arm("clam_sb")["bag_weight"] == CLAM_BAG_WEIGHT
+        assert pre.arm("clam_sb")["topk_b"] == CLAM_TOPK_B
+        assert pre.arm("dsmil")["bag_weight"] == DSMIL_BAG_WEIGHT
+        assert pre.arm("dsmil")["q_hidden"] == DSMIL_Q_HIDDEN
+        assert pre.arm("dsmil")["dropout_v"] == DSMIL_DROPOUT_V
+
+    def test_h5_declares_its_unit(self, pre):
+        """The freeze fixed H5's threshold and left its unit free, so an arm's
+        number could be a per-seed value or an aggregate -- and on the discovery
+        dumps the two disagree across the threshold (max 0.3121, mean 0.162).
+        Ruled by amendment before f32_seed1 was collected; pinned here so it
+        cannot be re-read once confirmatory numbers exist."""
+        h5 = pre.hypothesis("H5")
+        assert h5["unit"] == "mean_over_seeds"
+        assert h5["report_per_seed"] is True
+
+    def test_h10_has_three_outcomes_and_only_one_falsifies(self, pre):
+        """Drafted with two outcomes, which scored an oracle win as a failure of
+        a hypothesis about oracle wins. Only trained-wins withdraws the claim."""
+        h10 = pre.hypothesis("H10")
+        assert set(h10["outcomes"]) == {
+            "oracle_wins", "indistinguishable", "trained_wins"}
+        assert "trained-wins" in h10["falsifier"]
+        assert h10["member"] == "separable", "the paired member is pinned, not selected"
+
+    def test_h10s_three_outcomes_are_scored_by_code_not_by_eye(self, pre):
+        """The declared outcomes must have a scorer, or the verdict lives only
+        as an interval someone reads -- which is how H10 got drafted with two
+        outcomes and how H5 kept an undeclared unit."""
+        from slotmil.eval.estimands import h10_outcome
+
+        assert h10_outcome({"lo": 0.04, "hi": 0.09}) == "oracle_wins"
+        assert h10_outcome({"lo": -0.03, "hi": 0.002}) == "indistinguishable"
+        assert h10_outcome({"lo": -0.09, "hi": -0.04}) == "trained_wins"
+        assert h10_outcome({"lo": None, "hi": None}) is None
+        assert set(pre.hypothesis("H10")["outcomes"]) == {
+            h10_outcome({"lo": 0.04, "hi": 0.09}),
+            h10_outcome({"lo": -0.03, "hi": 0.002}),
+            h10_outcome({"lo": -0.09, "hi": -0.04}),
+        }
 
     def test_h2_scope_excludes_the_content_free_arm(self, pre):
         """centre_gaussian ties the centre_prior reference by construction, and a

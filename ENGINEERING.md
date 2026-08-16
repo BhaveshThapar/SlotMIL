@@ -13,7 +13,13 @@ Run everything through the venv: `source .venv/bin/activate`. Tests need
 Every pooling module maps `(feats [B, N, D_in], pad_mask [B, N]) -> (tokens [B, K, D], attn [B, K, N])`,
 with `pad_mask` True for real instances. `MILModel.forward` wraps that into
 `{"logits" [B,C], "attn" [B,K,N], "tokens" [B,K,D], "attribution" [B,K]}`, plus
-`"health"` if and only if the pooling is a `SlotAttention`.
+two conditional keys: `"health"` if and only if the pooling is a `SlotAttention`,
+and `"instance_logits"` if and only if it is an `InstanceScoringPool`
+(`clam_sb`, `dsmil` — their auxiliary streams are supervised per instance, which
+the two-tuple contract has no room for). Both go through `out` rather than
+widening the contract, and `instance_logits` is **recomputed from `feats`, never
+cached on the module**: a cache would make the value depend on whether `forward`
+ran first, which produces a wrong number rather than a crash.
 
 Two invariants that are tested and that silent breakage would hide:
 
@@ -46,6 +52,13 @@ by `scripts/train_cached.py::parse_arm`, which coerces **every override to
 `float`** — no bare flags, no string values. Run directories are the spec with
 `:` replaced by `_`, so `normal_guidance:lam=0.1` writes to
 `runs/<cond>/normal_guidance_lam=0.1/seed<N>/`.
+
+An arm whose method *is* an auxiliary loss term needs a guard, not just wiring.
+`clam_sb` without its clustering term is bit-identical to `gated_abmil`, `dsmil`
+without its max term is a single-stream pooling, and `normal_guidance` without
+`lam` is its own base arm — all three would train, write a valid `result.json`
+and be reported under the published name. `train_cached.py` refuses each of them
+rather than trusting the spec.
 
 **A parsed override that is never wired reaches nothing and warns about nothing.**
 `lam` was parsed and silently dropped for as long as the arm was unbuilt; the arm
@@ -138,11 +151,38 @@ fp32 with no autocast, so it is the tighter budget; training gets AMP for free.
 `protocol.dtype` is pre-registered float32, so you cannot buy memory back by
 dumping confirmatory attention in fp16.
 
-## Known defect, not yet fixed
+## Provenance and scope, enforced by the driver
 
-`FeatureBagDataset._rng` is an `np.random.default_rng` **Generator** built in
-`__init__` and forked to all four workers with identical state. `seed_worker`
-reseeds only the legacy `np.random` global and `random`, never the Generator — so
-stochastic slice subsampling correlates across workers, which is exactly what
-`seed_worker`'s own docstring says it prevents. Pre-existing; affects every
-training run to date. Resolve before the confirmatory sweep, in its own commit.
+`train_cached.py` takes `--role {exploratory,confirmatory}`. It has three effects
+and you want all of them:
+
+- Every `result.json` and `summary.json` opens with `analysis_role`, `splits`,
+  `splits_hash`, `splits_file_sha256` and a `prereg` stamp. Without this a
+  confirmatory result is indistinguishable from a discovery one on inspection,
+  which `PREREGISTRATION.md` line 189 says decides whether it counts.
+- **Test metrics are suppressed on stdout under `--role confirmatory`** unless
+  `--report-test` is passed. A declared scope the tooling ignores is a comment,
+  not a control — that is exactly how two discovery test AUCs reached a job log
+  that had declared them out of scope (`AMENDMENTS.md`, 2026-08-15).
+- **Per-seed resume refuses to cross splits.** It compares the recorded
+  `splits_hash`; a run predating stamping has none and is refused rather than
+  assumed. Pointing a confirmatory job at `runs/lidc` would otherwise have
+  skipped all 18 discovery seeds as "already complete" and reported them as
+  confirmatory. Use a fresh run root.
+
+`merge_results.py` carries the block up and refuses a directory that mixes roles
+or split hashes.
+
+## Slice subsampling
+
+`FeatureBagDataset` derives its subsample from `(seed, epoch, index)` via
+`_subsample_rng`, and `train.fit` calls `set_epoch` before each epoch's iterator
+is created. Do not reintroduce a `Generator` held on the dataset: DataLoader
+forks it to every worker with identical state, and `seed_worker` reseeds only the
+legacy `np.random` global, never a Generator object. That earlier form correlated
+across workers, reset every epoch (nothing sets `persistent_workers`), and — since
+`train_cached.py` never passed `seed` — was shared by every arm at every seed.
+
+Consequence to state once and not relitigate: **the confirmatory seed-to-seed
+std should come out wider than the discovery std**, because discovery variance
+excluded the data view. That is the bug being removed, not a change in method.

@@ -28,6 +28,7 @@ the headline `slice_auc = 0.4822` rested on a single seed.
 | real_seed1 | 0.8679 | 0.5565 [0.5167, 0.5945] | 0.8547 |
 | real_seed2 (fp16) | 0.7173 | 0.5430 [0.5072, 0.5801] | 0.7125 |
 | f32_seed0 | 0.8423 | 0.4822 [0.4392, 0.5215] | 0.8409 |
+| f32_seed1 | 0.8672 | 0.5565 [0.5152, 0.5964] | 0.8535 |
 | f32_seed2 | 0.7508 | 0.5430 [0.5072, 0.5801] | 0.7447 |
 | untrained_s1234 | 0.6433 | 0.4950 [0.4573, 0.5321] | 0.6490 |
 | untrained_s7 | 0.7858 | 0.4975 [0.4656, 0.5316] | 0.7881 |
@@ -51,8 +52,40 @@ before. Three claims do survive, and they are better:
    flat). Whatever the axial axis contributes to the headline number is ~0.
 
 Claim (3) is the robust form of the lead and does not depend on slice AUC landing
-exactly on 0.5. Also confirms the fp16 defect is seed-specific: seed0 is identical
-in fp16 and fp32 (0.8424/0.8423), seed2 moves 0.7173 → 0.7508.
+exactly on 0.5. Also confirms the fp16 defect is seed-specific in sign as well as
+size: seed0 is identical in fp16 and fp32 (0.8424/0.8423), seed1 moves 0.0007 the
+*other* way (0.8679 → 0.8672), seed2 moves 0.7173 → 0.7508.
+
+### Prior-normalised skill (2026-08-15, exploratory) — the estimand nobody had printed
+
+`f32_seed1` was collected on 2026-08-15 because it was the one float32 dump
+missing, and because H5's threshold had been set without this estimand ever being
+computed into a document. It existed only inside `runs/nulls/template_family.json`.
+Skill is `(AUC − AUC_template) / (1 − AUC_template)` against the pre-registered
+fitted template, per `protocol.dtype` reportable only on the float32 dumps:
+
+| dump | flat AUC | AUC_template | prior-normalised skill |
+|---|---|---|---|
+| f32_seed0 | 0.8423 | 0.7865 | 0.2615 |
+| **f32_seed1** | 0.8672 | 0.8069 | **0.3121** |
+| f32_seed2 | 0.7508 | 0.7709 | −0.0876 |
+| real_seed0 (fp16, not reportable) | 0.8424 | 0.7865 | 0.2619 |
+| real_seed1 (fp16, not reportable) | 0.8679 | 0.8069 | 0.3159 |
+| real_seed2 (fp16, not reportable) | 0.7173 | 0.7709 | −0.2335 |
+| untrained_s1234 | 0.6433 | 0.6765 | −0.1026 |
+| untrained_s7 | 0.7858 | 0.8299 | −0.2594 |
+
+**Seed 1 exceeds H5's 0.30 threshold on a valid float32 dump.** The arm's mean
+over its three float32 seeds is **0.162**, and the mean is the unit H5 was ruled
+on — before `f32_seed1` was collected, which is recorded with its ordering in
+`AMENDMENTS.md`. Two things follow. The fp16 exclusion never protected H5: fp16
+read 0.3159 and float32 reads 0.3121, so the dtype rule was removing an
+inadmissible dump rather than an inconvenient number. And a per-seed unit would
+have falsified H5 here, on discovery data, which is why the unit had to be fixed
+in advance rather than chosen against this table.
+
+These are discovery-split numbers and are exploratory by construction. H5 is
+decided on the seed-2027 confirmatory split.
 
 ## Null battery (2026-08-12) — the positive result does not survive
 

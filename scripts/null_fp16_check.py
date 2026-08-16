@@ -20,7 +20,8 @@ from null_battery import load, pick_lesion_slot, score
 from null_static_template import evaluate, global_template
 
 D = Path("runs/nulls")
-PAIRS = [("real_seed0", "f32_seed0"), ("real_seed2", "f32_seed2")]
+PAIRS = [("real_seed0", "f32_seed0"), ("real_seed1", "f32_seed1"),
+         ("real_seed2", "f32_seed2")]
 
 
 def main():

@@ -173,6 +173,107 @@ def normal_guidance_loss(
     return kl.mean()
 
 
+CLAM_TOPK_B = 8            # prereg arms[clam_sb].topk_b -- CLAM's printed B
+CLAM_BAG_WEIGHT = 0.7      # prereg arms[clam_sb].bag_weight
+CLAM_INSTANCE_WEIGHT = 1.0 - CLAM_BAG_WEIGHT
+DSMIL_BAG_WEIGHT = 0.5     # prereg arms[dsmil].bag_weight
+DSMIL_MAX_WEIGHT = 1.0 - DSMIL_BAG_WEIGHT
+
+
+def clam_instance_loss(
+    instance_logits: torch.Tensor,
+    attn: torch.Tensor,
+    targets: torch.Tensor,
+    pad_mask: torch.Tensor | None = None,
+    k: int = CLAM_TOPK_B,
+) -> torch.Tensor:
+    """CLAM's in-the-class instance clustering (Lu et al., Nature BME 2021).
+
+    Per bag, the ``k`` highest-attention instances are pseudo-labelled evidence
+    for the bag's class and the ``k`` lowest pseudo-labelled against it, and the
+    bag-class instance classifier is trained on those 2k. ``instance_logits`` is
+    ``[B, N, C, 2]`` -- one binary classifier per class, of which only the bag's
+    own is supervised (CLAM's ``subtyping=False`` default).
+
+    Two rulings, both in AMENDMENTS.md:
+
+    *k stays at CLAM's printed 8*, not a fraction of the bag. LIDC bags run to
+    43.8k instances against a WSI's few thousand, so a proportional k would make
+    this term's effective weight scale with scan depth -- 12x across the cohort --
+    and the branch exists to sharpen attention's extremes, not to label the bag.
+    Where a bag is too short to yield 2k disjoint instances, k drops to
+    ``n_valid // 2`` for that bag rather than letting the two sets overlap and
+    train the classifier on contradictory labels for the same instance.
+
+    *Cross-entropy, not the smooth top-1 SVM* of the reference implementation.
+    The SVM surrogate arrives as a third-party package (``topk``) for a margin
+    that no pre-registered estimand reads: the branch shapes attention, and
+    attention is scored by rank. CE is the standard surrogate for the same
+    pseudo-labels and keeps the dependency set auditable.
+    """
+    if targets.ndim > 1:
+        raise ValueError(
+            "clam_instance_loss expects single-label bag targets; CLAM's "
+            "in-the-class clustering has no defined bag class under multilabel"
+        )
+    b, n = attn.shape[0], attn.shape[-1]
+    a = attn[:, 0]  # B,N -- CLAM-SB has exactly one attention branch
+    if pad_mask is not None:
+        lengths = pad_mask.sum(dim=1)
+        hi = a.masked_fill(~pad_mask, float("-inf"))
+        lo = a.masked_fill(~pad_mask, float("inf"))
+    else:
+        lengths = torch.full((b,), n, device=a.device, dtype=torch.long)
+        hi = lo = a
+
+    # Looped over the batch because k is per-bag: batch_size is 4 here, and a
+    # vectorised form would have to clamp k to the shortest bag in the batch,
+    # making one bag's loss depend on which bags it was batched with.
+    terms = []
+    for i in range(b):
+        kk = min(int(k), int(lengths[i]) // 2)
+        if kk < 1:
+            continue
+        top = torch.topk(hi[i], kk).indices
+        bot = torch.topk(-lo[i], kk).indices
+        idx = torch.cat([top, bot])
+        logits = instance_logits[i, idx, int(targets[i])]  # 2k, 2
+        labels = torch.cat([
+            torch.ones(kk, dtype=torch.long, device=a.device),
+            torch.zeros(kk, dtype=torch.long, device=a.device),
+        ])
+        terms.append(F.cross_entropy(logits, labels))
+    if not terms:
+        return instance_logits.new_zeros(())
+    return torch.stack(terms).mean()
+
+
+def dsmil_max_loss(
+    instance_logits: torch.Tensor,
+    targets: torch.Tensor,
+    pad_mask: torch.Tensor | None = None,
+    multilabel: bool = False,
+    class_weights: torch.Tensor | None = None,
+) -> torch.Tensor:
+    """DSMIL's instance stream: bag loss on the max instance score per class.
+
+    ``instance_logits`` is ``[B, N, C]``. This is the stream that picks the
+    critical instance the bag stream then attends against, so leaving it
+    unsupervised would leave the critical-instance selection driven only by
+    whatever gradient reaches it through the attention -- which is what
+    distinguishes DSMIL from a single-stream non-local pooling.
+
+    Padded instances are excluded before the max. They are not merely unlikely to
+    win it: ``collate_bags`` pads to the deepest bag in the batch, so on LIDC's
+    58-700 slice range most of the tensor can be padding.
+    """
+    s = instance_logits
+    if pad_mask is not None:
+        s = s.masked_fill(~pad_mask.unsqueeze(-1), float("-inf"))
+    return bag_loss(s.max(dim=1).values, targets, multilabel=multilabel,
+                    class_weights=class_weights)
+
+
 class SlotFeatureDecoder(nn.Module):
     """DINOSAUR-style broadcast MLP decoder reconstructing input features.
 
@@ -238,6 +339,10 @@ class SlotMILLoss(nn.Module):
         w_kl: float = 0.0,
         kl_patches_per_slice: int = NG_PATCHES_PER_SLICE,
         kl_var_floor: float = NG_VAR_FLOOR_SLICES2,
+        w_bag: float = 1.0,
+        w_clam_inst: float = 0.0,
+        w_dsmil_max: float = 0.0,
+        clam_topk_b: int = CLAM_TOPK_B,
     ):
         super().__init__()
         self.multilabel = multilabel
@@ -251,6 +356,14 @@ class SlotMILLoss(nn.Module):
         self.w_kl = w_kl
         self.kl_patches_per_slice = kl_patches_per_slice
         self.kl_var_floor = kl_var_floor
+        # CLAM and DSMIL both publish their objective as a *weighted split*
+        # between the bag term and an auxiliary stream (0.7/0.3 and 0.5/0.5), so
+        # w_bag exists to run the printed split literally rather than folding the
+        # rescaling into the learning rate and calling it equivalent.
+        self.w_bag = w_bag
+        self.w_clam_inst = w_clam_inst
+        self.w_dsmil_max = w_dsmil_max
+        self.clam_topk_b = clam_topk_b
 
     def forward(
         self,
@@ -263,14 +376,31 @@ class SlotMILLoss(nn.Module):
         slice_index: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, dict]:
         comps = {}
-        loss = bag_loss(
+        bag = bag_loss(
             out["logits"],
             targets,
             multilabel=self.multilabel,
             class_weights=class_weights,
             label_smoothing=self.label_smoothing,
         )
-        comps["bag"] = loss.detach()
+        comps["bag"] = bag.detach()
+        loss = self.w_bag * bag
+
+        if self.w_clam_inst > 0:
+            c = clam_instance_loss(
+                out["instance_logits"], out["attn"], targets, pad_mask,
+                k=self.clam_topk_b,
+            )
+            loss = loss + self.w_clam_inst * c
+            comps["clam_inst"] = c.detach()
+
+        if self.w_dsmil_max > 0:
+            m = dsmil_max_loss(
+                out["instance_logits"], targets, pad_mask,
+                multilabel=self.multilabel, class_weights=class_weights,
+            )
+            loss = loss + self.w_dsmil_max * m
+            comps["dsmil_max"] = m.detach()
 
         if self.w_diversity > 0:
             d = slot_diversity_loss(out["tokens"])

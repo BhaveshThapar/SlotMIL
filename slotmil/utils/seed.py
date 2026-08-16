@@ -24,8 +24,17 @@ def set_seed(seed: int, deterministic: bool = False) -> None:
 
 
 def seed_worker(worker_id: int) -> None:
-    """DataLoader worker seeding -- without this, workers share a seed and
-    stochastic slice subsampling correlates across them."""
+    """Reseed the *legacy global* RNGs inside each DataLoader worker.
+
+    This covers ``np.random.*`` module-level calls and ``random``, and nothing
+    else. It specifically does **not** reach a ``np.random.Generator`` held on a
+    dataset object: those are forked with identical state and
+    ``np.random.seed()`` cannot touch them. This docstring used to claim it
+    stopped slice subsampling correlating across workers; it never could, and
+    ``FeatureBagDataset`` now derives its subsample from ``(seed, epoch, index)``
+    rather than from worker-forked Generator state. Keep this function for the
+    globals -- just do not build new stochasticity on top of it.
+    """
     worker_seed = torch.initial_seed() % 2**32
     np.random.seed(worker_seed)
     random.seed(worker_seed)

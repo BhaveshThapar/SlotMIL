@@ -39,6 +39,22 @@ class FeatureBagDataset(Dataset):
         max_slices: stochastic slice subsampling during training for very long
             volumes (plan.md line 88). ``None`` or eval mode uses every slice.
         train: whether to subsample. Inference always sees the full bag.
+        seed: base seed for the subsampler. Combined with the epoch (see
+            :meth:`set_epoch`) and the item index to derive the draw.
+
+    **The subsample is derived per item, not drawn from a Generator held on the
+    dataset.** A ``np.random.Generator`` built in ``__init__`` is forked to every
+    DataLoader worker with identical state, and ``utils.seed.seed_worker``
+    reseeds only the legacy ``np.random`` global and ``random`` -- it cannot
+    touch a Generator object. That produced three correlated failures at once:
+    workers at the same queue position drew the same slices; workers are
+    re-forked each epoch (no ``persistent_workers``) from a parent whose
+    Generator never advances, so the streams reset every epoch; and
+    ``train_cached.py`` never passed ``seed``, so every arm at every training
+    seed shared stream 0. Deriving from ``(seed, epoch, index)`` makes the draw a
+    pure function of things that are supposed to determine it, and independent of
+    ``--num-workers``, worker id and fork timing -- none of which are
+    pre-registered constants.
     """
 
     def __init__(
@@ -65,7 +81,8 @@ class FeatureBagDataset(Dataset):
         self.train = train
         self.return_mask = return_mask
         self.labels = labels
-        self._rng = np.random.default_rng(seed)
+        self.seed = int(seed)
+        self.epoch = 0
         self._h5: h5py.File | None = None  # opened lazily, per worker
 
         with h5py.File(self.h5_path, "r") as f:
@@ -79,6 +96,22 @@ class FeatureBagDataset(Dataset):
             self.dim = int(probe["features"].shape[-1])
             self.grid_h = int(probe.attrs["grid_h"])
             self.grid_w = int(probe.attrs["grid_w"])
+
+    def set_epoch(self, epoch: int) -> None:
+        """Advance the subsampling stream, the way ``DistributedSampler`` does.
+
+        Must be called *before* the epoch's DataLoader iterator is created, so
+        the new value is copied into each worker at fork. ``train.fit`` does
+        this; a caller that forgets simply gets epoch 0 every epoch, which is
+        wrong but at least deterministic and visible in ``history.json`` as a
+        train loss that stops behaving like resampled data.
+        """
+        self.epoch = int(epoch)
+
+    def _subsample_rng(self, index: int) -> np.random.Generator:
+        # Tuple seeding goes through SeedSequence, which is designed for exactly
+        # this: independent, reproducible streams from structured coordinates.
+        return np.random.default_rng((self.seed, self.epoch, index))
 
     def masked_keys(self) -> list[str]:
         """Series in this split that carry a lesion mask.
@@ -106,7 +139,9 @@ class FeatureBagDataset(Dataset):
         n_slices = feats.shape[0]
 
         if self.train and self.max_slices and n_slices > self.max_slices:
-            sel = np.sort(self._rng.choice(n_slices, self.max_slices, replace=False))
+            sel = np.sort(
+                self._subsample_rng(i).choice(n_slices, self.max_slices, replace=False)
+            )
         else:
             sel = np.arange(n_slices)
 

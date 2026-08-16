@@ -18,18 +18,33 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import torch
 from scipy import stats
 
-from slotmil.data.feature_cache import FeatureBagDataset, collate_bags
-from slotmil.eval.classification import aggregate_seeds
-from slotmil.losses import NG_VAR_FLOOR_SLICES2, SlotMILLoss
-from slotmil.models.baselines import CENTRE_GAUSSIAN_SIGMA_Z, DEFAULT_PATCHES_PER_SLICE
-from slotmil.models.mil import build_model, slot_pooling_param_count
-from slotmil.train import TrainConfig, fit
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from slotmil import prereg  # noqa: E402
+from slotmil.data.feature_cache import FeatureBagDataset, collate_bags  # noqa: E402
+from slotmil.eval.classification import aggregate_seeds  # noqa: E402
+from slotmil.losses import (  # noqa: E402
+    CLAM_BAG_WEIGHT,
+    CLAM_INSTANCE_WEIGHT,
+    CLAM_TOPK_B,
+    DSMIL_BAG_WEIGHT,
+    DSMIL_MAX_WEIGHT,
+    NG_VAR_FLOOR_SLICES2,
+    SlotMILLoss,
+)
+from slotmil.models.baselines import (  # noqa: E402
+    CENTRE_GAUSSIAN_SIGMA_Z,
+    DEFAULT_PATCHES_PER_SLICE,
+)
+from slotmil.models.mil import build_model, slot_pooling_param_count  # noqa: E402
+from slotmil.train import TrainConfig, fit  # noqa: E402
 
 
 def parse_arm(spec: str):
@@ -65,11 +80,41 @@ def main():
                          "normal_guidance KL. Forced to 1 at --instance-level slice.")
     ap.add_argument("--num-workers", type=int, default=4)
     ap.add_argument("--num-classes", type=int, default=2)
+    ap.add_argument("--role", choices=["exploratory", "confirmatory"],
+                    default="exploratory",
+                    help="stamped into every result.json. 'confirmatory' also "
+                         "suppresses test metrics on stdout unless --report-test "
+                         "is passed explicitly.")
+    ap.add_argument("--report-test", action=argparse.BooleanOptionalAction,
+                    default=None,
+                    help="print test AUC/ACC to stdout. Defaults to on for "
+                         "exploratory runs and OFF for confirmatory ones.")
     args = ap.parse_args()
 
     splits = json.loads(Path(args.splits).read_text())
     out_root = Path(args.out)
     out_root.mkdir(parents=True, exist_ok=True)
+
+    # A declared scope that the tooling does not enforce is a comment, not a
+    # control. The ng_lambda_preflight sbatch declared test metrics out of scope
+    # and this driver printed two of them to the job log anyway, which had to be
+    # recorded as a deviation (AMENDMENTS.md 2026-08-15). Suppression now happens
+    # at the source. The numbers are still written to result.json -- the analysis
+    # layer reads them under blinding; a human reading a job log does not.
+    show_test = args.report_test if args.report_test is not None else (
+        args.role != "confirmatory")
+
+    # Provenance. PREREGISTRATION.md:189-191 makes this the difference between a
+    # result that can carry a confirmatory claim and one that cannot, and until
+    # now training wrote none of it: the only record of the split was
+    # summary.json["args"]["splits"], a bare path, which merge_results.py then
+    # dropped on rewrite.
+    provenance = prereg.load().stamp({
+        "analysis_role": args.role,
+        "splits": str(args.splits),
+        "splits_hash": splits.get("hash"),
+        "splits_file_sha256": prereg.file_sha256(args.splits),
+    })
 
     # A split file carrying a label map (from --merge-classes) overrides the
     # labels stored in the cache. Without this the merge would apply to the
@@ -83,11 +128,17 @@ def main():
                   f"overriding --num-classes {args.num_classes} -> {n_cls}")
             args.num_classes = n_cls
 
-    mk = lambda keys, train: FeatureBagDataset(  # noqa: E731
+    # `seed` reaches the dataset because it drives slice subsampling, which is a
+    # per-seed source of variance the study reports. It was never passed, so
+    # every arm at every seed trained on the same subsampling stream and the
+    # reported seed-to-seed std covered init and shuffle order but not the data
+    # view. Expect the confirmatory std to be wider than the discovery std for
+    # that reason alone; that is the bug being removed, not a change in method.
+    mk = lambda keys, train, seed=0: FeatureBagDataset(  # noqa: E731
         args.cache, keys=keys, labels=label_map,
         instance_level=args.instance_level,
         max_slices=args.max_slices if train else None,
-        train=train, return_mask=False,
+        train=train, return_mask=False, seed=seed,
     )
     train_ds, val_ds, test_ds = mk(splits["train"], True), mk(splits["val"], False), mk(splits["test"], False)
     input_dim = train_ds.dim
@@ -143,6 +194,26 @@ def main():
                 "the KL term would be applied to an arm that does not declare it."
             )
 
+        # Same failure mode as lam, twice over. CLAM-SB without its clustering
+        # term is plain gated_abmil; DSMIL without its max term is a
+        # single-stream non-local pooling. Either would train, write a valid
+        # result.json and be reported under a published method's name. The
+        # weights are pre-registered constants rather than arm overrides, so
+        # there is nothing to parse and nothing to drop -- but the lookup is
+        # explicit here so that adding an auxiliary-stream arm and forgetting to
+        # wire it is a KeyError-shaped mistake, not a silent one.
+        AUX_WEIGHTS = {  # pooling -> (w_bag, w_clam_inst, w_dsmil_max)
+            "clam_sb": (CLAM_BAG_WEIGHT, CLAM_INSTANCE_WEIGHT, 0.0),
+            "dsmil": (DSMIL_BAG_WEIGHT, 0.0, DSMIL_MAX_WEIGHT),
+        }
+        w_bag, w_clam_inst, w_dsmil_max = AUX_WEIGHTS.get(pooling, (1.0, 0.0, 0.0))
+        if pooling in AUX_WEIGHTS and w_clam_inst + w_dsmil_max <= 0:
+            raise SystemExit(
+                f"[train] arm {label!r} declares an auxiliary stream but its "
+                "weight is zero; it would train as its base pooling and be "
+                "written out under the published name."
+            )
+
         runs = []
         for seed in args.seeds:
             # Per-seed resume. The scavenger partition preempts with REQUEUE, so a
@@ -153,6 +224,25 @@ def main():
             if done_file.exists():
                 try:
                     prev = json.loads(done_file.read_text())
+                    # A completed run from a DIFFERENT split must never be
+                    # resumed into this one. The check used to be "file exists,
+                    # parses, has a 'test' key" and nothing else, so a
+                    # confirmatory job pointed at runs/lidc would have printed
+                    # "already complete, skipping" for all 18 discovery runs and
+                    # reported discovery numbers under a confirmatory banner --
+                    # silently, which is the only kind of failure that matters
+                    # here. Runs predating provenance stamping have no
+                    # splits_hash and are refused rather than assumed.
+                    prev_hash = prev.get("splits_hash")
+                    if "test" in prev and prev_hash != splits.get("hash"):
+                        raise SystemExit(
+                            f"[train] {done_file} was produced on splits_hash="
+                            f"{prev_hash!r} but this run uses "
+                            f"{splits.get('hash')!r}. Refusing to resume across "
+                            "splits. Point --out at a fresh run root (the "
+                            "confirmatory sweep must not share one with "
+                            "discovery), or delete the stale directory."
+                        )
                     if "test" in prev:
                         runs.append({
                             "seed": seed,
@@ -192,45 +282,68 @@ def main():
                 extra={"n_params": n_params, "arm": label, "lam": lam,
                        "patches_per_slice": pps,
                        "kl_var_floor": NG_VAR_FLOOR_SLICES2,
-                       "sigma_z": CENTRE_GAUSSIAN_SIGMA_Z},
+                       "sigma_z": CENTRE_GAUSSIAN_SIGMA_Z,
+                       "w_bag": w_bag, "w_clam_inst": w_clam_inst,
+                       "w_dsmil_max": w_dsmil_max, "clam_topk_b": CLAM_TOPK_B},
             )
             res = fit(
-                model, train_ds, val_ds, cfg,
+                model, mk(splits["train"], True, seed), val_ds, cfg,
                 collate_fn=collate_bags,
                 criterion=SlotMILLoss(w_diversity=ov.get("div", 0.0),
                                       w_entropy=ov.get("ent", 0.0),
                                       w_kl=lam, kl_patches_per_slice=pps,
-                                      kl_var_floor=NG_VAR_FLOOR_SLICES2),
+                                      kl_var_floor=NG_VAR_FLOOR_SLICES2,
+                                      w_bag=w_bag, w_clam_inst=w_clam_inst,
+                                      w_dsmil_max=w_dsmil_max,
+                                      clam_topk_b=CLAM_TOPK_B),
                 test_ds=test_ds,
                 out_dir=out_root / label.replace(":", "_") / f"seed{seed}",
+                provenance=provenance,
             )
             row = {"seed": seed, "n_params": n_params, **res["test"]}
             runs.append(row)
-            msg = f"[train]   -> auc={row['auc']:.4f} acc={row['acc']:.4f}"
-            if "active_slots" in row:
-                msg += f" active={row['active_slots']:.2f} maxcos={row['max_off_diag_cos']:.3f}"
+            if show_test:
+                msg = f"[train]   -> auc={row['auc']:.4f} acc={row['acc']:.4f}"
+                if "active_slots" in row:
+                    msg += (f" active={row['active_slots']:.2f}"
+                            f" maxcos={row['max_off_diag_cos']:.3f}")
+            else:
+                # Everything in `row` is computed on test, slot health included,
+                # so the suppressed line reports validation only. Nothing is
+                # lost: result.json holds the full test dict either way.
+                msg = (f"[train]   -> done, best_val_auc="
+                       f"{res['best_val_auc']:.4f}, test metrics suppressed "
+                       f"(--role {args.role})")
             print(msg, flush=True)
         results[label] = runs
 
     summary = {k: aggregate_seeds(v) for k, v in results.items()}
 
     print("\n" + "=" * 80)
-    print(f"{'arm':<18}{'AUC':>18}{'ACC':>18}{'params':>10}{'active':>8}{'maxcos':>8}")
-    for k, s in summary.items():
-        act = f"{s['active_slots']['mean']:>8.2f}" if "active_slots" in s else " " * 8
-        cos = f"{s['max_off_diag_cos']['mean']:>8.3f}" if "max_off_diag_cos" in s else " " * 8
-        print(f"{k:<18}{s['auc']['mean']:>10.4f} +/-{s['auc']['std']:.4f}"
-              f"{s['acc']['mean']:>10.4f} +/-{s['acc']['std']:.4f}"
-              f"{s['n_params']['mean']/1e3:>9.0f}k{act}{cos}")
+    if not show_test:
+        print(f"test metrics suppressed (--role {args.role}); "
+              f"{len(summary)} arm(s) written to disk. Run the analysis layer "
+              "to read them.")
+    else:
+        print(f"{'arm':<18}{'AUC':>18}{'ACC':>18}{'params':>10}{'active':>8}{'maxcos':>8}")
+        for k, s in summary.items():
+            act = f"{s['active_slots']['mean']:>8.2f}" if "active_slots" in s else " " * 8
+            cos = f"{s['max_off_diag_cos']['mean']:>8.3f}" if "max_off_diag_cos" in s else " " * 8
+            print(f"{k:<18}{s['auc']['mean']:>10.4f} +/-{s['auc']['std']:.4f}"
+                  f"{s['acc']['mean']:>10.4f} +/-{s['acc']['std']:.4f}"
+                  f"{s['n_params']['mean']/1e3:>9.0f}k{act}{cos}")
 
     # Head-to-head with significance, same gate as W1: a bare mean comparison
-    # over a few seeds is not evidence.
+    # over a few seeds is not evidence. Computed and written either way -- it is
+    # the *printing* that leaks, and the pre-registered family-wise correction
+    # lives in the analysis layer, not here.
     slot_arms = {k: v for k, v in summary.items() if k.split(":")[0] == "slot"}
     comparisons = {}
     if slot_arms:
         best_label = max(slot_arms, key=lambda k: slot_arms[k]["auc"]["mean"])
         a = slot_arms[best_label]["auc"]["values"]
-        print(f"\nbest slot arm: {best_label}")
+        if show_test:
+            print(f"\nbest slot arm: {best_label}")
         for other in summary:
             if other == best_label:
                 continue
@@ -240,10 +353,12 @@ def main():
                 d = float(np.mean(a) - np.mean(b))
                 comparisons[other] = {"delta": d, "p": p, "significant": bool(d > 0 and p < 0.05)}
                 verdict = "SIGNIFICANT" if comparisons[other]["significant"] else "not significant"
-                print(f"  vs {other:<16} delta={d:+.4f}  p={p:.3f}  {verdict}")
+                if show_test:
+                    print(f"  vs {other:<16} delta={d:+.4f}  p={p:.3f}  {verdict}")
 
     (out_root / "summary.json").write_text(json.dumps(
-        {"args": vars(args), "summary": summary, "comparisons": comparisons}, indent=2, default=str))
+        {**provenance, "args": vars(args), "summary": summary,
+         "comparisons": comparisons}, indent=2, default=str))
     print(f"\nwrote {out_root/'summary.json'}")
 
 

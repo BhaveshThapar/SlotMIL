@@ -121,7 +121,7 @@ def main() -> int:
     # Useful as a smoke check, never reportable as a floor.
     ap.add_argument("--pooling", default="slot",
                     choices=["slot", "mh_abmil", "centre_gaussian",
-                             "normal_guidance"])
+                             "normal_guidance", "clam_sb", "dsmil"])
     ap.add_argument("--num-slots", type=int, default=8)
     ap.add_argument("--dim", type=int, default=256)
     ap.add_argument("--batch-size", type=int, default=4)
