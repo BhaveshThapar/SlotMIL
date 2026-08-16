@@ -128,7 +128,15 @@ def analyse(tag, val_npz, test_npz, lung_path, uid_to_pat, reps, seed,
                                strata[in_lung], estimand)
                 rows[(estimand, "all")].append(a_all)
                 rows[(estimand, "in_lung")].append(a_in)
-            if not np.isfinite(rows[("auc", "in_lung")][-1]):
+            # Count only bags the RESTRICTION emptied, not bags that were
+            # already degenerate. Counting both together printed "19 bags had no
+            # lesion patch inside the lung mask" on the discovery dumps, which
+            # reads as the mask deleting positives; all 19 had no lesion patch at
+            # all and per_bag_axes drops them anyway. The true count is 0, which
+            # is what protocol.lung_mask's containment 1.0 predicts, and a line
+            # that quietly contradicts a measured selection rule is worse than no
+            # line.
+            if target.sum() > 0 and not (target.astype(bool) & in_lung).any():
                 no_lesion_in_lung += 1
             pats.append(uid_to_pat.get(uid, uid))
             kept.append(float(in_lung.mean()))
@@ -175,10 +183,9 @@ def report(r):
         print(f"   {name + star:22s} {fmt(e['unrestricted']):24s} "
               f"{fmt(e['in_lung'])}", flush=True)
     print("   * = in_lung_auc, the estimand H8's threshold attaches to", flush=True)
-    if r["n_bags_with_no_lesion_in_lung"]:
-        print(f"   {r['n_bags_with_no_lesion_in_lung']} bags had no lesion patch "
-              f"inside the lung mask and score nan on the restricted axis",
-              flush=True)
+    n = r["n_bags_with_no_lesion_in_lung"]
+    print(f"   bags the restriction emptied of positives: {n}"
+          f"{'  <-- contradicts containment 1.0' if n else ''}", flush=True)
     h = r["h8"]
     print(f"   H8: in_lung_auc {h['value']:.4f} vs {h['threshold']} -> "
           f"{'EXCEEDS' if h['exceeds'] else 'BELOW'}  (two-sided, no falsifier)",
