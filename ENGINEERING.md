@@ -188,6 +188,35 @@ and you want all of them:
 `merge_results.py` carries the block up and refuses a directory that mixes roles
 or split hashes.
 
+**Know when your driver samples the stamp, because editing during a run poisons
+it.** `git_state()` shells out to `rev-parse` and `status --porcelain` at the
+moment `stamp()` is called, and the drivers call it at opposite ends:
+
+- `train_cached.py` stamps **once per task, before the seed loop**. Every seed of
+  that task carries the tree as it stood when the task *started*. Editing during
+  the run is therefore safe, but submitting from an uncommitted tree brands all
+  five seeds `git_dirty: true` — which is what happened on 2026-08-15, when the
+  arrays were submitted moments before the commit describing them landed and 17
+  tasks stamped `afebaf6` with a dirty flag they could never shed.
+- `probe_gate.py`, `template_family.py`, `untrained_floor.py` and the `null_*`
+  drivers stamp **at the end**, when they write. An edit made at any point while
+  they run lands in their stamp. Three artefacts were lost to this in one
+  session before the pattern was noticed.
+
+So: commit before you submit, and hold edits while an end-stamping driver runs.
+The check is `prereg_freeze.py --check` — it prints `current` / `superseded` per
+stamp, and `0 current` after an amendment means every confirmatory result on
+disk needs re-running.
+
+This is not an NFS artefact and it is worth not re-diagnosing as one. A probe job
+on a scavenger node reads `rev-parse HEAD` as the live head with an empty
+porcelain status; compute nodes see the repository correctly.
+
+Related, from the same session: **an amendment supersedes every stamp on disk.**
+Cheap for H3 (two jobs, 3m22s and 6m59s), expensive for the sweep (27 tasks x 5
+seeds x ~8h). Land pre-registration changes *before* submitting long jobs, not
+during them.
+
 ## Slice subsampling
 
 `FeatureBagDataset` derives its subsample from `(seed, epoch, index)` via
