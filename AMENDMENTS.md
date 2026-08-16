@@ -874,3 +874,139 @@ here, and the paper reports them whether or not H7 clears:
   percentile) rather than a point, as `reference_baselines.untrained_fleet`
   requires. `prereg_freeze.py --check` now reports 2 current stamps where it
   reported 0.
+
+---
+
+## 2026-08-15 — make H7's gate members and H8's estimand computable; declare the slot arm's init knobs
+
+- **Kind:** amendment
+- **Config hash before → after:** `de43c8bcdc5053b6` → `7682347538e76fc8`
+- **What changed:** four holes closed and one undeclared default declared. All
+  five are the same class as H5's missing unit: a term that reads as decided and
+  is not, found while writing the code that would have had to guess.
+
+  **(a) H8 named two different numbers against one threshold.** The hypothesis
+  says "in-lung fitted-template **AUC** exceeds 0.65"; the estimand it declares
+  `depends_on` is `in_lung_stratified_auc`, "`stratified_auc` restricted to
+  `protocol.lung_mask`". A plain AUC and a Mantel-Haenszel AUC over (slice ×
+  radial bin) strata are not the same quantity and 0.65 cannot mean both.
+
+  Ruled: **the 0.65 verdict is scored on the plain in-lung AUC**, and the
+  stratified number is reported beside it with no threshold attached. The plain
+  AUC is what H8's own sentence says and what 0.65 was set against — the
+  unrestricted fitted template scores 0.786 on discovery. The stratified form is
+  additionally near-tautological here: the fitted template is a *purely*
+  positional scorer, and stratifying a positional scorer by position drives it
+  toward 0.5 by construction, so a 0.65 bar on it would be unreachable for
+  arithmetic rather than measured reasons — the same defect that put `mean` and
+  `centre_gaussian` outside H1. Both numbers are published, so nothing is hidden
+  by the choice; only the verdict attaches to one of them.
+  `estimands.secondary` gains `in_lung_auc` beside the stratified entry.
+
+  **(b) `entropy_matched_random` was not computable as an H7 gate member.** The
+  probe emits `[1, N]`, like `centre_prior`. `nulls.slot_entropy` over a single
+  slot is identically 0 and `nulls.random_attn(k=1)` softmaxes over one row, so
+  every score is exactly 1.0 — all ties, AUC undefined. Ruled: `k` and the
+  entropy target come from the accompanying arm's dump, which is what
+  `reference_baselines.entropy_matched_random` already means; the member is
+  computed per dump, not against the probe's slot count.
+
+  **(c) `roll_permutation`'s construction was not pinned.** `nulls.roll_masks`
+  rolls the *target*; a "content-free scorer" reading would roll the score. The
+  AUCs coincide, the denominators do not. Ruled: the existing implementation —
+  roll the target — with the member's own in-plane template fit against the
+  **true** validation masks, since only the target moves and the scorer does not.
+
+  **(d) The probe's fit had no declared scan cap.** `probe_protocol` names
+  `fit_split: train` and stops. `probe_ceiling.py` used `--train-scans 60`, which
+  is where 0.9102 came from. Ruled: **no cap — the whole training split**, which
+  is the plain reading of `fit_split: train`. Declared because it is load-bearing
+  in an unobvious way: 608 of the 700 training series carry a lesion, and lifting
+  the cap is what exposed the view-aliasing defect that OOM-killed the first run
+  (fixed in `326a64b`; the collector is bit-identical to the old one on the same
+  20 series).
+
+  **(e) The arm carrying H10's verdict trains with its slot queries frozen, and
+  the freeze never said so.** `build_model`'s defaults are `implicit=True`,
+  `init="learnable"`, `bo_qsa_straight_through=False`; under implicit
+  differentiation the init is consumed inside `no_grad` and detached, so
+  `slots_query` receives no gradient and stays at its random initialisation.
+  This is documented in `slot_attention.py`, warned about at construction, and
+  unit-tested in three directions — it is faithful to Chang et al., whose fixed
+  point is meant to be init-independent — but `configs/prereg/isbi2027.yaml`
+  declared none of the three knobs. Declared now, on `slot_div0.5`, as
+  `init_contract`. Nothing changes: this is a description of the code the
+  running sweeps are already executing, identical across all 27 tasks, so it
+  cannot move a between-arm comparison. It is recorded because "learnable" is a
+  misnomer here and because `plan.md`'s random-vs-learnable init ablation is
+  void under it — both arms would be frozen random inits.
+
+- **Why:** all five were found while implementing `slotmil/eval/probe.py` and
+  `slotmil/eval/lung.py`, which are the first code to compute H7's numerator or
+  read the lung store at all. Each one is a place where the analysis code would
+  have had to pick a meaning silently, and the pre-registration would then have
+  recorded a commitment the results did not honour.
+
+- **Results already seen?** **No** — for every number this entry touches. The
+  complete accounting:
+  - **H8:** no in-lung number of any kind exists, plain or stratified.
+    `scripts/h8_in_lung.py` was written to take `--estimand` with **no default**
+    and to emit no verdict precisely so that (a) could be ruled without one.
+  - **`entropy_matched_random` and `roll_permutation`:** no prior-normalised
+    skill has been computed for either, on any split.
+  - **The probe:** no confirmatory number — the first full-split confirmatory
+    run was OOM-killed before producing output (empty log; `memory.events`
+    recorded `oom_kill 1` with `memory.peak` equal to `memory.max`). What *was*
+    run, and is disclosed here in full rather than omitted: a pipeline smoke
+    test on the **discovery** split at `--max-fit-scans 40 --reps 200 --role
+    exploratory`, written outside the repository. It returned probe flat AUC
+    **0.9096** over 8,195,584 patches — every patch of every bag, versus the
+    0.9102 `probe_ceiling.py` published over a subsample — against its own
+    val-fitted in-plane template at **0.8352**, for a prior-normalised skill of
+    **0.4518**. That is *below* H7's 0.50 bar, and below the whole 0.4720–0.7224
+    range the previous amendment computed, because the probe's own denominator
+    is stronger than any of the eight arm denominators that range came from.
+
+    This is not H7's estimand: wrong split, wrong fit set, exploratory. But it
+    is a number about the gate and the mechanism is worthless if it is not
+    written down.
+
+    **Ordering, because ruling (d) is the one this could look chosen for.** A
+    reader is right to ask whether the "no cap" ruling was made to raise a
+    number seen at 40 scans. It was not, and the record shows it two ways: the
+    first confirmatory run — launched and OOM-killed *before any probe number of
+    any kind existed* — already ran with no cap, and rulings (a)–(e) were
+    written into `configs/prereg/isbi2027.yaml` while the smoke was still
+    executing and its log still empty. No ruling in this entry moves H7's
+    threshold, its denominator or its content-free membership; all three were
+    fixed by the 2026-08-15 entry above, and this entry does not touch them.
+  - **(e):** carries no number at all; it declares behaviour already fixed in
+    committed, tested code.
+  - **No confirmatory result of any kind** beyond H3's floor: the 27-task sweep
+    is still running and no seed-2027 attention dump exists.
+
+- **Consequence for the paper:** none withdrawn. H7 remains the power gate,
+  confirmatory, with the four-member content-free set unchanged in membership —
+  (b) and (c) fix how two of them are built, not which they are. H8 remains
+  two-sided and confirmatory, now reporting two numbers with the threshold on
+  one. H10 is unaffected in substance; its pinned arm's init contract is now
+  legible in the document rather than only in the code.
+
+  One cost, stated because the entry above already flagged it as a recurring
+  one: this amendment supersedes `de43c8bcdc5053b6`, so `prereg_freeze.py
+  --check` drops from 2 current stamps to 0 and H3's confirmatory floor is
+  demoted over bookkeeping for the **fourth** time. Both poolings are re-run at
+  `7682347538e76fc8` rather than left demoted; the re-run costs 3m22s and 6m59s
+  of scavenger GPU and is recorded as its own deviation entry, as last time.
+
+  One thing to say plainly, since the discovery smoke points at it: **H7 may
+  fail.** If the confirmatory probe's skill also lands below 0.50, the
+  pre-registration's stated consequence stands without renegotiation — the
+  proposed estimands have no power and are not recommended, and the
+  constructive half of the paper is withdrawn. The destructive half does not
+  depend on H7 and survives either way. It is worth noting *why* it would fail,
+  because the reason is the paper's own thesis rather than an instrument fault:
+  the probe scores 0.9096 and is genuinely finding lesions, but a content-free
+  in-plane template fit to the probe's own output reaches 0.8352, so almost all
+  of a very high AUC is positional. That is the finding, not a defect in the
+  measurement of it.

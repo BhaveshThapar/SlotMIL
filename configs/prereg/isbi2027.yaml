@@ -168,8 +168,25 @@ arms:
      scoring_class: learned_attention}
   - {name: mh_abmil,        spec: 'mh_abmil',        status: implemented, blind: true,
      scoring_class: learned_attention}
-  - {name: slot_div0.5,     spec: 'slot:div=0.5',    status: implemented, blind: true,
-     scoring_class: learned_attention}
+  - name: slot_div0.5
+    spec: 'slot:div=0.5'
+    status: implemented
+    blind: true
+    scoring_class: learned_attention
+    # Added by amendment 2026-08-15 (second entry of that date). These three were
+    # build_model defaults and nothing more, on the arm that carries H10's
+    # verdict. Under implicit differentiation the init is consumed inside no_grad
+    # and detached, so slots_query gets no gradient and stays at its random
+    # initialisation for the whole run -- faithful to Chang et al., whose fixed
+    # point is meant to be init-independent, but "learnable" is a misnomer here
+    # and plan.md's random-vs-learnable ablation is void under it (both arms
+    # would be frozen random inits). Declared, not changed: this describes the
+    # code the running sweeps are executing, identically across all 27 tasks.
+    init_contract:
+      implicit: true
+      init: learnable
+      bo_qsa_straight_through: false
+      queries_receive_gradient: false
   - name: centre_gaussian
     spec: 'centre_gaussian'
     status: implemented
@@ -446,6 +463,13 @@ estimands:
     - name: in_lung_stratified_auc
       impl: 'estimands.stratified_auc restricted to protocol.lung_mask'
       depends_on: lung_mask
+    # Added by amendment 2026-08-15 (second entry of that date): H8's statement
+    # names a plain AUC and its declared estimand named a stratified one. Both
+    # are computed and reported; H8's 0.65 attaches to this one.
+    - name: in_lung_auc
+      impl: 'h8_in_lung --estimand auc, restricted to protocol.lung_mask'
+      depends_on: lung_mask
+      carries_verdict_for: H8
   decomposition:
     kind: nested_reference_chain
     chain: [chance, fitted_template, cross_patient, full]
@@ -629,12 +653,40 @@ hypotheses:
       content-free structure -- so skill against it is an UPPER BOUND for any
       scorer carrying axial structure. This is the cost of the exclusions above
       and it is paid in the paper rather than hidden.
+    # Added by amendment 2026-08-15 (second entry of that date). Two of the four
+    # members above were not computable as written -- see AMENDMENTS.md rulings
+    # (b) and (c). Membership is unchanged; only the construction is pinned.
+    content_free_construction:
+      chance: analytic 0.5
+      roll_permutation: >-
+        nulls.roll_masks -- roll the TARGET, per bag, in patches. The scorer is
+        unmoved, so its own in-plane denominator is fit against the TRUE
+        validation masks. Rolling the score instead gives the same AUC and a
+        different denominator, which is why this had to be said.
+      entropy_matched_random: >-
+        nulls.random_attn with k and the entropy target taken from the
+        accompanying arm's dump, as reference_baselines already means. NOT from
+        the probe: the probe emits K=1, slot_entropy over one slot is
+        identically 0, and random_attn(k=1) returns exactly 1.0 everywhere --
+        all ties, AUC undefined.
+      fitted_template: >-
+        nulls.global_template on the member's own validation attention, which
+        scores exactly 0 against itself and keeps the set non-empty.
+      denominator_rule: >-
+        Every member carries its OWN val-fitted in-plane template, the same rule
+        the probe carries. A shared denominator would make each member's verdict
+        depend on whose it was.
     probe_protocol:
       fit_split: train
+      fit_scan_cap: none
       fit_negatives_per_positive: 20
       fit_rng_seed: 0
       score_split: test
       score_coverage: every_patch_of_every_bag
+      # fit_scan_cap added by amendment 2026-08-15. `fit_split: train` and
+      # nothing more; probe_ceiling.py's --train-scans 60 is where the published
+      # 0.9102 came from, so the absence of a cap is a commitment, not a default.
+      # 608 of 700 training series carry a lesion.
       note: >-
         Subsampling at FIT time is a fitting choice and touches no estimand.
         Subsampling at SCORE time changes the estimand -- the numerator would be
@@ -648,6 +700,20 @@ hypotheses:
     falsifier: >-
       None -- reported either way. If restricting to lung removes the prior,
       that becomes the paper's actionable recommendation instead.
+    # Added by amendment 2026-08-15 (second entry of that date). The statement
+    # says AUC; the estimand this hypothesis depends_on was in_lung_stratified_auc.
+    # Those are two different numbers and 0.65 cannot mean both.
+    estimand: in_lung_auc
+    reported_beside_the_threshold: [in_lung_stratified_auc]
+    estimand_rationale: >-
+      The plain AUC is what the statement says and what 0.65 was set against --
+      the unrestricted fitted template scores 0.786 on discovery. The stratified
+      form is additionally near-tautological for this scorer: a fitted template
+      is PURELY positional, and stratifying a positional scorer by position
+      drives it toward 0.5 by construction, so a 0.65 bar on it would be
+      unreachable for arithmetic rather than measured reasons -- the defect that
+      put `mean` and `centre_gaussian` outside H1. Both numbers are reported, so
+      the choice hides nothing; only the verdict attaches to one.
   - id: H9
     role: secondary
     statement: >-
