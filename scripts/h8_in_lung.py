@@ -116,9 +116,15 @@ def analyse(tag, val_npz, test_npz, lung_path, uid_to_pat, reps, seed,
             target = (np.asarray(m) > 0).astype(np.int8)
             strata = bag_strata(n)
 
+            # template_scores emits K=1, like centre_prior -- `slot` indexes the
+            # ARM's attention and is used only to fit the template above. Reading
+            # s[slot] here raised on the first dump whose frozen slot was not 0,
+            # which is the loud version of the failure; the quiet version would
+            # have been a dump whose slot happened to be 0 scoring correctly and
+            # every other dump scoring a different scorer under the same name.
             for estimand in ("auc", "stratified_auc"):
-                a_all, _ = _auc(s[slot], target, strata, estimand)
-                a_in, _ = _auc(s[slot][in_lung], target[in_lung],
+                a_all, _ = _auc(s[0], target, strata, estimand)
+                a_in, _ = _auc(s[0][in_lung], target[in_lung],
                                strata[in_lung], estimand)
                 rows[(estimand, "all")].append(a_all)
                 rows[(estimand, "in_lung")].append(a_in)
