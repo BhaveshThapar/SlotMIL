@@ -51,6 +51,33 @@ datasets:
         note: >-
           Re-splitting is clean here because the DINOv2 cache is frozen and
           unsupervised, so no label information crosses the split boundary.
+      # Added by amendment 2026-08-15. Same seed and the same re-splitting
+      # argument as `confirmatory` above; both are relabellings of the identical
+      # frozen cache, so drawing them costs one training sweep each and nothing
+      # else. Their power limits are stated in AMENDMENTS.md rather than
+      # discovered at analysis time.
+      malignancy_confirmatory:
+        path: data/lidc/splits_malignancy_confirmatory.json
+        seed: 2027
+        recorded_hash: 8cb89c9a0b70b759
+        role: confirmatory
+        n_series: 734
+        note: >-
+          512/111/111 over 726 patients, 50.4% positive. The supervised patch
+          probe ceils at 0.6516 here against nodule presence's 0.9102, so this
+          condition tests the label rather than the method; it is a consistency
+          check and does not carry the hypothesis family.
+      balanced_confirmatory:
+        path: data/lidc/splits_balanced_confirmatory.json
+        seed: 2027
+        recorded_hash: 554390c2a05a663b
+        role: confirmatory
+        n_series: 262
+        note: >-
+          184/40/38 over 262 patients, exactly 50/50. THIRTY-EIGHT test bags: a
+          10000-rep patient-clustered bootstrap over 38 clusters gives intervals
+          wide enough that most outcomes land indistinguishable by default. That
+          is a property of the design and is not to be reported as a finding.
 
   mosmed:
     cache: data/mosmed/features_dinov2_vitb14.h5
@@ -74,14 +101,38 @@ conditions:
     dataset: lidc
     labels: null            # baked into the HDF5 attrs
     positive_rate: 0.869
+    split: confirmatory
+    carries_hypothesis_family: true
   - name: malignancy
     dataset: lidc
     labels: data/lidc/labels_malignancy.json
     positive_rate: 0.504
+    split: malignancy_confirmatory
+    carries_hypothesis_family: false
+  # Added by amendment 2026-08-15. runs/lidc_balanced/ has held five seeds of
+  # discovery results since commit 589dd63 while this block did not name the
+  # condition at all -- a declared experiment may be dropped, but it may not be
+  # missing.
+  - name: balanced_presence
+    dataset: lidc
+    labels: data/lidc/labels_balanced_presence.json
+    positive_rate: 0.500
+    split: balanced_confirmatory
+    carries_hypothesis_family: false
   - name: mosmed_severity
     dataset: mosmed
     labels: data/mosmed/splits.json
     num_classes: 4
+    split: existing
+    carries_hypothesis_family: false
+
+# Exactly one condition carries the pre-registered hypothesis family and the Holm
+# correction. Correcting across all three would spend the power of the condition that
+# carries the claim in order to protect two that cannot carry it (38 test bags;
+# a 0.65 supervised ceiling), and picking which condition leads after seeing three
+# verdict tables is the same best-of-k error refused for the template denominator.
+# Ruled 2026-08-15, before any confirmatory number existed.
+hypothesis_family_condition: nodule_present
 
 # ---------------------------------------------------------------- arms
 #
@@ -97,16 +148,33 @@ conditions:
 # spec strings are parsed by scripts/train_cached.py:34 parse_arm, which coerces
 # every override value to float -- overrides must be numeric `k=v`.
 
+# scoring_class, added by amendment 2026-08-15, decides which hypothesis arm sets an arm
+# belongs to. It generalises the prose `trained_arm_definition` H2 already carried, so that the
+# next hypothesis with the same hole does not need a second prose exclusion beside it.
+#
+#   learned_attention          the attention path contains fitted parameters
+#   uniform_attention          attention is exactly 1/n, so every axis AUC is 0.5 on ties
+#   fixed_geometric_attention  attention is a function of slice index alone
+#
+# Only learned_attention arms enter H1/H2/H4/H5/H6. The other two are reported in every table
+# with their construction-fixed values; see AMENDMENTS.md for why the exclusion cannot move
+# H1's falsification bar.
 arms:
-  - {name: mean,            spec: 'mean',            status: implemented, blind: true}
-  - {name: abmil,           spec: 'abmil',           status: implemented, blind: true}
-  - {name: gated_abmil,     spec: 'gated_abmil',     status: implemented, blind: true}
-  - {name: mh_abmil,        spec: 'mh_abmil',        status: implemented, blind: true}
-  - {name: slot_div0.5,     spec: 'slot:div=0.5',    status: implemented, blind: true}
+  - {name: mean,            spec: 'mean',            status: implemented, blind: true,
+     scoring_class: uniform_attention}
+  - {name: abmil,           spec: 'abmil',           status: implemented, blind: true,
+     scoring_class: learned_attention}
+  - {name: gated_abmil,     spec: 'gated_abmil',     status: implemented, blind: true,
+     scoring_class: learned_attention}
+  - {name: mh_abmil,        spec: 'mh_abmil',        status: implemented, blind: true,
+     scoring_class: learned_attention}
+  - {name: slot_div0.5,     spec: 'slot:div=0.5',    status: implemented, blind: true,
+     scoring_class: learned_attention}
   - name: centre_gaussian
     spec: 'centre_gaussian'
     status: implemented
     blind: false
+    scoring_class: fixed_geometric_attention
     note: >-
       Harvey et al. arXiv:2605.27306 -- a_ij proportional to
       NormPDF(j | S_i/2, 1) over slice index. Content-free reference, so its
@@ -134,6 +202,7 @@ arms:
     spec: 'normal_guidance:lam=0.1'
     status: implemented
     blind: true
+    scoring_class: learned_attention
     note: >-
       KL to a moment-matched Normal over slice index, recomputed under
       stop-gradient each step. Carries H6.
@@ -163,6 +232,7 @@ arms:
     spec: 'clam_sb'
     status: implemented
     blind: true
+    scoring_class: learned_attention
     base_arm: gated_abmil
     topk_b: 8
     bag_weight: 0.7
@@ -195,6 +265,7 @@ arms:
     spec: 'dsmil'
     status: implemented
     blind: true
+    scoring_class: learned_attention
     q_hidden: 128
     dropout_v: 0.0
     bag_weight: 0.5
@@ -219,6 +290,7 @@ arms:
     spec: 'transmil'
     status: planned
     blind: true
+    scoring_class: learned_attention
     drop_rule: >-
       LIDC bags are ~43.8k instances, far beyond the WSI bags TransMIL was
       designed for. If it is not training by 2026-09-22, cut it and report the
@@ -319,6 +391,36 @@ statistics:
   multiplicity: holm
   alpha: 0.05
 
+  # Added by amendment 2026-08-15. `multiplicity: holm` declared a correction over
+  # a family this file never defined, and eight of the ten hypotheses emit no
+  # p-value at all -- their falsifiers compare a point estimate to a threshold.
+  # Two rulings, and the order matters.
+  verdict_basis: point_estimate
+  verdict_basis_rationale: >-
+    Hypothesis verdicts are scored exactly as their falsifiers are written, on
+    point estimates, with the patient-clustered 95% CI reported beside every one
+    and never changing a verdict. Rewriting point-estimate falsifiers as interval
+    rules now would loosen or tighten every one of them in a direction chosen with
+    the discovery numbers already in hand. H9 and H10 state CI-based falsifiers in
+    their own text and keep them; those two are scored on the interval because
+    that is what they were written to be.
+
+  holm_family:
+    # Holm therefore corrects a NAMED family of paired DeLong comparisons, not the
+    # hypothesis list. Each member is a paired test on the flat instance axis
+    # between one learned_attention arm and one content-free reference, over the
+    # condition named by hypothesis_family_condition. classification.delong_test
+    # and classification.holm_reject are implemented and unit-tested and have had
+    # no caller outside tests/; this is what they are for.
+    scope: 'arms in H1.arm_set x references below, on the condition carrying the family'
+    references: [fitted_template, centre_prior, cross_patient]
+    axis: flat_instance_auc
+    alpha: 0.05
+    note: >-
+      Enumerated rather than computed at analysis time so that the family size --
+      which sets every adjusted p-value -- cannot be changed by deciding later to
+      report one more comparison.
+
 # ---------------------------------------------------------------- estimands
 estimands:
   primary:
@@ -368,6 +470,26 @@ hypotheses:
     falsifier: >-
       Fails for a majority of arms -> the paper's lead claim is withdrawn and
       the in-plane framing is abandoned.
+    # Arm set and controls added by amendment 2026-08-15, before the confirmatory
+    # sweep was submitted. See AMENDMENTS.md for the full argument, including the
+    # arithmetic showing the exclusion does not move this hypothesis's bar:
+    # over 9 arms a majority is 5, and centre_gaussian contributes one guaranteed
+    # failure, so falsification needs 4 of the other 7; over the 7-arm set a
+    # majority is 4 -- the same four.
+    arm_set: learned_attention
+    positive_controls:
+      # References that carry axial information and therefore MUST exceed the
+      # threshold. If any comes in under 0.02 the harness is broken and the H1
+      # verdict is void rather than supported -- a test that cannot fail is
+      # ceremony. Discovery values, for reference: 0.0978 / 0.0259 / 0.0401.
+      members: [masks:axial, masks:separable, centre_prior]
+      rule: 'every member must exceed threshold; otherwise H1 verdict = void'
+    tie_floor_check:
+      # mean returns exactly 1/n, so both axes are 0.5 on ties and the gap is
+      # identically zero. Any other value means the tie handling changed
+      # underneath the estimand.
+      arm: mean
+      expected_gap: 0.0
   - id: H2
     role: primary
     statement: >-
@@ -387,6 +509,12 @@ hypotheses:
       centre_gaussian, whose attention is a fixed geometric rule; its bag
       classifier is trained, but its attention -- the thing H2 compares -- is not.
     excluded_arms: [centre_gaussian]
+    # Added 2026-08-15. arm_set is the mechanical form of trained_arm_definition
+    # above; the prose ruling stands unchanged and the two agree by construction
+    # (centre_gaussian is fixed_geometric_attention, mean is uniform_attention).
+    # Kept side by side deliberately: the prose records why, the class records
+    # how, and a future reader can check they have not drifted apart.
+    arm_set: learned_attention
   - id: H3
     role: primary
     statement: >-
@@ -401,6 +529,19 @@ hypotheses:
       is < 0.10.
     threshold: {per_arm: 0.15, median: 0.10}
     falsifier: any arm >= 0.15, or median >= 0.10.
+    arm_set: learned_attention
+    # Operationalised by amendment 2026-08-15. The estimand was named
+    # (auc_real - auc_cross_patient) but not the axis, the number of
+    # derangements, or the RNG -- three people would have computed three
+    # different numbers, and H6 reads the same quantity.
+    cross_patient:
+      axis: flat
+      impl: 'nulls.shuffle_masks_across_bags'
+      n_derangements: 100
+      rng_seed: 0
+      aggregate: mean_over_derangements
+      pairing: per_bag_against_the_real_score
+      interval: 'estimands.cluster_bootstrap, reps and seed from statistics.bootstrap'
   - id: H5
     role: secondary
     statement: >-
@@ -409,6 +550,7 @@ hypotheses:
     threshold: 0.30
     unit: mean_over_seeds
     report_per_seed: true
+    arm_set: learned_attention
     falsifier: any arm's mean over seeds exceeds 0.30.
     unit_rationale: >-
       The original statement named a threshold and not a unit, which leaves the
@@ -430,6 +572,15 @@ hypotheses:
     falsifier: >-
       Patient-specific skill rises by >= 0.02 -- prior injection would then be
       adding real information and the critique fails.
+    arm_set: learned_attention
+    # H6 reads the same estimand as H4 and uses H4's cross_patient block
+    # verbatim; declared by reference rather than copied so the two cannot
+    # drift apart into two different numbers with one name.
+    cross_patient: same_as_H4
+    base_arm_comparison:
+      arm: 'normal_guidance:lam=0.1'
+      base: gated_abmil
+      axes: [slice_auc, patient_specific_skill]
   - id: H7
     role: power_gate
     statement: >-
@@ -464,6 +615,15 @@ hypotheses:
     estimand: template_family.paired_flat_auc['masks:separable - trained']
     member: separable
     axis: flat
+    # Added by amendment 2026-08-15. The statement said "the trained arm",
+    # singular, and never named it -- with nine arms in the sweep that is a
+    # best-of-9 selection sitting inside a hypothesis whose own
+    # member_rationale refuses best-of-k for the template family. Pinned to
+    # the arm every discovery number and every threshold in this document
+    # came from. All learned_attention arms are scored and reported; only
+    # this one carries the verdict.
+    arm: 'slot:div=0.5'
+    arm_set: learned_attention
     statistic: patient_clustered_bootstrap
     reps: 10000
     bootstrap_seed: 0

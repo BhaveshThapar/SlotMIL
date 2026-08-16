@@ -522,3 +522,170 @@ Template:
   DSMIL departures above are stated in the methods section; a baseline that
   differs from its paper and does not say so is a worse baseline than one that
   does.
+
+---
+
+## 2026-08-15 — scope the hypothesis arm sets, name H10's arm, define the Holm family, and declare two more confirmatory conditions
+
+- **Kind:** amendment
+- **Config hash before → after:** `93e006fd8c7d8a57` → `7d0a43b7c301e332`
+- **What changed:** six holes, all of the same class as H5's missing unit and
+  H2's missing scope: a hypothesis that names a threshold but not the set it
+  applies over, or a statistic but not how it is computed. Each is ruled below
+  and each is ruled **before the confirmatory sweep is submitted**, which is the
+  only reason any of it is admissible.
+
+### 1. Arms carry a `scoring_class`, and hypothesis arm sets are declared
+
+H2 already excluded `centre_gaussian` by amendment, via a prose
+`trained_arm_definition`. That ruling was right and is unchanged; what it lacked
+was a mechanism, so the next hypothesis with the same problem needed a second
+prose exclusion beside it. Each arm now declares a `scoring_class`:
+
+| class | arms | why |
+|---|---|---|
+| `learned_attention` | `abmil`, `gated_abmil`, `mh_abmil`, `slot:div=0.5`, `normal_guidance`, `clam_sb`, `dsmil` | attention path contains fitted parameters |
+| `uniform_attention` | `mean` | `MeanPool.forward` returns exactly `1/n` |
+| `fixed_geometric_attention` | `centre_gaussian` | attention is a function of slice index alone |
+
+H1, H2, H4, H5 and H6 declare `arm_set: learned_attention`. H2's existing
+`excluded_arms: [centre_gaussian]` is retained and is now redundant with the
+class, which is the intended end state — the prose ruling and the mechanism
+agree.
+
+**Why `mean` and `centre_gaussian` are excluded, and it is arithmetic, not
+empirical.** `MeanPool` (`slotmil/models/baselines.py:36-52`) returns uniform
+attention, so every score in every bag ties: `roc_auc_score` credits 0.5 on the
+flat, slice and within-slice axes alike, `|flat − within| = 0` exactly, and every
+skill is exactly 0. It is a guaranteed H1 pass that measures nothing.
+`CentreGaussianPool` attention depends only on slice index, so it is constant
+within a slice; `per_bag_axes` therefore scores `within_slice = 0.5` on ties
+while `flat` carries the axial prior, and the gap cannot be small. Neither
+outcome is a measurement. This is the same defect as the `chance_affinity`
+"1.00× lift" already recorded in `RESULTS.md` — a baseline that is 0.5 by
+construction was reported as a result.
+
+**The exclusion cannot change H1's verdict, and this is checkable.** H1
+falsifies on a majority of arms failing. Over 9 arms a majority is 5; because
+`centre_gaussian` contributes one guaranteed failure and `mean` one guaranteed
+pass, falsification requires 4 failures among the other 7. Over the 7-arm set a
+majority is 4 — **the same four**. The ruling removes two uninformative rows
+and moves the bar by exactly zero. It could not have been chosen to change the
+outcome, which is the property a scope ruling needs and the one H2's prose form
+could not demonstrate.
+
+Both arms stay in the sweep, in the classification table and in the axis table,
+with their construction-fixed values printed and the reason given. Excluding an
+arm from a hypothesis is not excluding it from the paper — the `report_per_seed`
+precedent applies: a ruling must not become a way of not printing a number.
+
+### 2. H1 declares positive controls and a tie-floor check
+
+A test that cannot fail is ceremony, and H1 has never been shown to be able to
+fail. Three references already scored by `scripts/template_family.py` carry
+axial information and therefore must exceed the 0.02 threshold:
+`masks:axial`, `masks:separable`, `centre_prior`. If any of the three comes in
+**under** 0.02 on the confirmatory split, the H1 harness is broken and the H1
+verdict is `void` rather than supported. Separately, `mean` must return exactly
+`0.0000`; anything else means the tie handling changed underneath the estimand.
+
+Both cost nothing — every one of these rows is already computed — and they
+convert "can your test fail?" from a reviewer's question into a printed row.
+
+### 3. H10 names its arm
+
+H10 reads "the paired per-bag difference between the mask-fitted separable
+template and **the trained arm**" — singular, and never specified. With nine
+arms in the sweep that is a best-of-9 selection sitting inside a hypothesis
+whose own `member_rationale` refuses best-of-k for the template family. Ruled:
+the verdict is taken on **`slot:div=0.5`**, the arm every discovery number and
+every threshold in this document came from. All `learned_attention` arms are
+scored and reported; only that one carries the pre-registered verdict.
+
+### 4. Patient-specific skill is operationalised
+
+H4 and H6 both read `patient_specific_skill` (`auc_real − auc_cross_patient`)
+and neither says on which axis, over how many derangements, or with what RNG —
+so three people would compute three different numbers. Ruled: **flat axis;
+R = 100 derangements through `nulls.shuffle_masks_across_bags`; numpy
+`default_rng(0)`; mean over derangements; paired per bag against the real score;
+patient-clustered bootstrap at the pre-registered 10 000 reps and seed 0.**
+
+### 5. The Holm family is enumerated, and verdicts are scored on point estimates
+
+`statistics.multiplicity: holm` declared a correction over a family the config
+never defined, and eight of the ten hypotheses emit no p-value at all — their
+falsifiers are written as comparisons of a point estimate to a threshold. Two
+rulings, and the order matters:
+
+- **Hypothesis verdicts are scored exactly as their falsifiers are written**, on
+  point estimates, with the patient-clustered 95% CI reported beside every one
+  and never changing a verdict. Rewriting point-estimate falsifiers as interval
+  rules now would loosen or tighten every one of them, in a direction chosen
+  with the discovery numbers already in hand. H9 and H10 state CI-based
+  falsifiers and keep them.
+- **Holm therefore applies to a separately named family** of paired DeLong
+  comparisons supporting the secondary arm-vs-reference tests, listed by name in
+  `statistics.holm_family`. `classification.holm_reject` and `delong_test` are
+  implemented and unit-tested and have had no caller outside `tests/`; this is
+  what they are for.
+
+### 6. Two more confirmatory conditions, and how their families are counted
+
+`malignancy` was declared in `conditions` with no confirmatory split, and
+`balanced_presence` was not declared at all despite `runs/lidc_balanced/`
+holding five seeds of discovery results. Both now carry seed-2027
+patient-grouped splits drawn by `scripts/make_splits.py`, on the same argument
+that made the LIDC re-split clean: the DINOv2 cache is frozen and unsupervised,
+so no label information crosses the boundary.
+
+| condition | split | series | train/val/test | hash |
+|---|---|---|---|---|
+| `malignancy` | `data/lidc/splits_malignancy_confirmatory.json` | 734, 726 patients | 512/111/111 | `8cb89c9a0b70b759` |
+| `balanced_presence` | `data/lidc/splits_balanced_confirmatory.json` | 262, 262 patients | 184/40/38 | `554390c2a05a663b` |
+
+**Their power limits are stated here rather than discovered at analysis time.**
+`balanced_presence` has **38 test bags over 38 patients**; a 10 000-rep
+patient-clustered bootstrap over 38 clusters produces intervals wide enough that
+most outcomes will land `indistinguishable` by default, and that is a property
+of the design, not a finding. `malignancy` has a supervised patch-probe ceiling
+of 0.6516 against nodule presence's 0.9102, and `RESULTS.md` already records the
+MIL arms reaching ~91% of that ceiling — the condition tests the label, not the
+method.
+
+Ruled accordingly: **`nodule_present` carries the pre-registered hypothesis
+family and the Holm correction. `malignancy` and `balanced_presence` are
+reported per-condition as consistency checks and do not join that family.**
+Correcting over 27 tests instead of 9 would spend the power of the condition
+that carries the claim to protect two that cannot carry it, and choosing which
+condition leads after seeing three verdict tables would be the same best-of-k
+error refused everywhere else in this document.
+
+- **Why now:** the confirmatory sweep is submitted next. Every one of these six
+  is a choice that, left open, would be made with a confirmatory number already
+  on screen — which is precisely the failure this document exists to prevent.
+  Section 1's arithmetic neutrality is offered because "we excluded two arms
+  from the lead hypothesis" is otherwise exactly the sentence a reader should
+  distrust.
+
+- **Results already seen?** **Yes, all on the discovery split**, and this is the
+  complete list. The per-scorer axis rows in `runs/nulls/template_family.json`,
+  from which sections 1 and 2 quote `masks:axial` 0.0978, `centre_prior` 0.0401,
+  `masks:separable` 0.0259 and `attention:inplane` 0.0020; the eight trained-dump
+  gaps in `runs/nulls/axis_gate.json` (0.0014–0.0137, all under 0.02), already
+  published in `RESULTS.md` before this entry; and the split sizes printed by
+  `make_splits.py` above, which are counts rather than outcomes. **No
+  confirmatory result of any kind was read**: `runs/lidc_confirmatory/` does not
+  exist, no arm has been trained on any seed-2027 split, and no seed-2027
+  attention dump exists. The discovery numbers are what make sections 1 and 2
+  *checkable* — the exclusions are provable from the code alone, and the
+  positive controls are declared because the data shows the test can fail.
+
+- **Consequence for the paper:** H1's denominator is 7 arms and the falsification
+  bar is unchanged at 4 failures; `mean` and `centre_gaussian` appear in every
+  table with their construction-fixed values and the reason. H10's verdict is
+  `slot:div=0.5`, all arms reported. H4 and H6 have a computable estimand for the
+  first time. The verdict table reports point estimates with CIs beside them, and
+  a separately named DeLong family carries the Holm correction. Three conditions
+  run; one carries the family. The methods section states that the arm scoping
+  was ruled before submission and that it does not move H1's bar.

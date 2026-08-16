@@ -382,6 +382,52 @@ class Prereg:
             f"arm {name!r} is not pre-registered. Declared arms: {declared}"
         )
 
+    SCORING_CLASSES = ("learned_attention", "uniform_attention",
+                       "fixed_geometric_attention")
+
+    def arm_set(self, hid: str) -> list[str]:
+        """The arm names a hypothesis is scored over, resolved from `scoring_class`.
+
+        A hypothesis without an ``arm_set`` is scored over every implemented arm
+        -- that is the pre-freeze default and it stays the default, so adding
+        this method cannot silently rescope a hypothesis nobody amended.
+
+        Why this exists rather than a second list of exclusions beside H2's:
+        "every arm" is a hole of exactly the kind H5's missing unit was. Two arms
+        have outcomes fixed by construction rather than measured -- ``mean``
+        returns uniform attention so every axis AUC ties at 0.5, and
+        ``centre_gaussian`` is constant within a slice so its within-slice AUC is
+        0.5 by construction -- and a hypothesis that counts them is counting
+        arithmetic as evidence. Ruled by amendment 2026-08-15, before the
+        confirmatory sweep, with the arithmetic showing H1's falsification bar is
+        unchanged either way; see AMENDMENTS.md.
+
+        Raises rather than defaulting on an undeclared class, for the same reason
+        :meth:`get` has no default overload: a typo in ``scoring_class`` must not
+        quietly drop an arm out of a hypothesis.
+        """
+        want = self.hypothesis(hid).get("arm_set")
+        implemented = self.arms(status="implemented")
+        for a in implemented:
+            cls = a.get("scoring_class")
+            if cls is None:
+                raise PreregViolation(
+                    f"arm {a['name']!r} declares no scoring_class; "
+                    f"arm_set({hid!r}) cannot be resolved"
+                )
+            if cls not in self.SCORING_CLASSES:
+                raise PreregViolation(
+                    f"arm {a['name']!r} has scoring_class {cls!r}, which is not one of "
+                    f"{', '.join(self.SCORING_CLASSES)}"
+                )
+        if want is None:
+            return [a["name"] for a in implemented]
+        if want not in self.SCORING_CLASSES:
+            raise PreregViolation(
+                f"hypothesis {hid!r} declares arm_set {want!r}, which is not a scoring_class"
+            )
+        return [a["name"] for a in implemented if a.get("scoring_class") == want]
+
     def estimand(self, name: str) -> dict:
         est = self.get("estimands")
         for group in ("primary", "secondary"):

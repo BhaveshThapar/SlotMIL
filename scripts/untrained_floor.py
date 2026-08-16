@@ -119,9 +119,16 @@ def main() -> int:
     # centre_gaussian is accepted but degenerate here: its attention has no
     # learned parameters, so 30 untrained inits produce 30 identical numbers.
     # Useful as a smoke check, never reportable as a floor.
+    # Every pooling reachable from an `implemented` arm spec in
+    # configs/prereg/isbi2027.yaml, pinned by
+    # tests/test_prereg.py::test_every_implemented_arm_is_collectible. mean, abmil and
+    # gated_abmil were missing until 2026-08-15: H1 is stated over every arm, H2 over
+    # every trained arm, and H6 compares normal_guidance against gated_abmil
+    # specifically -- so three hypotheses were uncomputable because of an argparse list.
+    # mean is here for H1's tie-floor check, which asserts its gap is exactly 0.
     ap.add_argument("--pooling", default="slot",
-                    choices=["slot", "mh_abmil", "centre_gaussian",
-                             "normal_guidance", "clam_sb", "dsmil"])
+                    choices=["mean", "abmil", "gated_abmil", "slot", "mh_abmil",
+                             "centre_gaussian", "normal_guidance", "clam_sb", "dsmil"])
     ap.add_argument("--num-slots", type=int, default=8)
     ap.add_argument("--dim", type=int, default=256)
     ap.add_argument("--batch-size", type=int, default=4)

@@ -42,7 +42,14 @@ CONDITIONS = [
 ]
 # (run-directory name, pooling). train_cached.py writes the directory as the arm
 # spec with ':' replaced by '_', which is why normal_guidance carries its lam.
+# Every `implemented` arm in configs/prereg/isbi2027.yaml, pinned by
+# tests/test_prereg.py::test_every_implemented_arm_is_collectible. mean, abmil and
+# gated_abmil were absent until 2026-08-15 -- gated_abmil most consequentially, since it
+# is normal_guidance's declared base arm and H6 is the comparison between the two.
 ARMS = [
+    ("mean", "mean"),
+    ("abmil", "abmil"),
+    ("gated_abmil", "gated_abmil"),
     ("slot_div=0.5", "slot"),
     ("mh_abmil", "mh_abmil"),
     ("centre_gaussian", "centre_gaussian"),

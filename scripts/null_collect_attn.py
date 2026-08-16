@@ -59,9 +59,16 @@ def main():
     ap.add_argument("--cache", default="data/lidc/features_dinov2_vitb14.h5")
     ap.add_argument("--splits", default="data/lidc/splits.json")
     ap.add_argument("--ckpt", default=None, help="omit for the untrained-model null")
+    # Every pooling reachable from an `implemented` arm spec in
+    # configs/prereg/isbi2027.yaml, pinned by
+    # tests/test_prereg.py::test_every_implemented_arm_is_collectible. mean, abmil and
+    # gated_abmil were missing until 2026-08-15: H1 is stated over every arm, H2 over
+    # every trained arm, and H6 compares normal_guidance against gated_abmil
+    # specifically -- so three hypotheses were uncomputable because of an argparse list.
+    # mean is here for H1's tie-floor check, which asserts its gap is exactly 0.
     ap.add_argument("--pooling", default="slot",
-                    choices=["slot", "mh_abmil", "centre_gaussian",
-                             "normal_guidance", "clam_sb", "dsmil"])
+                    choices=["mean", "abmil", "gated_abmil", "slot", "mh_abmil",
+                             "centre_gaussian", "normal_guidance", "clam_sb", "dsmil"])
     ap.add_argument("--init-seed", type=int, default=1234,
                     help="torch seed for the untrained-model null")
     ap.add_argument("--tag", required=True)

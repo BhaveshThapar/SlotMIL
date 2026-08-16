@@ -22,6 +22,7 @@ So each test here pins one way the mechanism could rot:
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -231,32 +232,47 @@ class TestAmendmentLineage:
     def test_the_predecessor_hash_is_superseded_and_names_the_amendment(self, pre):
         """The list grows by one for every amendment that actually changes the
         config -- record-only deviations (before == after) are in the chain but
-        supersede nothing, which is why three of the six entries are absent
-        here. The label names the *first* amendment past the hash, so it is
-        stable as the list lengthens."""
-        lin = classify_hash(FLOOR_HASH, pre.hash, amendment_chain(AMENDMENTS))
+        supersede nothing, which is why not every entry appears here. The label
+        names the *first* amendment past the hash, so it is stable as the list
+        lengthens.
+
+        Asserted as properties rather than as a literal list: an earlier form
+        pinned the exact dates, which made every future amendment fail a test
+        about lineage bookkeeping rather than about anything that had broken.
+        The invariants that matter are that the entry is superseded, that every
+        superseding amendment really changed the config, that they are the ones
+        at or after FLOOR_HASH's position, and that the label names the first.
+        """
+        chain = amendment_chain(AMENDMENTS)
+        lin = classify_hash(FLOOR_HASH, pre.hash, chain)
         assert lin.status == "superseded"
+        assert lin.superseded_by, "a superseded hash must name what superseded it"
+        assert all(a.changed_the_config for a in lin.superseded_by)
+        assert lin.label == f"superseded-by-{lin.superseded_by[0].date}"
+
+        # The superseding set is exactly the config-changing amendments from
+        # FLOOR_HASH's position onward -- not a prefix, not the whole chain.
+        idx = next(i for i, a in enumerate(chain) if a.before == FLOOR_HASH)
         assert [a.date for a in lin.superseded_by] == [
-            "2026-08-15",  # the two Harvey arms
-            "2026-08-15",  # H5's unit and H10
-            "2026-08-15",  # CLAM-SB and DSMIL
+            a.date for a in chain[idx:] if a.changed_the_config
         ]
-        assert lin.label == "superseded-by-2026-08-15"
 
     def test_the_origin_hash_is_ancestral_not_unknown(self, pre):
         """The trap this whole function exists to avoid. ORIGIN_HASH is the
         first entry's *before*, so it appears nowhere among the `after` values;
         a reader that scanned only those would call five stamped results on disk
         UNKNOWN -- a lie about files whose provenance the log states outright."""
-        lin = classify_hash(ORIGIN_HASH, pre.hash, amendment_chain(AMENDMENTS))
+        chain = amendment_chain(AMENDMENTS)
+        lin = classify_hash(ORIGIN_HASH, pre.hash, chain)
         assert lin.status == "superseded"
+        # Every config-changing amendment supersedes the origin, by definition --
+        # it is the chain's first `before`. Asserted as that property rather than
+        # as a literal date list, which would fail on each future amendment for
+        # bookkeeping reasons rather than because anything broke.
         assert [a.date for a in lin.superseded_by] == [
-            "2026-08-14",  # lung-mask method and the in-lung patch rule
-            "2026-08-15",  # the two Harvey arms
-            "2026-08-15",  # H5's unit and H10
-            "2026-08-15",  # CLAM-SB and DSMIL
+            a.date for a in chain if a.changed_the_config
         ]
-        assert lin.label == "superseded-by-2026-08-14"
+        assert lin.label == f"superseded-by-{chain[0].date}"
 
     def test_a_record_only_entry_supersedes_nothing(self, tmp_path):
         """The 2026-08-15 lam pre-flight entry is a deviation with
@@ -568,3 +584,139 @@ class TestStamping:
 
     def test_git_state_on_a_non_repo_is_none_not_an_explosion(self, tmp_path):
         assert git_state(tmp_path)["commit"] is None
+
+
+REPO = Path(__file__).resolve().parent.parent
+
+
+def _argparse_choices(script: str, flag: str) -> set[str]:
+    """Pull an argparse `choices=[...]` literal straight out of a script's source.
+
+    Read as text rather than imported: these scripts pull in torch and h5py at module
+    scope, and the thing under test is the literal list, not anything importing it
+    would reveal.
+    """
+    src = (REPO / script).read_text()
+    m = re.search(rf'add_argument\(\s*"{re.escape(flag)}".*?choices=\[(.*?)\]',
+                  src, re.S)
+    assert m, f"no choices= for {flag} in {script}"
+    return set(re.findall(r'"([^"]+)"', m.group(1)))
+
+
+class TestArmSetScoping:
+    """The 2026-08-15 scoping amendment, pinned so it cannot rot back into prose.
+
+    `mean` and `centre_gaussian` have hypothesis outcomes fixed by construction --
+    uniform attention ties every axis at 0.5, and slice-constant attention forces
+    within-slice to 0.5 -- so counting them is counting arithmetic as evidence.
+    """
+
+    SCOPED = ("H1", "H2", "H4", "H5", "H6", "H10")
+
+    def test_every_implemented_arm_declares_a_scoring_class(self, pre):
+        for a in pre.arms(status="implemented"):
+            assert a.get("scoring_class") in pre.SCORING_CLASSES, a["name"]
+
+    @pytest.mark.parametrize("hid", SCOPED)
+    def test_scoped_hypotheses_exclude_the_construction_fixed_arms(self, pre, hid):
+        s = pre.arm_set(hid)
+        assert "mean" not in s
+        assert "centre_gaussian" not in s
+        assert len(s) == 7
+
+    def test_an_unscoped_hypothesis_still_sees_every_arm(self, pre):
+        """The pre-freeze default must survive, or this method would silently
+        rescope hypotheses nobody amended."""
+        assert set(pre.arm_set("H3")) == {a["name"] for a in pre.arms(status="implemented")}
+
+    def test_an_undeclared_arm_set_raises_rather_than_defaulting(self, pre):
+        pre.raw["hypotheses"].append({"id": "HX", "arm_set": "not_a_class"})
+        try:
+            with pytest.raises(PreregViolation):
+                pre.arm_set("HX")
+        finally:
+            pre.raw["hypotheses"].pop()
+
+    def test_the_exclusion_does_not_move_H1s_falsification_bar(self, pre):
+        """The property that makes the ruling admissible at all.
+
+        H1 falsifies on a majority. Over 9 arms that is 5, and centre_gaussian is a
+        guaranteed failure while mean is a guaranteed pass -- so 4 of the other 7
+        must fail. Over the 7-arm set a majority is 4. The same four. If this ever
+        stops holding, the exclusion has become a choice that changes the verdict.
+        """
+        n_all = len(pre.arms(status="implemented"))
+        n_set = len(pre.arm_set("H1"))
+        assert n_all - n_set == 2
+        assert (n_all // 2 + 1) - 1 == n_set // 2 + 1
+
+    def test_H2s_prose_ruling_and_the_mechanism_agree(self, pre):
+        """Both forms are kept side by side; drifting apart is the failure."""
+        h2 = pre.hypothesis("H2")
+        for name in h2["excluded_arms"]:
+            assert name not in pre.arm_set("H2")
+
+
+class TestHypothesesAreComputable:
+    """Each of these was a hole through which a number could have been chosen late."""
+
+    def test_H10_names_the_arm_it_is_scored_on(self, pre):
+        arm = pre.hypothesis("H10")["arm"]
+        assert arm in {a["spec"] for a in pre.arms(status="implemented")}
+
+    def test_H1_declares_positive_controls_that_must_exceed_the_threshold(self, pre):
+        pc = pre.hypothesis("H1")["positive_controls"]
+        assert set(pc["members"]) == {"masks:axial", "masks:separable", "centre_prior"}
+
+    def test_H1_declares_the_tie_floor_check(self, pre):
+        tf = pre.hypothesis("H1")["tie_floor_check"]
+        assert tf["arm"] == "mean" and tf["expected_gap"] == 0.0
+
+    def test_patient_specific_skill_is_operationalised(self, pre):
+        cp = pre.hypothesis("H4")["cross_patient"]
+        assert cp["n_derangements"] >= 1
+        assert cp["rng_seed"] == 0
+        assert cp["axis"] == "flat"
+        assert pre.hypothesis("H6")["cross_patient"] == "same_as_H4"
+
+    def test_the_holm_family_is_named_rather_than_left_to_analysis_time(self, pre):
+        fam = pre.get("statistics.holm_family")
+        assert fam["references"] and fam["alpha"] == pre.get("statistics.alpha")
+
+    def test_verdicts_are_scored_on_point_estimates(self, pre):
+        """Falsifiers are written as point-estimate comparisons. Rewriting them as
+        interval rules after the discovery numbers are known would move every one."""
+        assert pre.get("statistics.verdict_basis") == "point_estimate"
+
+    def test_exactly_one_condition_carries_the_hypothesis_family(self, pre):
+        carriers = [c["name"] for c in pre.get("conditions")
+                    if c.get("carries_hypothesis_family")]
+        assert carriers == [pre.get("hypothesis_family_condition")]
+
+    def test_every_condition_names_a_declared_split(self, pre):
+        for c in pre.get("conditions"):
+            pre.split(c["dataset"], c["split"])
+
+
+class TestArmAllowLists:
+    """ENGINEERING.md: these fail only at submission time, hours into a job.
+
+    `abmil` and `gated_abmil` were missing until 2026-08-15, which made H1, H2 and
+    H6 uncomputable -- H6 most directly, since gated_abmil is normal_guidance's
+    declared base arm.
+    """
+
+    @pytest.mark.parametrize("script", ["scripts/null_collect_attn.py",
+                                        "scripts/untrained_floor.py"])
+    def test_every_implemented_arm_is_collectible(self, pre, script):
+        choices = _argparse_choices(script, "--pooling")
+        for a in pre.arms(status="implemented"):
+            pooling = a["spec"].partition(":")[0]
+            assert pooling in choices, f"{a['name']} -> {pooling} missing from {script}"
+
+    def test_the_reeval_arm_table_covers_every_implemented_arm(self, pre):
+        src = (REPO / "scripts/reeval_all_alignment.py").read_text()
+        block = re.search(r"ARMS = \[(.*?)\]", src, re.S).group(1)
+        poolings = {m[1] for m in re.findall(r'\("([^"]+)",\s*"([^"]+)"\)', block)}
+        for a in pre.arms(status="implemented"):
+            assert a["spec"].partition(":")[0] in poolings, a["name"]
