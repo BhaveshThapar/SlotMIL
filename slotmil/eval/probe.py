@@ -48,7 +48,8 @@ __all__ = ["collect_fit_set", "fit_probe", "score_bags"]
 SLICE_CHUNK = 16
 
 
-def collect_fit_set(f, uids, neg_per_pos: int, rng, max_scans: int | None = None):
+def collect_fit_set(f, uids, neg_per_pos: int, rng, max_scans: int | None = None,
+                    progress=None):
     """Patch features and labels for fitting: every positive, sampled negatives.
 
     Lifted from ``scripts/probe_ceiling.py`` so the fit is the one that produced
@@ -60,6 +61,11 @@ def collect_fit_set(f, uids, neg_per_pos: int, rng, max_scans: int | None = None
     Series with no lesion patch contribute nothing: a bag that is all-negative
     has no positive to sample against, and ``per_bag_axes`` drops it at score
     time too.
+
+    ``progress`` is called with ``(n_series_used, n_rows)`` as series are
+    consumed. The whole training split is ~41 GB of compressed reads, and a
+    driver that prints nothing for that long is indistinguishable from one that
+    has hung -- which is how the first OOM looked from outside.
     """
     X: list[np.ndarray] = []
     y: list[np.ndarray] = []
@@ -98,6 +104,8 @@ def collect_fit_set(f, uids, neg_per_pos: int, rng, max_scans: int | None = None
         del block
 
         used += 1
+        if progress is not None:
+            progress(used, sum(a.shape[0] for a in X))
         if max_scans is not None and used >= max_scans:
             break
     if not X:
@@ -106,7 +114,7 @@ def collect_fit_set(f, uids, neg_per_pos: int, rng, max_scans: int | None = None
 
 
 def fit_probe(f, uids, neg_per_pos: int = 20, seed: int = 0,
-              max_scans: int | None = None) -> LogisticRegression:
+              max_scans: int | None = None, progress=None) -> LogisticRegression:
     """Fit the patch probe on one split. ``f`` is an open :class:`h5py.File`.
 
     ``class_weight="balanced"`` and ``max_iter=2000`` are ``probe_ceiling.py``'s,
@@ -114,7 +122,7 @@ def fit_probe(f, uids, neg_per_pos: int = 20, seed: int = 0,
     a different output.
     """
     rng = np.random.default_rng(seed)
-    X, y = collect_fit_set(f, uids, neg_per_pos, rng, max_scans)
+    X, y = collect_fit_set(f, uids, neg_per_pos, rng, max_scans, progress)
     if X.size == 0:
         raise ValueError("no lesion-bearing series in the fit split")
     clf = LogisticRegression(max_iter=2000, class_weight="balanced")
@@ -122,7 +130,7 @@ def fit_probe(f, uids, neg_per_pos: int = 20, seed: int = 0,
     return clf
 
 
-def score_bags(clf: LogisticRegression, f, uids):
+def score_bags(clf: LogisticRegression, f, uids, progress=None):
     """Score **every** patch of every bag -> ``(attns, masks)``, dump-shaped.
 
     Returns one ``[1, N]`` float32 array and one ``[N]`` int8 target per bag, in
@@ -163,4 +171,6 @@ def score_bags(clf: LogisticRegression, f, uids):
         attns.append(out[None, :])
         masks.append((m > 0).astype(np.int8))
         scored.append(uid)
+        if progress is not None:
+            progress(len(scored), out.shape[0])
     return attns, masks, scored

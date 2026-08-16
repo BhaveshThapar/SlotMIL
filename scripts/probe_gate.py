@@ -61,12 +61,28 @@ def _scored(tag, rows, uids, uid_to_pat, reps, seed, **extra):
     return out
 
 
+def _ticker(label: str, total: int, every: int = 25):
+    """Print every ``every`` series. The training split is ~41 GB of compressed
+    reads; a driver silent for that long is indistinguishable from a hung one."""
+    def tick(n, extra):
+        if n % every == 0 or n == total:
+            print(f"[probe] {label} {n}/{total}  ({extra:,})", flush=True)
+    return tick
+
+
 def analyse(cache_path, splits, uid_to_pat, neg_per_pos, seed, reps, max_fit_scans):
     with h5py.File(cache_path, "r") as f:
+        n_fit = min(len(splits["train"]), max_fit_scans or len(splits["train"]))
         clf = fit_probe(f, splits["train"], neg_per_pos=neg_per_pos, seed=seed,
-                        max_scans=max_fit_scans)
-        val_a, val_m, _ = score_bags(clf, f, splits["val"])
-        test_a, test_m, test_uids = score_bags(clf, f, splits["test"])
+                        max_scans=max_fit_scans,
+                        progress=_ticker("fit series", n_fit))
+        print("[probe] fitted; scoring val", flush=True)
+        val_a, val_m, _ = score_bags(
+            clf, f, splits["val"], progress=_ticker("val bags", len(splits["val"])))
+        print("[probe] scoring test", flush=True)
+        test_a, test_m, test_uids = score_bags(
+            clf, f, splits["test"], progress=_ticker("test bags", len(splits["test"])))
+        print(f"[probe] bootstrapping ({reps} reps)", flush=True)
 
     # Fit on validation, freeze, apply identically to every test bag. It cannot
     # read the test image, which is exactly what makes it the honest denominator.
