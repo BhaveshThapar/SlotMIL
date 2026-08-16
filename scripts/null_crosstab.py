@@ -36,6 +36,8 @@ from null_static_template import global_template
 from scipy.stats import ttest_rel
 from sklearn.metrics import roc_auc_score
 
+from slotmil import prereg
+
 GRID = 16
 SCORERS = ["slot", "residual", "bag_static", "global_static", "centre_prior"]
 
@@ -82,6 +84,15 @@ def main():
     ap.add_argument("--tags", nargs="+", default=["real_seed0", "real_seed1", "real_seed2"])
     ap.add_argument("--reps", type=int, default=5)
     ap.add_argument("--out", default="runs/nulls/crosstab.json")
+    ap.add_argument("--role", choices=["exploratory", "confirmatory"],
+                    default="exploratory",
+                    help="dumps in runs/nulls came from the DISCOVERY split, so "
+                         "anything scored from them is exploratory; pass "
+                         "confirmatory only for seed-2027 dumps. Without this the "
+                         "output carries no analysis_role and no prereg stamp, and "
+                         "PREREGISTRATION.md's \"Verifying the chain\" makes an "
+                         "unstamped result exploratory regardless of the prose "
+                         "around it.")
     args = ap.parse_args()
 
     d, R = Path(args.dir), {}
@@ -123,7 +134,8 @@ def main():
                   f"{re_-sh:>12.4f}{sh-ro:>12.4f}", flush=True)
         del va, vm, ta, tm
 
-    Path(args.out).write_text(json.dumps(R, indent=2))
+    payload = prereg.load().stamp({"analysis_role": args.role, **R})
+    Path(args.out).write_text(json.dumps(payload, indent=2))
     print(f"\nwrote {args.out}")
 
 

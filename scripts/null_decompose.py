@@ -28,6 +28,7 @@ import numpy as np
 from null_battery import N_PATCH, load, pick_lesion_slot, roll_masks, shuffle_masks_across_bags
 from sklearn.metrics import roc_auc_score
 
+from slotmil import prereg
 from slotmil.eval.axes import per_bag_axes
 
 
@@ -108,6 +109,15 @@ def main():
     ap.add_argument("--tags", nargs="+", default=["real_seed0"])
     ap.add_argument("--reps", type=int, default=10)
     ap.add_argument("--out", default="runs/nulls/decompose.json")
+    ap.add_argument("--role", choices=["exploratory", "confirmatory"],
+                    default="exploratory",
+                    help="dumps in runs/nulls came from the DISCOVERY split, so "
+                         "anything scored from them is exploratory; pass "
+                         "confirmatory only for seed-2027 dumps. Without this the "
+                         "output carries no analysis_role and no prereg stamp, and "
+                         "PREREGISTRATION.md's \"Verifying the chain\" makes an "
+                         "unstamped result exploratory regardless of the prose "
+                         "around it.")
     args = ap.parse_args()
 
     d, R = Path(args.dir), {}
@@ -156,7 +166,8 @@ def main():
                   f"slice={n['slice_auc']:.4f} within_slice={n['within_slice_auc']:.4f}",
                   flush=True)
 
-    Path(args.out).write_text(json.dumps(R, indent=2))
+    payload = prereg.load().stamp({"analysis_role": args.role, **R})
+    Path(args.out).write_text(json.dumps(payload, indent=2))
     print(f"wrote {args.out}")
 
 

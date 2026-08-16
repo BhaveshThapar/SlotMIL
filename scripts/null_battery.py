@@ -47,6 +47,8 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 from sklearn.metrics import average_precision_score, roc_auc_score
 
+from slotmil import prereg
+
 N_PATCH = 256  # 16x16 DINOv2 ViT-B/14 grid per slice
 GRID = 16
 
@@ -235,6 +237,15 @@ def main():
     ap.add_argument("--reps", type=int, default=20)
     ap.add_argument("--sweep-reps", type=int, default=6)
     ap.add_argument("--out", default="runs/nulls/null_battery.json")
+    ap.add_argument("--role", choices=["exploratory", "confirmatory"],
+                    default="exploratory",
+                    help="dumps in runs/nulls came from the DISCOVERY split, so "
+                         "anything scored from them is exploratory; pass "
+                         "confirmatory only for seed-2027 dumps. Without this the "
+                         "output carries no analysis_role and no prereg stamp, and "
+                         "PREREGISTRATION.md's \"Verifying the chain\" makes an "
+                         "unstamped result exploratory regardless of the prose "
+                         "around it.")
     args = ap.parse_args()
 
     d, R = Path(args.dir), {}
@@ -377,7 +388,8 @@ def main():
           f"range=[{np.min(per_slot):.4f},{np.max(per_slot):.4f}]", flush=True)
 
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(json.dumps(R, indent=2))
+    payload = prereg.load().stamp({"analysis_role": args.role, **R})
+    Path(args.out).write_text(json.dumps(payload, indent=2))
     print(f"\nwrote {args.out}  ({time.time()-t0:.0f}s total)")
 
 

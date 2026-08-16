@@ -20,6 +20,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from slotmil import prereg
 from slotmil.data.feature_cache import FeatureBagDataset, collate_bags
 from slotmil.models.mil import build_model, slot_pooling_param_count
 
@@ -78,7 +79,29 @@ def main():
                     help="float16 halves the cache but quantises very peaked "
                          "attention; use float32 to check a seed whose AUC does "
                          "not reproduce the float32 reeval number")
+    ap.add_argument("--role", choices=["exploratory", "confirmatory"],
+                    default="exploratory",
+                    help="confirmatory forces float32 per protocol.dtype and "
+                         "stamps the dump's sidecar; pass it only for seed-2027 "
+                         "checkpoints")
     args = ap.parse_args()
+
+    # protocol.dtype is pre-registered float32 because fp16 caching cost seed 2
+    # 0.034 AUC. The default here is float16 -- right for a cheap exploratory
+    # sweep, wrong for anything carrying a hypothesis -- so a confirmatory run
+    # that forgot the flag would silently produce dumps no estimand may read.
+    # Refuse rather than coerce: the same reason train_cached.py refuses a
+    # zero-weight auxiliary stream instead of quietly training the base arm.
+    pre = prereg.load()
+    if args.role == "confirmatory":
+        declared = pre.get("protocol.dtype")
+        if args.dtype != declared:
+            raise SystemExit(
+                f"--role confirmatory requires --dtype {declared} "
+                f"(protocol.dtype), got {args.dtype!r}. fp16 attention caching "
+                f"cost seed 2 0.034 AUC; a confirmatory dump in fp16 cannot "
+                f"carry a pre-registered estimand."
+            )
     dtype = np.float16 if args.dtype == "float16" else np.float32
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -106,8 +129,23 @@ def main():
 
     for split, ds in (("val", val_ds), ("test", test_ds)):
         print(f"[{args.tag}] collecting {split}", flush=True)
-        save(Path(args.outdir) / f"{args.tag}_{split}.npz",
-             *collect(model, ds, device, dtype=dtype))
+        out = Path(args.outdir) / f"{args.tag}_{split}.npz"
+        save(out, *collect(model, ds, device, dtype=dtype))
+        # Sidecar rather than a key inside the .npz: every downstream reader
+        # (axis_gate, template_family, null_*) loads the archive by field name,
+        # and adding a field would change what `load()` returns for dumps that
+        # already exist. The stamp travels with the dump and is what lets
+        # prereg_freeze.py --check place it on the amendment chain.
+        out.with_suffix(".prereg.json").write_text(json.dumps(pre.stamp({
+            "analysis_role": args.role,
+            "tag": args.tag,
+            "split": split,
+            "dtype": args.dtype,
+            "pooling": args.pooling,
+            "splits": args.splits,
+            "splits_file_sha256": prereg.file_sha256(args.splits),
+            "ckpt": args.ckpt,
+        }), indent=2))
 
 
 if __name__ == "__main__":
