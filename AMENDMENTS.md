@@ -1010,3 +1010,71 @@ here, and the paper reports them whether or not H7 clears:
   in-plane template fit to the probe's own output reaches 0.8352, so almost all
   of a very high AUC is positional. That is the finding, not a defect in the
   measurement of it.
+
+---
+
+## 2026-08-16 — the confirmatory sweep re-run at the current head
+
+- **Kind:** deviation (record only — no config change)
+- **Config hash before → after:** `7682347538e76fc8` → `7682347538e76fc8` (unchanged)
+- **What changed:** no declared parameter. All 27 confirmatory tasks were
+  cancelled and resubmitted at `7682347538e76fc8` with a clean tree. The 130
+  seeds written by the first attempt are preserved, not deleted, under
+  `runs/lidc{,_malignancy,_balanced_presence}_confirmatory_superseded_20260816`.
+
+  Two independent defects made the first attempt unusable, and only the first is
+  a consequence of this session's amendment:
+
+  1. **127 of 130 seeds carry `de43c8bcdc5053b6`**, which the amendment above
+     supersedes. By the literal rule in `PREREGISTRATION.md`'s "Verifying the
+     chain" that demotes them, the same bookkeeping demotion H3 has now taken
+     four times — but at 27 tasks × 5 seeds rather than two seven-minute jobs.
+  2. **82 of 130 seeds carry `git_dirty: true` at commit `afebaf6`**, which is
+     three commits behind the head the arrays were submitted from. This one
+     predates the amendment entirely. `train_cached.py` computes its provenance
+     block **once per task**, before the seed loop (`scripts/train_cached.py:111`),
+     so this is 17 tasks and not 82 independent events: each task stamped the
+     tree as it stood when that task *started*, around 22:35 on 2026-08-15, and
+     reused it for all five of its seeds. 26 of the 27 arms carry a single
+     uniform stamp; the one mixed arm was preempted and requeued after the
+     amendment, which is `--requeue` working as intended.
+
+     The cause is ordinary and worth naming so it does not recur: the arrays
+     were submitted from a working tree that had not yet been committed, and the
+     commit describing them (`e91d698`, "submit all three sweeps") landed
+     moments *after* the tasks started. The dirty flag is the uncommitted
+     launcher itself.
+
+  Ruled out, because it was the more alarming explanation: stale provenance is
+  **not** an NFS artefact. A probe job on a scavenger node (`quics00`, job
+  7258892) read `rev-parse HEAD` as the live head with `status --porcelain`
+  empty and `git_state()` returning `dirty: False`. Compute nodes see the
+  repository correctly; the stamps are accurate reports of the tree at task
+  start.
+
+- **Why:** the amendment's config diff is provably training-irrelevant — it is
+  purely additive, and the single edited line reformats `slot_div0.5` from flow
+  to block style with its four existing keys unchanged — so an argument that the
+  sweep survives supersession would have been available and defensible. It was
+  not taken. Defect 2 is untouched by that argument: 17 tasks could not have
+  carried a confirmatory claim under *any* hash, and a table mixing seeds that
+  can with seeds that cannot is worse than one that costs a day of scavenger
+  time. Re-running clears both at once and leaves every seed under one hash, one
+  commit and `dirty: false`.
+
+- **Results already seen?** **Yes, and this is the reason the re-run is recorded
+  as a deviation rather than presented as a first attempt.** Test metrics were
+  suppressed on stdout throughout (`--role confirmatory`, no `--report-test`),
+  and no confirmatory verdict was scored from the discarded seeds — no
+  hypothesis runner was pointed at them, `merge_results.py` was never run over
+  them, and `runs/nulls` contains no dump derived from them. What *was* visible:
+  per-seed `best_val_auc` in job logs, which is validation and in scope. The
+  discarded seeds remain on disk so this claim can be checked rather than taken
+  on trust.
+
+- **Consequence for the paper:** none, provided the re-run completes. H1, H2,
+  H4, H5, H6 and H10 are scored from the new roots. H3 is unaffected and already
+  re-stamped at `7682347538e76fc8` (`runs/untrained_floor{,_mh}_rehash4.json`,
+  p95 0.7665760928074817 and 0.7678969514750311, bit-identical to both prior
+  re-runs). H7's probe half is likewise unaffected: it reads the feature cache
+  and the splits, not any trained arm, and is already stamped current and clean.
