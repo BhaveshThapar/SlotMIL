@@ -698,6 +698,46 @@ class TestHypothesesAreComputable:
             pre.split(c["dataset"], c["split"])
 
 
+class TestH7IsComputable:
+    """The power gate. If it fails, the constructive half of the paper is withdrawn,
+    so every term in it has to mean one thing."""
+
+    def test_the_probe_carries_its_own_denominator(self, pre):
+        """fitted_template is fit to the SCORER's own validation attention, so every
+        arm already has its own. Borrowing one would make the verdict depend on which
+        arm was borrowed from -- across the eight discovery denominators the probe's
+        skill spans 0.4720-0.7224, straddling its own 0.50 threshold."""
+        assert pre.hypothesis("H7")["probe_denominator"] == "own_fitted_inplane_template"
+
+    def test_the_content_free_set_is_enumerated_and_label_free(self, pre):
+        """Every member must be a declared reference_baseline, so the set cannot grow
+        a member that post-dates the freeze."""
+        declared = {r["name"] for r in pre.get("reference_baselines")}
+        for name in pre.hypothesis("H7")["content_free_set"]:
+            assert name in declared, name
+
+    def test_the_mask_fitted_family_is_not_in_the_gate(self, pre):
+        """Content-free but not label-free: fit to validation lesion masks. Requiring
+        it to score below 0.05 while requiring a supervised probe above 0.50 is not a
+        strict test but an inconsistent one. Excluded -- and reported beside the gate."""
+        h7 = pre.hypothesis("H7")
+        assert not any(m.startswith("masks:") for m in h7["content_free_set"])
+        assert any(m.startswith("masks:") for m in h7["reported_beside_the_gate"])
+
+    def test_centre_prior_is_excluded_from_the_gate_but_still_reported(self, pre):
+        h7 = pre.hypothesis("H7")
+        assert "centre_prior" not in h7["content_free_set"]
+        assert "centre_prior" in h7["reported_beside_the_gate"]
+
+    def test_the_probe_scores_every_patch_even_though_it_fits_on_a_subsample(self, pre):
+        """Subsampling at fit time touches no estimand. Subsampling at score time
+        computes the numerator over a different patch population than the
+        denominator, which is a different quantity wearing the same name."""
+        proto = pre.hypothesis("H7")["probe_protocol"]
+        assert proto["score_coverage"] == "every_patch_of_every_bag"
+        assert proto["fit_split"] == "train" and proto["score_split"] == "test"
+
+
 class TestArmAllowLists:
     """ENGINEERING.md: these fail only at submission time, hours into a job.
 

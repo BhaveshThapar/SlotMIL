@@ -689,3 +689,137 @@ error refused everywhere else in this document.
   a separately named DeLong family carries the Holm correction. Three conditions
   run; one carries the family. The methods section states that the arm scoping
   was ruled before submission and that it does not move H1's bar.
+
+---
+
+## 2026-08-15 — define H7's denominator and its content-free set, and fix the probe's protocol
+
+- **Kind:** amendment
+- **Config hash before → after:** `7d0a43b7c301e332` → `de43c8bcdc5053b6`
+- **What changed:** H7 gained a denominator rule for the probe, an enumerated
+  `content_free_set`, and a `probe_protocol`. Nothing about the estimand itself
+  moves.
+
+**This is a separate entry from the scoping amendment above, on purpose.** That
+one answers "results already seen?" with discovery numbers that only *check* its
+rulings; this one answers with discovery numbers that would otherwise *decide*
+one of them. Merging the two would launder the difference.
+
+### The defect: H7 is not computable as written, in three different ways
+
+H7 reads: *the supervised patch probe's prior-normalised skill exceeds 0.50
+while every content-free baseline's is below 0.05.* Working it against what is on
+disk:
+
+**1. The probe has no declared denominator.** `reference_baselines.fitted_template`
+is fit to *the scorer's own* validation attention (`nulls.global_template(attns,
+masks, slot)` accumulates `a[slot]`, not the masks). Every arm therefore gets its
+own denominator. The probe is not an arm and nobody said which template it is
+scored against. Borrowing another arm's is arbitrary, and the arbitrariness is
+not small: carrying the published probe AUC of 0.9102 through each of the eight
+discovery denominators gives skill **0.4720 to 0.7224**, and the lowest of those
+is *below the 0.50 threshold*. The clause H7 leads with can be passed or failed
+by a choice nobody made.
+
+**2. `probe_ceiling.py` cannot produce the number at all.** It trains on 60 scans,
+tests on 40, subsamples negatives at `neg_per_pos=20`, and returns a bare patch
+AUC. A skill needs the probe scored on the same bags and the same patch grid as
+the template, or the numerator and denominator do not correspond. 0.9102 is not
+divisible into a skill.
+
+**3. "Every content-free baseline" is an undefined set, and it contains a
+falsifier.** The mask-fitted template family in `slotmil/eval/templates.py`
+post-dates the freeze and reads no test image, so on the plain reading of
+"content-free" it qualifies. Its skill against the declared denominator is
+**+0.298 / +0.224 / +0.346** on the three float32 dumps, up to **+0.537** on an
+untrained init: `masks:separable` is above 0.05 on 8 of 8 dumps and
+`masks:inplane` on 7 of 8. Under that reading H7 is falsified on discovery data
+and the constructive half of the paper is blocked.
+
+### Rulings
+
+**(a) The probe is scored against its own self-fitted in-plane template**, exactly
+as every arm is. Its per-patch scores take the place of attention, so
+`templates.inplane_template(source="attention")` applies unchanged. This is not a
+new rule — it is the existing `fitted_template` rule applied to a scorer that was
+never explicitly handed to it. It also removes the 0.4720–0.7224 range above:
+there is one denominator, and it is the probe's own.
+
+**(b) The mask-fitted family is excluded from the content-free set, as oracle
+references.** "Content-free" in this document has meant *reads no test image*
+(`PREREGISTRATION.md`: "a 256-number in-plane map fit on validation that never
+reads a test image"). The `masks:*` family satisfies that and still fails the
+sense H7 needs, because it is fit to validation **lesion masks** — it is
+content-free but not *label-free*. H7's whole purpose is to show the estimand
+separates a supervised scorer from unsupervised ones; requiring a reference that
+was itself fit to lesion labels to score near zero contradicts the clause
+immediately before it, which requires a supervised scorer to score high. A set
+containing both demands is not strict, it is inconsistent.
+
+**(c) `centre_prior` is reported as its own row and is not in the gate's set.**
+It is axially informative *by construction* — it ranks by distance from the
+volume centre — while the denominator is in-plane and, as
+`slotmil/eval/templates.py` records, has a slice AUC of exactly 0.5 by
+construction. Skill above zero for `centre_prior` therefore measures something
+the denominator cannot represent, which is this paper's own thesis, not a failure
+of the instrument. Using the finding to falsify the gate that measured it would
+be circular.
+
+  **`centre_prior`'s prior-normalised skill has not been computed.** It is not in
+  `runs/nulls/template_family.json`, which stores the family per trained dump and
+  scores `centre_prior` only as a scorer row (flat 0.7752, slice 0.6026,
+  within-slice 0.7351). This ruling is therefore made **before** the number
+  exists, which is the same order the H5 unit was ruled in and the reason this
+  clause is admissible at all. Whatever it comes out as, it is reported.
+
+**(d) The gate's content-free set is enumerated by name:** `chance`,
+`roll_permutation`, `entropy_matched_random`, `fitted_template`. All four are in
+the pre-freeze `reference_baselines` block; none reads a label; `fitted_template`
+scores exactly 0 against itself by construction and is included so the set is
+never empty.
+
+**(e) The probe protocol.** Fit on the confirmatory **train** split — all lesion
+patches plus `neg_per_pos=20` sampled negatives, `default_rng(0)`. Score **every
+patch of every confirmatory test bag**, emitted in the `(attns, masks)` shape the
+dumps use so it flows through `per_bag_axes` and `fit_family` unchanged.
+Subsampling at fit time is a fitting choice and touches no estimand; subsampling
+at score time changes the estimand and is forbidden.
+
+**(f) Rejected alternative, recorded.** Scoring H7 on the within-slice axis, where
+the in-plane denominator is commensurable by construction, also removes the
+inconsistency. Rejected because H5 reads the same estimand on the flat axis, and
+two hypotheses reading one estimand on two axes is a worse trap than the one
+being closed.
+
+### The cost, paid in the paper rather than hidden
+
+This ruling makes H7 easier to pass. Three things are therefore committed to
+here, and the paper reports them whether or not H7 clears:
+
+1. `masks:separable`'s skill (0.119–0.537 on discovery) as evidence that **the
+   declared denominator is not the strongest available reference** — a fitted
+   oracle beats it, and the honest reading of prior-normalised skill against an
+   in-plane template is an **upper bound** for any scorer carrying axial
+   structure.
+2. `centre_prior`'s skill, once computed, in the same table.
+3. The sentence that an in-plane denominator under-credits axial content-free
+   structure, stated as a limitation of the estimand we are recommending.
+
+- **Results already seen?** **Yes**, all on the discovery split and all
+  exploratory by construction. The complete list: the per-dump
+  `prior_normalised_skill` block in `runs/nulls/template_family.json`, from which
+  every `masks:*` figure above is quoted; the scorer axis rows in the same file;
+  and the probe AUC 0.9102 published in `RESULTS.md` since 2026-08-11, carried
+  through each stored denominator by arithmetic in this entry. **Not seen, and
+  deliberately not computed before ruling (c):** `centre_prior`'s
+  prior-normalised skill. **No confirmatory result of any kind:** no arm is
+  trained on any seed-2027 split and no seed-2027 dump exists.
+
+- **Consequence for the paper:** H7 remains the power gate and remains
+  confirmatory, evaluated on the seed-2027 split with the probe scored against
+  its own fitted template over the full test set. Its content-free set is the
+  four named references. The mask-fitted family and `centre_prior` are reported
+  beside it, not inside it, and the limitation in (c) is stated in the discussion
+  rather than left for a reviewer to find. If the probe still fails to separate,
+  the pre-registration's original consequence stands: the protocol is not
+  recommended.

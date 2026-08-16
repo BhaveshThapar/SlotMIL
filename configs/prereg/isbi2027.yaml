@@ -591,6 +591,56 @@ hypotheses:
       The probe fails to separate -> the proposed estimands have no power and
       must not be recommended. This gate blocks the constructive half of the
       paper.
+    # Everything below added by amendment 2026-08-15. The statement was not
+    # computable as written, in three ways: the probe had no declared
+    # denominator (carrying its 0.9102 through the eight stored denominators
+    # spans skill 0.4720-0.7224, straddling the 0.50 threshold);
+    # probe_ceiling.py returned a bare AUC over a subsampled test set, which is
+    # not divisible into a skill; and "every content-free baseline" was an
+    # undefined set. See AMENDMENTS.md, including the disclosure that the
+    # mask-family figures were known when the set was ruled and centre_prior's
+    # was not.
+    probe_denominator: own_fitted_inplane_template
+    probe_denominator_rationale: >-
+      Not a new rule -- the existing fitted_template rule applied to a scorer
+      nobody had explicitly handed to it. global_template fits to the SCORER's
+      own validation attention, so every arm already carries its own
+      denominator; the probe's per-patch scores take the place of attention and
+      it carries its own too. Borrowing another arm's would make the verdict
+      depend on which arm was borrowed from.
+    content_free_set: [chance, roll_permutation, entropy_matched_random, fitted_template]
+    content_free_set_rationale: >-
+      All four are in the pre-freeze reference_baselines block and none reads a
+      label. fitted_template scores exactly 0 against itself by construction and
+      is included so the set is never empty. EXCLUDED, with reasons: the
+      mask-fitted template family (templates.py) is content-free in this
+      document's sense -- it never reads a test image -- but it is fit to
+      validation LESION MASKS, so it is not label-free. Requiring a reference
+      fitted to lesion labels to score below 0.05, in the same breath as
+      requiring a supervised probe to score above 0.50, is not a strict test but
+      an inconsistent one. centre_prior is excluded as axially informative by
+      construction: the denominator is in-plane and has slice AUC exactly 0.5,
+      so skill above zero for centre_prior measures a limit of the denominator,
+      which is this paper's own thesis rather than a failure of the instrument.
+    reported_beside_the_gate: [masks:separable, masks:inplane, centre_prior]
+    reported_beside_the_gate_rule: >-
+      Reported in the same table as the gate, whether or not H7 clears, and the
+      discussion states that an in-plane denominator under-credits axial
+      content-free structure -- so skill against it is an UPPER BOUND for any
+      scorer carrying axial structure. This is the cost of the exclusions above
+      and it is paid in the paper rather than hidden.
+    probe_protocol:
+      fit_split: train
+      fit_negatives_per_positive: 20
+      fit_rng_seed: 0
+      score_split: test
+      score_coverage: every_patch_of_every_bag
+      note: >-
+        Subsampling at FIT time is a fitting choice and touches no estimand.
+        Subsampling at SCORE time changes the estimand -- the numerator would be
+        computed over a different patch population than the denominator -- and is
+        forbidden. Emitted in the (attns, masks) shape the dumps use so it flows
+        through per_bag_axes and fit_family unchanged.
   - id: H8
     role: two_sided
     statement: In-lung fitted-template AUC exceeds 0.65.
