@@ -93,6 +93,18 @@ class TestScoreCoverage:
             large, _ = collect_fit_set(f, uids, 8, np.random.default_rng(0))
         assert large.shape[0] > small.shape[0]
 
+    def test_the_fit_set_owns_its_memory(self, cache, uids):
+        """Not a style point -- this is the defect that OOM-killed a 20 GB node.
+
+        A basic index into an HDF5-read block returns a *view*, so holding one
+        patch holds the entire series it came from; 608 lesion-bearing training
+        series at up to 275 MB each is ~55 GB. Advanced indexing copies. The old
+        driver's 60-scan cap kept it under the cliff and out of sight."""
+        with h5py.File(cache, "r") as f:
+            X, _ = collect_fit_set(f, uids, 2, np.random.default_rng(0))
+        assert X.base is None
+        assert X.nbytes == X.shape[0] * X.shape[1] * 4
+
 
 class TestOwnDenominator:
     """``probe_denominator: own_fitted_inplane_template`` -- fit on val, per scorer."""

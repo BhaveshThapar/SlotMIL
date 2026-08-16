@@ -62,7 +62,7 @@ def collect_fit_set(f, uids, neg_per_pos: int, rng, max_scans: int | None = None
     time too.
     """
     X: list[np.ndarray] = []
-    y: list[int] = []
+    y: list[np.ndarray] = []
     used = 0
     for uid in uids:
         if uid not in f:
@@ -74,23 +74,35 @@ def collect_fit_set(f, uids, neg_per_pos: int, rng, max_scans: int | None = None
         pos = np.argwhere(m > 0)
         if len(pos) == 0:
             continue
-        feats = g["features"][:]
         gh = int(g.attrs["grid_h"])
-        for (s, r, c) in pos:
-            X.append(feats[s, r * gh + c])
-            y.append(1)
         flat = m.reshape(m.shape[0], -1)
         neg = np.argwhere(flat == 0)
         pick = rng.choice(len(neg), min(len(pos) * neg_per_pos, len(neg)),
                           replace=False)
-        for j in pick:
-            s, p = neg[j]
-            X.append(feats[s, p])
-            y.append(0)
+
+        # Gathered in one advanced index, positives first, then the sampled
+        # negatives in the order rng.choice returned them -- the order the
+        # per-patch loop this replaces produced, so the fit set is unchanged.
+        #
+        # Advanced indexing because it COPIES. `block[s, p]` on a basic index
+        # returns a *view*, which keeps the whole series alive for as long as any
+        # one of its patches is held: 608 lesion-bearing training series at up to
+        # 275 MB each is ~55 GB, and this OOM-killed a 20 GB login node. The old
+        # driver capped at 60 scans and never reached the cliff.
+        rows_s = np.concatenate([pos[:, 0], neg[pick, 0]])
+        rows_p = np.concatenate([pos[:, 1] * gh + pos[:, 2], neg[pick, 1]])
+        block = g["features"][:]
+        X.append(np.asarray(block[rows_s, rows_p], dtype=np.float32))
+        y.append(np.concatenate([np.ones(len(pos), dtype=np.int64),
+                                 np.zeros(len(pick), dtype=np.int64)]))
+        del block
+
         used += 1
         if max_scans is not None and used >= max_scans:
             break
-    return np.array(X, dtype=np.float32), np.array(y)
+    if not X:
+        return np.empty((0, 0), dtype=np.float32), np.empty(0, dtype=np.int64)
+    return np.concatenate(X), np.concatenate(y)
 
 
 def fit_probe(f, uids, neg_per_pos: int = 20, seed: int = 0,
