@@ -7,27 +7,26 @@ actionable recommendation instead of a defeat. It needs the lung store that
 ``scripts/lung_mask_lidc.py`` built for all 999 series and that, until
 ``slotmil/eval/lung.py``, nothing read.
 
-**``--estimand`` has no default, on purpose.** The pre-registration says two
-different things and only one of them can be H8's number:
+**Two numbers, one threshold.** H8's statement named a plain AUC and the
+estimand it declared ``depends_on`` named a stratified one, which is not the
+same quantity; the amendment of 2026-08-15 (``7682347538e76fc8``) ruled that the
+0.65 verdict attaches to ``in_lung_auc`` and that ``in_lung_stratified_auc`` is
+reported beside it with no threshold. Both are computed here in one pass, so the
+reported pair cannot drift, and the verdict reads only the one the config marks
+``carries_verdict_for: H8``.
 
-    PREREGISTRATION.md / H8.statement    "in-lung fitted-template AUC exceeds 0.65"
-    estimands.secondary                  in_lung_stratified_auc =
-                                         "stratified_auc restricted to protocol.lung_mask"
-
-A plain AUC and a Mantel-Haenszel AUC over (slice x radial bin) strata are not
-the same quantity, and one 0.65 threshold cannot mean both. Until an amendment
-picks one, this driver refuses to guess: the caller states which estimand is
-being computed, the choice is recorded in the artefact, and no ``h8`` verdict is
-emitted. Running it both ways and then deciding would be choosing the rule after
-seeing the number, which is the error the whole amendment chain exists to
-prevent.
+The stratified number is not a second opinion on the same question. A fitted
+template is a *purely* positional scorer, and stratifying by (slice x radial
+bin) removes exactly the ranking such a scorer lives on -- it collapses toward
+0.5 by construction. It is reported because that collapse is informative about
+the estimand, not because 0.65 could ever have meant it.
 
 Restriction removes roughly three quarters of every bag -- the global in-lung
 fraction under ``method: fill`` is 0.243 -- so the in-lung number is computed
 over far fewer patches than the unrestricted one, and the unrestricted number is
 reported beside it so the reader can see what restricting cost.
 
-    python scripts/h8_in_lung.py --tags f32_seed0 --estimand auc --role exploratory
+    python scripts/h8_in_lung.py --tags f32_seed0 --role exploratory
 """
 
 from __future__ import annotations
@@ -89,7 +88,7 @@ def _auc(scores, target, strata, estimand: str) -> tuple[float, int]:
     return d["auc"], d["n_pairs"]
 
 
-def analyse(tag, val_npz, test_npz, lung_path, uid_to_pat, estimand, reps, seed,
+def analyse(tag, val_npz, test_npz, lung_path, uid_to_pat, reps, seed,
             lung_thresh):
     val_a, val_m = load(val_npz)
     test_a, test_m = load(test_npz)
@@ -101,8 +100,13 @@ def analyse(tag, val_npz, test_npz, lung_path, uid_to_pat, estimand, reps, seed,
     template = global_template(val_a, val_m, slot=slot)
     scored = template_scores(test_m, template)
 
-    rows_in, rows_all, pats, kept = [], [], [], []
-    dropped_no_lesion_in_lung = 0
+    # Both estimands in one pass over the bags, so the reported pair cannot drift
+    # apart into two runs of two different files.
+    rows: dict[tuple[str, str], list[float]] = {
+        (e, r): [] for e in ("auc", "stratified_auc") for r in ("in_lung", "all")
+    }
+    pats, kept = [], []
+    no_lesion_in_lung = 0
     with h5py.File(lung_path, "r") as lf:
         for i, (s, m) in enumerate(zip(scored, test_m)):
             uid = uids[i]
@@ -112,38 +116,42 @@ def analyse(tag, val_npz, test_npz, lung_path, uid_to_pat, estimand, reps, seed,
             target = (np.asarray(m) > 0).astype(np.int8)
             strata = bag_strata(n)
 
-            a_all, _ = _auc(s[slot], target, strata, estimand)
-            a_in, n_used = _auc(s[slot][in_lung], target[in_lung],
-                                strata[in_lung], estimand)
-            if not np.isfinite(a_in):
-                dropped_no_lesion_in_lung += 1
-            rows_all.append(a_all)
-            rows_in.append(a_in)
+            for estimand in ("auc", "stratified_auc"):
+                a_all, _ = _auc(s[slot], target, strata, estimand)
+                a_in, _ = _auc(s[slot][in_lung], target[in_lung],
+                               strata[in_lung], estimand)
+                rows[(estimand, "all")].append(a_all)
+                rows[(estimand, "in_lung")].append(a_in)
+            if not np.isfinite(rows[("auc", "in_lung")][-1]):
+                no_lesion_in_lung += 1
             pats.append(uid_to_pat.get(uid, uid))
             kept.append(float(in_lung.mean()))
 
-    boot_in = cluster_bootstrap(rows_in, pats, reps, seed)
-    boot_all = cluster_bootstrap(rows_all, pats, reps, seed)
+    estimands = {
+        e: {"in_lung": cluster_bootstrap(rows[(e, "in_lung")], pats, reps, seed),
+            "unrestricted": cluster_bootstrap(rows[(e, "all")], pats, reps, seed)}
+        for e in ("auc", "stratified_auc")
+    }
+
+    # The verdict reads in_lung_auc only -- estimands.secondary marks it
+    # carries_verdict_for: H8. Two-sided: reported either way, no falsifier.
+    verdict = estimands["auc"]["in_lung"]["mean"]
     return {
         "tag": tag,
         "frozen_slot": int(slot),
-        "estimand": estimand,
         "lung_thresh": lung_thresh,
         "patch_rule": "a patch is in-lung when it contains any lung at all",
-        "n_bags": len(rows_in),
+        "n_bags": len(pats),
         "mean_in_lung_fraction": float(np.mean(kept)),
-        "n_bags_with_no_lesion_in_lung": dropped_no_lesion_in_lung,
-        "in_lung": boot_in,
-        "unrestricted": boot_all,
-        # Deliberately no verdict. See the module docstring: H8's statement and
-        # its declared estimand name two different numbers, and picking one after
-        # seeing both is the error the amendment chain exists to prevent.
+        "n_bags_with_no_lesion_in_lung": no_lesion_in_lung,
+        "estimands": estimands,
         "h8": {
+            "estimand": "in_lung_auc",
             "threshold": 0.65,
-            "outcome": None,
-            "blocked_on": "H8.statement says 'in-lung fitted-template AUC' while "
-                          "estimands.secondary declares in_lung_stratified_auc; "
-                          "one amendment must pick one before a verdict is scored",
+            "value": verdict,
+            "exceeds": None if verdict is None else bool(verdict > 0.65),
+            "falsifier": "none -- two-sided, reported either way",
+            "reported_beside_the_threshold": "in_lung_stratified_auc",
         },
     }
 
@@ -152,17 +160,23 @@ def report(r):
     def fmt(s):
         return "     --" if s["mean"] is None else \
             f"{s['mean']:.4f}  [{s['lo']:.4f}, {s['hi']:.4f}]"
-    print(f"[{r['tag']}]  frozen_slot={r['frozen_slot']}  "
-          f"estimand={r['estimand']}  bags={r['n_bags']}", flush=True)
+    print(f"[{r['tag']}]  frozen_slot={r['frozen_slot']}  bags={r['n_bags']}",
+          flush=True)
     print(f"   mean in-lung fraction   {r['mean_in_lung_fraction']:.4f}", flush=True)
-    print(f"   {'unrestricted':22s} {fmt(r['unrestricted'])}", flush=True)
-    print(f"   {'in-lung':22s} {fmt(r['in_lung'])}", flush=True)
+    print(f"   {'estimand':22s} {'unrestricted':24s} in-lung", flush=True)
+    for name, e in r["estimands"].items():
+        star = " *" if name == "auc" else ""
+        print(f"   {name + star:22s} {fmt(e['unrestricted']):24s} "
+              f"{fmt(e['in_lung'])}", flush=True)
+    print("   * = in_lung_auc, the estimand H8's threshold attaches to", flush=True)
     if r["n_bags_with_no_lesion_in_lung"]:
         print(f"   {r['n_bags_with_no_lesion_in_lung']} bags had no lesion patch "
               f"inside the lung mask and score nan on the restricted axis",
               flush=True)
-    print(f"   H8 (> {r['h8']['threshold']}): NOT SCORED -- "
-          f"{r['h8']['blocked_on']}", flush=True)
+    h = r["h8"]
+    print(f"   H8: in_lung_auc {h['value']:.4f} vs {h['threshold']} -> "
+          f"{'EXCEEDS' if h['exceeds'] else 'BELOW'}  (two-sided, no falsifier)",
+          flush=True)
 
 
 def main():
@@ -172,10 +186,6 @@ def main():
     ap.add_argument("--meta", default="runs/_audit_meta.json")
     ap.add_argument("--tags", nargs="*", default=None,
                     help="default: every tag with both a _val.npz and a _test.npz")
-    ap.add_argument("--estimand", required=True, choices=["auc", "stratified_auc"],
-                    help="no default: H8's statement and its declared estimand "
-                         "name two different numbers and the freeze has not yet "
-                         "picked one")
     ap.add_argument("--lung-thresh", type=float, default=DEFAULT_LUNG_THRESH)
     ap.add_argument("--reps", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=0)
@@ -194,14 +204,14 @@ def main():
     results = []
     for tag in tags:
         r = analyse(tag, d / f"{tag}_val.npz", d / f"{tag}_test.npz", args.lung,
-                    uid_to_pat, args.estimand, args.reps, args.seed,
-                    args.lung_thresh)
+                    uid_to_pat, args.reps, args.seed, args.lung_thresh)
         results.append(r)
         report(r)
 
     payload = prereg.load().stamp({
         "reps": args.reps, "analysis_role": args.role,
-        "estimand": args.estimand, "lung_mask": args.lung, "results": results,
+        "verdict_estimand": "in_lung_auc", "lung_mask": args.lung,
+        "results": results,
     })
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(payload, indent=2))
