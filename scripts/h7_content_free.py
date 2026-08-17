@@ -30,9 +30,13 @@ not recommend it -- the gate blocks the constructive half. Which makes the
     dump. **Undefined for a K=1 arm**: ``random_attn(k=1)`` softmaxes one slot and
     returns exactly 1.0 everywhere, so every instance ties and the AUC does not
     exist. That is the same objection ``content_free_construction`` raises against
-    taking k from the probe, and it applies to five of the seven arms here. Those
-    are reported as not computable, with the reason, and cannot falsify the gate;
-    ``slot:div=0.5`` (K=8) and ``mh_abmil`` (K=4) carry the member.
+    taking k from the probe. Measured K over the seven ``learned_attention`` arms is
+    ``{1: abmil, gated_abmil, clam_sb, normal_guidance; 2: dsmil; 8: mh_abmil,
+    slot:div=0.5}`` -- so four arms cannot carry the member and three can. Those
+    four are reported as not computable, with the reason, and cannot falsify the
+    gate. (``mh_abmil`` emits K=8, not 4: it is parameter-matched to slot attention
+    at ``num_slots=8``. The ``4`` in ENGINEERING.md's ``[4, 45312, 2304]`` OOM note is a
+    batch dimension.)
 ``fitted_template``
     ``nulls.global_template`` on the member's own validation attention, which is
     its own denominator and therefore scores exactly 0. Included, per the config,
