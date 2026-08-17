@@ -371,6 +371,39 @@ class TestArms:
             out = model(torch.randn(2, 15, 64), torch.ones(2, 15, dtype=torch.bool))
             assert out["logits"].shape == (2, 2), a["name"]
 
+    def test_implemented_arms_build_at_every_declared_class_count(self, pre):
+        """Constructibility is tested at num_classes=2 above, but the config
+        declares a four-class condition (``mosmed_severity``) that carries H9.
+        An arm that builds binary and not four-class would fail only once the
+        MosMed sweep was already queued.
+
+        Two arms change shape with the class count and the difference is
+        load-bearing, so it is asserted rather than left implicit:
+        ``dsmil`` emits ``k_eff = num_classes`` tokens (mil.py:139), and
+        ``clam_sb`` carries one binary instance classifier per bag class, so
+        ``instance_logits`` is ``[B, N, C, 2]``. H7's
+        ``entropy_matched_random`` is defined only for K > 1, so DSMIL's K is
+        what decides whether that member is computable for the arm.
+        """
+        counts = sorted({int(c.get("num_classes") or 2)
+                         for c in pre.get("conditions")})
+        assert 4 in counts, "the four-class condition went missing from the config"
+        for a in pre.arms(status="implemented"):
+            pooling = a["spec"].partition(":")[0]
+            for n_cls in counts:
+                torch.manual_seed(0)
+                model = build_model(
+                    pooling=pooling, input_dim=64, dim=32, num_classes=n_cls,
+                    num_slots=4, readout="gated",
+                ).eval()
+                out = model(torch.randn(2, 15, 64), torch.ones(2, 15, dtype=torch.bool))
+                assert out["logits"].shape == (2, n_cls), (a["name"], n_cls)
+                if pooling == "dsmil":
+                    assert out["attn"].shape[1] == n_cls, (a["name"], n_cls)
+                    assert out["instance_logits"].shape == (2, 15, n_cls)
+                if pooling == "clam_sb":
+                    assert out["instance_logits"].shape == (2, 15, n_cls, 2)
+
     def test_planned_arms_are_not_yet_constructible(self, pre):
         """If a planned arm starts building, the config is stale -- promote it,
         so the sweep does not quietly skip an arm it could have run."""

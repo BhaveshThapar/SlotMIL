@@ -22,6 +22,11 @@
 #   COND=nodule_present    sbatch scripts/slurm/confirmatory_collect_array.sbatch
 #   COND=malignancy        sbatch scripts/slurm/confirmatory_collect_array.sbatch
 #   COND=balanced_presence sbatch scripts/slurm/confirmatory_collect_array.sbatch
+#   COND=mosmed_severity   sbatch scripts/slurm/confirmatory_collect_array.sbatch
+#
+# Any pre-registered condition, not just the LIDC three: the split, the feature
+# cache and the run root all resolve from the config below, so a second dataset
+# needs a condition stanza and nothing here.
 #
 # One array task per arm; the five seeds loop inside, because a dump costs ~2
 # minutes (job 7256442 ran 00:01:49 for one checkpoint, val+test) and 45 separate
@@ -41,7 +46,7 @@ set -euo pipefail
 PROJ=/fs/nexus-scratch/bthapar/SlotMIL
 cd "$PROJ"
 
-COND=${COND:?set COND=nodule_present, malignancy or balanced_presence}
+COND=${COND:?set COND to a pre-registered condition name, e.g. nodule_present}
 
 source /usr/share/Modules/init/bash
 module load Python3/3.11.11
@@ -73,9 +78,16 @@ ARM=${ARMS[$SLURM_ARRAY_TASK_ID]}
 ARM_DIR=${ARM//:/_}
 POOLING=${ARM%%:*}
 
-# Resolve the split and the run root from the frozen config, so this script holds
-# no second copy of either. Refuses an undeclared condition.
-read -r SPLITS RUN_ROOT <<<"$(python - "$COND" <<'PY'
+# Resolve the split, the cache and the run root from the frozen config, so this
+# script holds no second copy of any of them. Refuses an undeclared condition.
+#
+# This was LIDC-only until MosMed's confirmatory collection needed it. The guard
+# that enforced that is gone, not loosened: what it was really protecting was the
+# hardcoded `CACHE=data/lidc/...` two lines below, which would have paired MosMed
+# checkpoints with LIDC features and produced dumps that looked entirely normal.
+# The cache now comes from the same config stanza as the split, so the pairing
+# cannot come apart and the guard has nothing left to guard.
+read -r SPLITS CACHE RUN_ROOT <<<"$(python - "$COND" <<'PY'
 import sys
 sys.path.insert(0, "/fs/nexus-scratch/bthapar/SlotMIL")
 from slotmil import prereg
@@ -86,18 +98,26 @@ cond = next((c for c in pre.get("conditions") if c["name"] == name), None)
 if cond is None:
     declared = ", ".join(c["name"] for c in pre.get("conditions"))
     raise SystemExit(f"condition {name!r} is not pre-registered. Declared: {declared}")
-if cond["dataset"] != "lidc":
-    raise SystemExit(f"{name} is on {cond['dataset']}, not lidc; this array is LIDC-only")
 
-sp = pre.split(cond["dataset"], cond["split"])
-root = ("runs/lidc_confirmatory" if cond.get("carries_hypothesis_family")
-        else f"runs/lidc_{name}_confirmatory")
-print(sp["path"], root)
+ds = cond["dataset"]
+sp = pre.split(ds, cond["split"])
+cache = pre.get("datasets")[ds]["cache"]
+# The family carrier keeps its historical directory name; every other condition
+# is named for itself. Spelled as three explicit branches rather than one clever
+# expression, because a run root that is subtly wrong reads as "training never
+# finished" rather than as a path bug.
+if cond.get("carries_hypothesis_family"):
+    root = "runs/lidc_confirmatory"
+elif ds == "lidc":
+    root = f"runs/lidc_{name}_confirmatory"
+else:
+    root = f"runs/{name}_confirmatory"
+print(sp["path"], cache, root)
 PY
 )"
 
 OUTDIR=$PROJ/runs/nulls_${COND}_confirmatory
-CACHE=$PROJ/data/lidc/features_dinov2_vitb14.h5
+CACHE=$PROJ/$CACHE
 
 echo "task $SLURM_ARRAY_TASK_ID | condition '$COND' | arm '$ARM' | pooling '$POOLING'"
 echo "  splits   $SPLITS"

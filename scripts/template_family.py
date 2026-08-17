@@ -46,8 +46,14 @@ reads a test image, not that the reference beats it. The weaker sentence is the
 one that survives a reviewer.
 
 Discovery dumps in ``runs/nulls`` are exploratory by construction, which is the
-default here. ``--role confirmatory`` is for dumps from the seed-2027 split and
-nothing else.
+default here. ``--role confirmatory`` is for dumps from a split the config
+declares confirmatory -- which is the seed-2027 LIDC splits **and MosMed's
+seed-0 split**, declared ``confirmatory_with_caveat`` because only 50 of 1110
+scans carry masks and re-splitting would leave too few in test to estimate
+anything. This sentence read "the seed-2027 split and nothing else" until H9 was
+run, which would have made the tool's own stated contract contradict the
+pre-registration it enforces. Nothing was enforcing it either way; the flag has
+always been a label.
 
     python scripts/template_family.py --tags f32_seed0 --reps 10000
 """
