@@ -652,10 +652,15 @@ class TestArmSetScoping:
 
     @pytest.mark.parametrize("hid", SCOPED)
     def test_scoped_hypotheses_exclude_the_construction_fixed_arms(self, pre, hid):
+        """A literal count of 7 stood here until transmil made it 8. Comparing
+        against `scoring_class` keeps the guard -- a misclassified arm still
+        fails -- without going red on every promotion, which is the pattern that
+        teaches a reader to bump the number instead of checking it."""
         s = pre.arm_set(hid)
         assert "mean" not in s
         assert "centre_gaussian" not in s
-        assert len(s) == 7
+        assert set(s) == {a["name"] for a in pre.arms(status="implemented")
+                          if a.get("scoring_class") == "learned_attention"}
 
     def test_an_unscoped_hypothesis_still_sees_every_arm(self, pre):
         """The pre-freeze default must survive, or this method would silently

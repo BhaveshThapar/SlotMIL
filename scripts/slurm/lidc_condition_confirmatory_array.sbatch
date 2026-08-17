@@ -11,7 +11,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=48G
 #SBATCH --time=24:00:00
-#SBATCH --array=0-8
+#SBATCH --array=0-9
 #SBATCH --requeue
 #SBATCH --output=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.out
 #SBATCH --error=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.err
@@ -61,10 +61,10 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 # Exactly the arms declared `status: implemented`, in declaration order --
 # identical to lidc_confirmatory_array.sbatch, because a secondary condition
 # that trained a different arm set would not be a consistency check on anything.
-# transmil is still `status: planned`; append it, and raise --array, only once it
-# is promoted through the amendment procedure in ENGINEERING.md.
+# transmil joined on 2026-08-17, taking --array to 0-9; its drop rule did not
+# fire. This list and --array must be raised together.
 ARMS=(mean abmil gated_abmil mh_abmil "slot:div=0.5" \
-      centre_gaussian "normal_guidance:lam=0.1" clam_sb dsmil)
+      centre_gaussian "normal_guidance:lam=0.1" clam_sb dsmil transmil)
 
 if [ "$SLURM_ARRAY_TASK_ID" -ge "${#ARMS[@]}" ]; then
     echo "array index $SLURM_ARRAY_TASK_ID beyond ${#ARMS[@]} arms -- --array and ARMS have drifted" >&2

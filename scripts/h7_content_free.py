@@ -87,6 +87,25 @@ from slotmil.eval.verdict import arm_tag
 
 FLAT = 1
 
+# How many times each STOCHASTIC content-free member is drawn per tag.
+#
+# It used to be once. `np.random.default_rng(cf_seed)` was constructed fresh per
+# tag with cf_seed fixed at 0, so every tag in a condition shared one realisation
+# -- roll_permutation's offsets were literally identical across all 35 tags --
+# and the spread across tags was arm-to-arm variation with the draw held
+# constant. There was therefore no estimate of draw-to-draw variance anywhere,
+# which matters because H7's gate is a MAXIMUM over tags: a maximum over one
+# realisation cannot distinguish a member that really sits above 0.05 from a
+# member whose one draw happened to. Neither a max nor a mean is well founded on
+# a single realisation; the fix is to draw enough times to summarise, not to
+# change what the gate does with the summary.
+#
+# 30 because the protocol already uses ">= 30" for the one other place it makes a
+# distributional claim (the untrained-init floor, reported as median and
+# 5th-95th percentile). Reusing a number this document already committed to is a
+# better justification than a fresh one chosen while looking at a result.
+CONTENT_FREE_DRAWS = 30
+
 
 def _flat(attns, masks, slot, uids, uid_to_pat, reps, seed):
     """Flat-axis cluster-bootstrapped AUC through the one shared scoring path."""
@@ -101,19 +120,47 @@ def _skill(numer, denom):
     return prior_normalised_skill(numer["mean"], denom["mean"])
 
 
+def _summarise_draws(skills):
+    """Collapse one member's per-draw skills at one tag into the gate's input.
+
+    The gate keeps its pre-registered aggregation -- a maximum over tags, so that
+    no arm can hide a badly-behaved one inside an average. What changes is only
+    how a single tag's value is estimated: the MEAN over draws, which is the
+    member's expected skill for that arm rather than whichever draw came up. The
+    full distribution is carried alongside, because the whole point of drawing 30
+    times is that a reader can see the spread the single-draw form hid.
+    """
+    vals = [s for s in skills if s is not None]
+    if not vals:
+        return None, {"draws": len(skills), "computable": 0}
+    a = np.asarray(vals, dtype=float)
+    return float(a.mean()), {
+        "draws": len(skills), "computable": int(a.size),
+        "per_draw": [float(v) for v in a],
+        "mean": float(a.mean()), "median": float(np.median(a)),
+        "sd": float(a.std(ddof=1)) if a.size > 1 else 0.0,
+        "min": float(a.min()), "max": float(a.max()),
+        # Draw 0 is seeded exactly as the single-realisation form was, so the
+        # published number stays locatable inside its own distribution rather
+        # than being silently replaced by one computed a different way.
+        "single_draw": float(a[0]),
+    }
+
+
 def _constant_like(masks):
     """A K=1 scorer that is the same everywhere: chance, built not asserted."""
     return [np.ones((1, len(m)), dtype=np.float32) for m in masks]
 
 
-def analyse(tag, val_npz, test_npz, uid_to_pat, reps, seed, cf_seed):
+def analyse(tag, val_npz, test_npz, uid_to_pat, reps, seed, cf_seed,
+            cf_draws=CONTENT_FREE_DRAWS):
     val_a, val_m = load(val_npz)
     test_a, test_m = load(test_npz)
     slot, _ = pick_lesion_slot(val_a, val_m)
     uids = np.load(test_npz, allow_pickle=True)["uids"]
     k = int(test_a[0].shape[0])
 
-    def flat(attns, masks, s=0):
+    def flat(attns, masks, s=0, reps=reps):
         return _flat(attns, masks, s, uids, uid_to_pat, reps, seed)
 
     members: dict[str, dict] = {}
@@ -127,17 +174,33 @@ def analyse(tag, val_npz, test_npz, uid_to_pat, reps, seed, cf_seed):
                          "computable": True}
 
     # ---- roll_permutation: roll the TARGET, leave the scorer alone ------------
-    rolled = roll_masks(test_m, np.random.default_rng(cf_seed))
+    # Draw d is seeded cf_seed + d, so draw 0 reproduces the single-realisation
+    # number exactly and the remaining draws are independent streams (numpy runs
+    # an integer seed through SeedSequence, so consecutive seeds are not
+    # correlated). Only draw 0 pays for the bootstrap: reps=0 returns the point
+    # estimate, and an interval on one draw of a null is not a reported quantity.
     template = global_template(val_a, val_m, slot)   # fit on the TRUE val masks
-    num, n = flat(test_a, rolled, slot)
-    den, _ = flat(template_scores(rolled, template), rolled)
+    roll_skills, roll_num, roll_den, n = [], None, None, 0
+    for d in range(cf_draws):
+        rolled = roll_masks(test_m, np.random.default_rng(cf_seed + d))
+        num, n = flat(test_a, rolled, slot, reps=reps if d == 0 else 0)
+        den, _ = flat(template_scores(rolled, template), rolled,
+                      reps=reps if d == 0 else 0)
+        roll_skills.append(_skill(num, den))
+        if d == 0:
+            roll_num, roll_den = num, den
+    skill, spread = _summarise_draws(roll_skills)
     members["roll_permutation"] = {
-        "auc": num, "auc_denominator": den, "skill": _skill(num, den),
-        "n_bags_scored": n, "computable": True,
+        "auc": roll_num, "auc_denominator": roll_den, "skill": skill,
+        "n_bags_scored": n, "computable": skill is not None,
+        "draw_distribution": spread,
         "construction": "nulls.roll_masks on the target; the arm's attention is "
                         "unmoved and its template is fit on the true val masks, "
                         "with both numerator and denominator scored against the "
-                        "rolled target",
+                        f"rolled target. Drawn {cf_draws} times, seeds "
+                        f"{cf_seed}..{cf_seed + cf_draws - 1}; the reported skill "
+                        "is the mean over draws. auc and auc_denominator are "
+                        "draw 0's, the only draw carrying an interval.",
     }
 
     # ---- entropy_matched_random: needs K > 1 ---------------------------------
@@ -153,22 +216,39 @@ def analyse(tag, val_npz, test_npz, uid_to_pat, reps, seed, cf_seed):
                             "from the accompanying arm's dump",
         }
     else:
+        # match_scale is deterministic in (target_h, k), so it is fit once and
+        # every draw shares it: the member is "random attention AT the arm's
+        # entropy", and refitting the scale per draw would let the entropy match
+        # itself wander between draws.
         target_h = slot_entropy(test_a)
         scale = match_scale(target_h, k)
-        rng = np.random.default_rng(cf_seed)
-        rand_val = random_attn([len(m) for m in val_m], k, scale, rng)
-        rand_test = random_attn([len(m) for m in test_m], k, scale, rng)
-        num, n = flat(rand_test, test_m)
-        den, _ = flat(template_scores(test_m, global_template(rand_val, val_m, 0)),
-                      test_m)
+        rand_skills, rand_num, rand_den, achieved = [], None, None, []
+        for d in range(cf_draws):
+            rng = np.random.default_rng(cf_seed + d)
+            rand_val = random_attn([len(m) for m in val_m], k, scale, rng)
+            rand_test = random_attn([len(m) for m in test_m], k, scale, rng)
+            num, n = flat(rand_test, test_m, reps=reps if d == 0 else 0)
+            den, _ = flat(template_scores(test_m, global_template(rand_val, val_m, 0)),
+                          test_m, reps=reps if d == 0 else 0)
+            rand_skills.append(_skill(num, den))
+            achieved.append(slot_entropy(rand_test))
+            if d == 0:
+                rand_num, rand_den = num, den
+        skill, spread = _summarise_draws(rand_skills)
         members["entropy_matched_random"] = {
-            "auc": num, "auc_denominator": den, "skill": _skill(num, den),
-            "n_bags_scored": n, "computable": True, "k": k,
+            "auc": rand_num, "auc_denominator": rand_den, "skill": skill,
+            "n_bags_scored": n, "computable": skill is not None, "k": k,
             "target_slot_entropy": target_h, "matched_scale": scale,
-            "achieved_slot_entropy": slot_entropy(rand_test),
+            "achieved_slot_entropy": float(np.mean(achieved)),
+            "achieved_slot_entropy_per_draw": [float(v) for v in achieved],
             "max_possible_entropy": float(np.log(k)),
+            "draw_distribution": spread,
             "construction": "nulls.random_attn at nulls.match_scale, k and entropy "
-                            "target from the accompanying arm's dump",
+                            "target from the accompanying arm's dump. Drawn "
+                            f"{cf_draws} times, seeds {cf_seed}.."
+                            f"{cf_seed + cf_draws - 1}; the reported skill is the "
+                            "mean over draws. The scale is fit once and shared, "
+                            "so the entropy match does not wander between draws.",
         }
 
     # ---- fitted_template: its own denominator, so exactly 0 ------------------
@@ -241,6 +321,10 @@ def main():
     ap.add_argument("--seed", type=int, default=None,
                     help="default: statistics.bootstrap.rng_seed; also the RNG for "
                          "the roll and the random-attention members")
+    ap.add_argument("--cf-draws", type=int, default=None,
+                    help="draws per tag for the two stochastic content-free "
+                         "members; default: hypotheses.H7.content_free_draws if "
+                         "declared, else CONTENT_FREE_DRAWS")
     ap.add_argument("--out", default="runs/nulls/h7_content_free.json")
     ap.add_argument("--role", choices=["exploratory", "confirmatory"],
                     default="exploratory")
@@ -251,6 +335,15 @@ def main():
     reps = args.reps if args.reps is not None else pre.get("statistics.bootstrap.reps")
     boot_seed = (args.seed if args.seed is not None
                  else pre.get("statistics.bootstrap.rng_seed"))
+    # Declared if the config declares it, taken if not -- and either way the
+    # number and which of the two it was land in the artefact, so a reader never
+    # has to open this file to find out how many draws stand behind a member.
+    declared_draws = h7.get("content_free_draws")
+    cf_draws = (args.cf_draws if args.cf_draws is not None
+                else declared_draws if declared_draws is not None
+                else CONTENT_FREE_DRAWS)
+    draws_basis = ("cli" if args.cf_draws is not None
+                   else "declared" if declared_draws is not None else "taken")
 
     d = Path(args.dir)
     if args.tags:
@@ -272,13 +365,15 @@ def main():
     results = []
     for tag in tags:
         r = analyse(tag, d / f"{tag}_val.npz", d / f"{tag}_test.npz", uid_to_pat,
-                    reps, boot_seed, boot_seed)
+                    reps, boot_seed, boot_seed, cf_draws)
         results.append(r)
         report(r)
 
     # The gate reads the worst computed member over every tag: "every content-free
     # baseline's is below 0.05" is a statement about the set, not about an average
-    # over it.
+    # over it. Unchanged by the replication -- each tag's value is now a mean over
+    # draws rather than one draw, but what the gate does with those values is the
+    # rule as written.
     worst = None
     for r in results:
         for name, m in r["members"].items():
@@ -290,6 +385,16 @@ def main():
         "reps": reps, "analysis_role": args.role,
         "content_free_set": h7["content_free_set"],
         "denominator_rule": h7["content_free_construction"]["denominator_rule"],
+        "content_free_draws": cf_draws,
+        "content_free_draws_basis": draws_basis,
+        "content_free_draws_note":
+            "The two stochastic members are drawn cf_draws times per tag and each "
+            "tag's reported skill is the mean over its draws. Before this, every "
+            "tag in a condition shared ONE realisation -- default_rng(0) rebuilt "
+            "per tag -- so there was no draw-to-draw variance estimate anywhere "
+            "and a maximum over tags could not tell a member that sits above the "
+            "threshold from a member whose single draw did. The aggregation the "
+            "gate applies to the per-tag values is unchanged.",
         "h7_content_free_half": {
             "threshold": threshold,
             "worst_computed": worst,

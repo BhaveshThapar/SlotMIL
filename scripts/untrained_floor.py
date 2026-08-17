@@ -128,7 +128,8 @@ def main() -> int:
     # mean is here for H1's tie-floor check, which asserts its gap is exactly 0.
     ap.add_argument("--pooling", default="slot",
                     choices=["mean", "abmil", "gated_abmil", "slot", "mh_abmil",
-                             "centre_gaussian", "normal_guidance", "clam_sb", "dsmil"])
+                             "centre_gaussian", "normal_guidance", "clam_sb", "dsmil",
+                             "transmil"])
     ap.add_argument("--num-slots", type=int, default=8)
     ap.add_argument("--dim", type=int, default=256)
     ap.add_argument("--batch-size", type=int, default=4)

@@ -339,10 +339,22 @@ class TestArmSetsExcludeTheArithmeticArms:
 
     @pytest.mark.parametrize("hid", ["H1", "H2", "H4", "H5", "H6", "H10"])
     def test_learned_attention_only(self, hid):
-        arms = prereg.load().arm_set(hid)
+        """The set is exactly the implemented arms declared ``learned_attention``.
+
+        This was a literal count of 7 until transmil made it 8. A literal is the
+        wrong guard: it goes red on every arm promotion, which trains the reader
+        to bump it, and bumping it is precisely the move that would let a
+        misclassified arm through. Comparing against ``scoring_class`` is not
+        tautological -- it is the rule ``arm_set`` claims to implement -- and the
+        two named exclusions below stay explicit because they are the specific
+        failure this class exists to catch.
+        """
+        pre = prereg.load()
+        arms = pre.arm_set(hid)
         assert "mean" not in arms
         assert "centre_gaussian" not in arms
-        assert len(arms) == 7
+        assert set(arms) == {a["name"] for a in pre.arms(status="implemented")
+                             if a.get("scoring_class") == "learned_attention"}
 
     def test_h8_is_scored_over_every_implemented_arm(self):
         """H8 declares no ``arm_set``, and the pre-freeze default stays the default
@@ -555,10 +567,11 @@ class TestEndToEndWiring:
         """An arm_set that resolves to tags nobody wrote yields an empty table, and
         an empty table passes every 'no arm exceeds' rule vacuously."""
         pre, _, seeds = wired
-        assert len(score_h1(pre, art, seeds)["gaps"]) == 7
-        assert len(score_h2(pre, art, seeds)["arm_slice_auc"]) == 7
-        assert len(score_h4(pre, art, seeds)["skills"]) == 7
-        assert len(score_h5(pre, art, seeds)["mean_over_seeds"]) == 7
+        n = len(pre.arm_set("H1"))
+        assert len(score_h1(pre, art, seeds)["gaps"]) == n
+        assert len(score_h2(pre, art, seeds)["arm_slice_auc"]) == n
+        assert len(score_h4(pre, art, seeds)["skills"]) == n
+        assert len(score_h5(pre, art, seeds)["mean_over_seeds"]) == n
 
     def test_h10_reads_the_pinned_arm_at_every_seed(self, wired, art):
         pre, _, seeds = wired

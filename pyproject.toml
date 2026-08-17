@@ -43,6 +43,13 @@ dependencies = [
     "h5py",
     "tqdm",
     "einops",
+    # TransMIL's own dependency, added 2026-08-17 with the arm. This is the
+    # opposite call to CLAM's, and deliberately: CLAM's smooth top-1 SVM was
+    # refused as a third-party package because no pre-registered estimand read
+    # that margin, whereas exact attention over a 43.8k-instance LIDC bag is a
+    # 1.9e9-entry matrix per head -- linear-complexity attention is why the arm
+    # can exist at this bag size, not an implementation detail of it.
+    "nystrom-attention",
     "matplotlib",
     "PyYAML",
     # pylidc imports pkg_resources at module load; setuptools >=81 removed it.

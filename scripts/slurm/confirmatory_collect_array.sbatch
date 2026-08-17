@@ -10,7 +10,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=48G
 #SBATCH --time=06:00:00
-#SBATCH --array=0-8
+#SBATCH --array=0-9
 #SBATCH --requeue
 #SBATCH --output=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.out
 #SBATCH --error=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.err
@@ -64,7 +64,7 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 # appear in every reported table. An arm excluded from a hypothesis is not
 # excluded from the paper.
 ARMS=(mean abmil gated_abmil mh_abmil "slot:div=0.5" \
-      centre_gaussian "normal_guidance:lam=0.1" clam_sb dsmil)
+      centre_gaussian "normal_guidance:lam=0.1" clam_sb dsmil transmil)
 SEEDS=(0 1 2 3 4)
 
 if [ "$SLURM_ARRAY_TASK_ID" -ge "${#ARMS[@]}" ]; then

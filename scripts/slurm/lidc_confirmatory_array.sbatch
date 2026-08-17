@@ -11,7 +11,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=48G
 #SBATCH --time=24:00:00
-#SBATCH --array=0-8
+#SBATCH --array=0-9
 #SBATCH --requeue
 #SBATCH --output=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.out
 #SBATCH --error=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.err
@@ -66,12 +66,13 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 #     confirmatory table.
 #
 # clam_sb and dsmil were promoted to `implemented` by the 2026-08-15 amendment
-# and are appended here, with --array raised to match. transmil is still
-# `status: planned`; append it -- and raise --array again -- only once it is
-# promoted through the amendment procedure in ENGINEERING.md. TransMIL carries a
-# pre-committed drop date of 2026-09-22; the deadline does not move for an arm.
+# and are appended here, with --array raised to match. transmil followed on
+# 2026-08-17, taking --array to 0-9 and the arm count to ten. Its pre-committed
+# drop date of 2026-09-22 did not fire: it trains at LIDC bag size with headroom
+# (job 7266534, 16.22 GiB peak of 23.55). This list and --array must be raised
+# together; the bounds check below is what catches it when they are not.
 ARMS=(mean abmil gated_abmil mh_abmil "slot:div=0.5" \
-      centre_gaussian "normal_guidance:lam=0.1" clam_sb dsmil)
+      centre_gaussian "normal_guidance:lam=0.1" clam_sb dsmil transmil)
 ARM=${ARMS[$SLURM_ARRAY_TASK_ID]}
 
 if [ "$SLURM_ARRAY_TASK_ID" -ge "${#ARMS[@]}" ]; then

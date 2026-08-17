@@ -17,6 +17,8 @@ than the extra capacity.
 
 from __future__ import annotations
 
+import math
+
 import torch
 import torch.nn as nn
 
@@ -340,6 +342,165 @@ class DSMIL(nn.Module, InstanceScoringPool):
         return torch.bmm(attn, self.v(x)), attn  # B,C,D  B,C,N
 
 
+TRANSMIL_HEADS = 8            # prereg arms[transmil].heads -- the paper's printed value
+TRANSMIL_LANDMARKS = 256      # prereg arms[transmil].num_landmarks -- likewise
+TRANSMIL_PINV_ITERS = 6       # Nystromformer's printed Moore-Penrose iteration count
+
+
+class PPEG(nn.Module):
+    """TransMIL's Pyramid Position Encoding Generator: depthwise 7/5/3 convs.
+
+    The convolutions run over the *squared* sequence, which is the paper's own
+    construction and is worth being explicit about, because on this data it
+    throws away real geometry. TransMIL was built for whole-slide bags of tiles
+    with no canonical 2D order, so squaring an arbitrary sequence into a
+    ``ceil(sqrt(N))`` grid invents a neighbourhood that is as good as any other.
+    Our instances have a true layout -- ``S`` slices of a 16x16 in-plane grid --
+    and squaring scrambles it. Kept faithful to the paper anyway: substituting
+    the true geometry would be a better position encoder and a different method,
+    and this study exists to compare published methods rather than improved ones.
+    Recorded in ``AMENDMENTS.md``.
+    """
+
+    def __init__(self, dim: int):
+        super().__init__()
+        self.proj = nn.Conv2d(dim, dim, 7, 1, 3, groups=dim)
+        self.proj1 = nn.Conv2d(dim, dim, 5, 1, 2, groups=dim)
+        self.proj2 = nn.Conv2d(dim, dim, 3, 1, 1, groups=dim)
+
+    def forward(self, x: torch.Tensor, side: int, keep: torch.Tensor) -> torch.Tensor:
+        cls, feat = x[:, :1], x[:, 1:]
+        # Zero the padded cells before convolving. A depthwise 7x7 reads a
+        # neighbourhood, so a nonzero pad leaks into real positions -- and it
+        # leaks *past* the attention mask, which can only zero the pad's own
+        # column and not the real columns it has already contaminated.
+        w = keep.unsqueeze(-1).to(feat.dtype)
+        feat = feat * w
+        b, _, d = feat.shape
+        g = feat.transpose(1, 2).reshape(b, d, side, side)
+        g = self.proj(g) + g + self.proj1(g) + self.proj2(g)
+        feat = g.reshape(b, d, side * side).transpose(1, 2)
+        return torch.cat([cls, feat * w], dim=1)
+
+
+class _TransLayer(nn.Module):
+    """Pre-norm residual block around one Nystromformer self-attention."""
+
+    def __init__(self, dim: int, heads: int, num_landmarks: int, pinv_iterations: int):
+        super().__init__()
+        from nystrom_attention import NystromAttention
+
+        self.norm = nn.LayerNorm(dim)
+        self.attn = NystromAttention(
+            dim=dim, dim_head=dim // heads, heads=heads,
+            num_landmarks=num_landmarks, pinv_iterations=pinv_iterations,
+            residual=True, dropout=0.0,
+        )
+
+    def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        return x + self.attn(self.norm(x), mask=mask)
+
+    def class_token_attention(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        """Exact softmax attention row for the class query, ``[B, L]``.
+
+        The block's *output* uses the Nystrom approximation, but the reported
+        attention must be a distribution -- padded columns exactly 0, real ones
+        summing to 1 -- and a Nystrom row is neither normalised nor guaranteed
+        non-negative. It is also unaffordable to extract: ``return_attn=True``
+        materialises the full ``L x L`` matrix, which at a 43.8k-instance LIDC
+        bag is 7.7 GB per head.
+
+        The exact row for one query costs ``O(L d)`` and is what the
+        approximation is approximating, so this reports the quantity the arm
+        intends rather than the arithmetic it used to afford it. The gap is
+        measured in ``tests/test_transmil.py`` rather than asserted away.
+        """
+        h = self.attn.heads
+        q, k, _ = self.attn.to_qkv(self.norm(x)).chunk(3, dim=-1)
+        b, n, _ = q.shape
+        q = q.reshape(b, n, h, -1)
+        k = k.reshape(b, n, h, -1)
+        logits = torch.einsum("bhd,bnhd->bhn", q[:, 0], k) * self.attn.scale
+        logits = logits.masked_fill(~mask.unsqueeze(1), float("-inf"))
+        return logits.softmax(dim=-1).mean(dim=1)  # B,L -- mean of h distributions
+
+
+class TransMIL(nn.Module):
+    """TransMIL (Shao et al., NeurIPS 2021): correlated MIL by self-attention.
+
+    A class token attends over every instance through two Nystromformer layers
+    with a PPEG position encoding between them, and the class token is the bag
+    embedding. ``K = 1``: there is exactly one class token, so unlike DSMIL the
+    published shape is already a single token.
+
+    Attention normalises over the **instance** axis, like every other arm in this
+    file and unlike slot attention -- so ``localization.instance_auc(slot=None)``
+    is valid for it.
+
+    **Nystromformer is a dependency, not a substitution.** CLAM's smooth top-1
+    SVM was replaced with cross-entropy to keep the dependency set auditable,
+    because no pre-registered estimand read that margin. The opposite holds here:
+    exact attention over a 43.8k-instance LIDC bag is a 1.9e9-entry matrix per
+    head, so linear-complexity attention is not an implementation detail of this
+    arm, it is the reason the arm can exist at this bag size. Reimplementing it
+    would put a numerical method with an iterative pseudo-inverse on our side of
+    the audit line for no fidelity gain. ``nystrom-attention`` is the package the
+    reference implementation itself uses. Recorded in ``AMENDMENTS.md``.
+
+    The squaring pad is masked, not filled with repeated instances as the
+    reference does. Repeating real instances would enter them twice in an
+    attention denominator that every reported estimand ranks against.
+    """
+
+    def __init__(self, input_dim: int, dim: int, heads: int = TRANSMIL_HEADS,
+                 num_landmarks: int = TRANSMIL_LANDMARKS,
+                 pinv_iterations: int = TRANSMIL_PINV_ITERS):
+        super().__init__()
+        if dim % heads:
+            raise ValueError(f"TransMIL needs dim divisible by heads; got {dim}/{heads}")
+        self.proj = nn.Sequential(nn.Linear(input_dim, dim), nn.ReLU())
+        self.cls_token = nn.Parameter(torch.randn(1, 1, dim) * 0.02)
+        self.layer1 = _TransLayer(dim, heads, num_landmarks, pinv_iterations)
+        self.ppeg = PPEG(dim)
+        self.layer2 = _TransLayer(dim, heads, num_landmarks, pinv_iterations)
+        self.norm = nn.LayerNorm(dim)
+
+    def forward(self, feats, pad_mask=None):
+        b, n, _ = feats.shape
+        x = self.proj(feats)
+        if pad_mask is None:
+            pad_mask = torch.ones(b, n, dtype=torch.bool, device=x.device)
+
+        # Square the sequence so PPEG has a grid to convolve over. ceil(sqrt(N)),
+        # per the paper.
+        side = int(math.isqrt(n - 1)) + 1 if n > 0 else 1
+        pad = side * side - n
+        if pad:
+            x = torch.cat([x, x.new_zeros(b, pad, x.shape[-1])], dim=1)
+            keep = torch.cat([pad_mask, pad_mask.new_zeros(b, pad)], dim=1)
+        else:
+            keep = pad_mask
+        x = x * keep.unsqueeze(-1).to(x.dtype)
+
+        x = torch.cat([self.cls_token.expand(b, -1, -1), x], dim=1)
+        mask = torch.cat([keep.new_ones(b, 1), keep], dim=1)
+
+        x = self.layer1(x, mask)
+        x = self.ppeg(x, side, keep)
+        # Read the row before the block, not after: this is layer 2's attention.
+        row = self.layer2.class_token_attention(x, mask)
+        x = self.layer2(x, mask)
+
+        tokens = self.norm(x)[:, :1]  # B,1,D -- the class token is the bag
+
+        # Drop the class column and the squaring pad, then renormalise over real
+        # instances: the class token attends to itself and that mass is not part
+        # of any instance-level estimand.
+        attn = row[:, 1:1 + n].masked_fill(~pad_mask, 0.0)
+        attn = attn / attn.sum(dim=-1, keepdim=True).clamp_min(torch.finfo(attn.dtype).tiny)
+        return tokens, attn.unsqueeze(1)  # B,1,D  B,1,N
+
+
 def count_params(module: nn.Module) -> int:
     return sum(p.numel() for p in module.parameters() if p.requires_grad)
 
@@ -430,5 +591,13 @@ def build_pooling(name: str, input_dim: int, dim: int, **kw) -> nn.Module:
             num_classes=kw.get("num_classes", 2),
             q_hidden=kw.get("q_hidden", DSMIL_Q_HIDDEN),
             dropout_v=kw.get("dropout_v", DSMIL_DROPOUT_V),
+        )
+    if name == "transmil":
+        return TransMIL(
+            input_dim,
+            dim,
+            heads=kw.get("heads", TRANSMIL_HEADS),
+            num_landmarks=kw.get("num_landmarks", TRANSMIL_LANDMARKS),
+            pinv_iterations=kw.get("pinv_iterations", TRANSMIL_PINV_ITERS),
         )
     raise ValueError(f"unknown pooling {name!r}")

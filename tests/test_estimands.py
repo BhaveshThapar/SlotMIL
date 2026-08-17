@@ -186,6 +186,25 @@ class TestClusterBootstrap:
         with pytest.raises(ValueError, match="disagree"):
             cluster_bootstrap([1.0, 2.0], ["a"], reps=10)
 
+    def test_reps_zero_gives_the_point_estimate_and_no_interval(self):
+        """H7's content-free members are drawn 30 times per tag and summarised
+        before any verdict reads them, so 29 of those draws want the mean and
+        nothing else. The alternative -- a second "drop non-finite, then take the
+        mean" in the driver -- is a copy of this rule that can go stale against
+        it, which is the reason reps=0 lives here rather than there.
+        """
+        v = [0.8, np.nan, 0.9, 0.7]
+        c = list("abcd")
+        point = cluster_bootstrap(v, c, reps=0)
+        full = cluster_bootstrap(v, c, reps=500)
+        assert point["lo"] is None and point["hi"] is None
+        assert point["mean"] == pytest.approx(full["mean"])
+        assert point["n"] == full["n"] == 3
+        assert point["n_clusters"] == full["n_clusters"]
+
+    def test_reps_zero_still_returns_none_on_empty_input(self):
+        assert cluster_bootstrap([], [], reps=0)["mean"] is None
+
     def test_is_deterministic_given_a_seed(self):
         v, c = np.linspace(0, 1, 40), [f"p{i // 2}" for i in range(40)]
         assert cluster_bootstrap(v, c, reps=200, seed=7) == cluster_bootstrap(

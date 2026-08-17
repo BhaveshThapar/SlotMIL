@@ -69,7 +69,8 @@ def main():
     # mean is here for H1's tie-floor check, which asserts its gap is exactly 0.
     ap.add_argument("--pooling", default="slot",
                     choices=["mean", "abmil", "gated_abmil", "slot", "mh_abmil",
-                             "centre_gaussian", "normal_guidance", "clam_sb", "dsmil"])
+                             "centre_gaussian", "normal_guidance", "clam_sb", "dsmil",
+                             "transmil"])
     ap.add_argument("--init-seed", type=int, default=1234,
                     help="torch seed for the untrained-model null")
     ap.add_argument("--tag", required=True)

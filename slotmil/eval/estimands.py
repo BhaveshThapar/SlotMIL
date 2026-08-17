@@ -151,6 +151,14 @@ def cluster_bootstrap(values, clusters, reps: int = 10000, seed: int = 0,
 
     Non-finite values are dropped before resampling, so a bag that was degenerate
     for one axis does not poison the others.
+
+    ``reps=0`` returns the point estimate with ``lo``/``hi`` as ``None`` and does
+    no resampling. That exists for replicated nulls: H7's content-free members are
+    now drawn many times per tag, the per-draw values are summarised before the
+    verdict reads them, and an interval on a single draw of a null is not a
+    quantity anything reports. It also keeps the "drop non-finite, then take the
+    mean over rows" rule in one place -- a second implementation of it in a driver
+    would be a copy that can go stale against this one.
     """
     values = np.asarray(values, dtype=float)
     clusters = np.asarray(clusters)
@@ -165,6 +173,10 @@ def cluster_bootstrap(values, clusters, reps: int = 10000, seed: int = 0,
         return {"mean": None, "lo": None, "hi": None, "n": 0, "n_clusters": 0}
 
     uniq = np.unique(clusters)
+    if reps <= 0:
+        return {"mean": float(values.mean()), "lo": None, "hi": None,
+                "n": int(values.size), "n_clusters": int(uniq.size)}
+
     index = {c: np.flatnonzero(clusters == c) for c in uniq}
     rng = np.random.default_rng(seed)
     boot = np.empty(reps)

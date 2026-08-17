@@ -305,13 +305,49 @@ arms:
       fidelity cost is real and is reported as one.
   - name: transmil
     spec: 'transmil'
-    status: planned
+    # Promoted by amendment 2026-08-17, AFTER measuring rather than before:
+    # promotion re-hashes this file and an amendment supersedes every stamp on
+    # disk, so declaring the arm implemented in order to find out whether it
+    # trains would have cost 440 stamps to answer a question a four-hour job
+    # answers. Job 7266534: forward+backward at the largest real shape (43812
+    # instances, batch 4, squared to a 210x210 PPEG grid) in 4.05s at a peak of
+    # 16.22 GiB of 23.55 GiB, and two epochs on the discovery split reaching val
+    # AUC 0.8441. The drop_rule below did not fire and is kept as the record of
+    # what was asked.
+    status: implemented
     blind: true
     scoring_class: learned_attention
+    attn_norm_axis: instance
+    k_tokens: 1
+    heads: 8
+    num_landmarks: 256
+    pinv_iterations: 6
     drop_rule: >-
       LIDC bags are ~43.8k instances, far beyond the WSI bags TransMIL was
       designed for. If it is not training by 2026-09-22, cut it and report the
       arm count achieved. Do not slip the deadline for this arm.
+    rationale: >-
+      K = 1: there is exactly one class token, so unlike DSMIL the published
+      shape is already a single token. The reported attention is the class
+      token's EXACT softmax row over instances, not its Nystrom approximation --
+      the pooling contract requires a distribution and a Nystrom row is neither
+      normalised nor non-negative, and extracting one would cost a 1.9e9-entry
+      matrix per head at LIDC bag size. The exact row costs O(N d) and is the
+      quantity the approximation approximates.
+    departures: >-
+      Two, both stated rather than absorbed. FIRST, nystrom-attention is added
+      as a dependency, which is the opposite of the CLAM ruling and for the
+      opposite reason: CLAM's smooth top-1 SVM was refused because no
+      pre-registered estimand read that margin, whereas linear-complexity
+      attention is what lets this arm exist at 43.8k instances at all, and
+      reimplementing an iterative pseudo-inverse would add risk for no fidelity
+      gain. SECOND, the squaring pad is masked rather than filled with the bag's
+      repeated leading instances as the reference does; repeating real instances
+      would enter them twice into an attention denominator every reported
+      estimand ranks against. PPEG's squaring is kept exactly as published even
+      though it discards real geometry -- our instances are S slices of a 16x16
+      grid and squaring scrambles that -- because substituting the true layout
+      would be a better position encoder and a different method.
 
 # ---------------------------------------------------------------- references
 reference_baselines:
@@ -633,6 +669,42 @@ hypotheses:
       it carries its own too. Borrowing another arm's would make the verdict
       depend on which arm was borrowed from.
     content_free_set: [chance, roll_permutation, entropy_matched_random, fitted_template]
+    # Both added by amendment 2026-08-17. Neither is a new rule; both are units
+    # that were being applied without being written down anywhere a reader could
+    # check. content_free_unit was the one chosen unit missing from the verdict's
+    # undeclared_units_taken block -- it lived only in two source comments, so it
+    # was neither declared here nor recorded as taken there.
+    content_free_draws: 30
+    content_free_unit: max_over_tags_of_the_mean_over_draws
+    content_free_draws_rationale: >-
+      The two stochastic members were computed ONCE per tag:
+      np.random.default_rng(cf_seed) was rebuilt per tag with cf_seed fixed at 0,
+      so every tag in a condition shared one realisation -- roll_permutation's
+      offsets were identical across all 35 tags -- and the visible spread across
+      tags was arm-to-arm variation with the draw held constant. Draw-to-draw
+      variance was therefore never estimable. That is a defect in the
+      CONSTRUCTION, and it bites here specifically because the gate is a maximum:
+      a maximum over one realisation cannot distinguish a member that sits above
+      0.05 from a member whose single draw happened to. Measured at four draws on
+      mh_abmil_seed0, entropy_matched_random's draw-to-draw sd is 0.0849 --
+      larger than the 0.05 threshold -- with the published realisation (+0.0776)
+      at the top of its own range. 30 draws because protocol.floor already
+      commits to ">= 30" for the one other distributional claim this document
+      makes; reusing a number the document already stands behind beats choosing a
+      fresh one while looking at a result. Draw 0 keeps the original seed, so the
+      published value stays locatable inside its own distribution, and every
+      per-draw value is emitted.
+    content_free_unit_rationale: >-
+      The aggregation is UNCHANGED by the replication and is the rule as first
+      written: "every content-free baseline's is below 0.05" is a statement about
+      the set, so each member is summarised by its worst value over the arms it
+      accompanies rather than by an average a well-behaved arm could hide a
+      badly-behaved one inside. What the replication changes is only how a single
+      tag's value is estimated -- the mean over that tag's draws, the member's
+      expected skill for that arm, rather than whichever draw came up. Recorded
+      here after the single-draw values were seen; see AMENDMENTS.md 2026-08-17,
+      which states that the full mean/median/max table was known when this was
+      written and that the maximum was left in force anyway.
     content_free_set_rationale: >-
       All four are in the pre-freeze reference_baselines block and none reads a
       label. fitted_template scores exactly 0 against itself by construction and

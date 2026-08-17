@@ -1,6 +1,6 @@
 # Pre-registration — ISBI 2027
 
-**Frozen config hash:** `7682347538e76fc8`
+**Frozen config hash:** `4fd6e801157ecef5`
 
 **Config:** [`configs/prereg/isbi2027.yaml`](configs/prereg/isbi2027.yaml) ·
 **Amendments:** [`AMENDMENTS.md`](AMENDMENTS.md) ·

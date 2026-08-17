@@ -1078,3 +1078,114 @@ here, and the paper reports them whether or not H7 clears:
   p95 0.7665760928074817 and 0.7678969514750311, bit-identical to both prior
   re-runs). H7's probe half is likewise unaffected: it reads the feature cache
   and the splits, not any trained arm, and is already stamped current and clean.
+
+## 2026-08-17 — promote TransMIL; declare how many times a stochastic null is drawn
+
+- **Kind:** amendment
+- **Config hash before → after:** `7682347538e76fc8` → `4fd6e801157ecef5`
+- **What changed:** two things, batched into one amendment on purpose. An
+  amendment supersedes every stamp on disk, so the cost of amending is a full
+  re-run of the confirmatory sweep whether it carries one change or two. Landing
+  these separately would have paid that cost twice.
+
+  **1. `arms[transmil].status: planned → implemented.`** The arm is built
+  (`slotmil/models/baselines.py::TransMIL`) and wired into the three
+  construction switches and all four hard allow-lists. `--array` is raised from
+  `0-8` to `0-9` in the three arrays that enumerate arms.
+
+  The promotion was deliberately made *after* measuring, not before. Its
+  `drop_rule` asks one question — does an architecture designed for whole-slide
+  bags train on LIDC's ~43.8k-instance bags — and promoting first would have
+  superseded 440 stamps to find out. Job 7266534 on an RTX A5000 answers it:
+  forward and backward at the largest real shape (43812 instances, batch 4,
+  squared to a 210×210 PPEG grid) runs in 4.05 s at a peak of **16.22 GiB of
+  23.55 GiB**, and two epochs through `train_cached.py` on the discovery split
+  reach val AUC 0.8441. It trains, with headroom, so the drop rule does not fire
+  and the paper reports ten arms rather than nine.
+
+  Two departures from the paper, recorded rather than absorbed:
+
+  - **`nystrom-attention` is added as a dependency.** CLAM's smooth top-1 SVM
+    was *refused* as a third-party dependency because no pre-registered estimand
+    read that margin. The opposite holds here: exact attention over a
+    43.8k-instance bag is a 1.9e9-entry matrix per head, so linear-complexity
+    attention is not an implementation detail of TransMIL, it is the reason the
+    arm can exist at this bag size. Reimplementing an iterative pseudo-inverse
+    on our side of the audit line would add risk for no fidelity gain, and this
+    is the package the reference implementation itself uses.
+  - **The squaring pad is masked, not filled with repeated instances.** The
+    reference pads to `ceil(sqrt(N))**2` by repeating the bag's own leading
+    tiles. Repeating real instances would enter them twice into an attention
+    denominator that every reported estimand ranks against.
+
+  PPEG's squaring is kept exactly as published even though it discards real
+  geometry — our instances are `S` slices of a 16×16 grid, and squaring
+  scrambles that. Substituting the true layout would be a better position
+  encoder and a different method, and this study compares published methods
+  rather than improved ones. The reported attention is the class token's exact
+  softmax row rather than its Nystrom approximation, because the pooling
+  contract requires a distribution and a Nystrom row is neither normalised nor
+  non-negative; `tests/test_transmil.py` pins the two as the same quantity by
+  showing the gap shrinks with the pseudo-inverse iteration count.
+
+  **2. `hypotheses[H7].content_free_draws: 30`, and `content_free_unit`
+  recorded.** H7's two stochastic content-free members were each computed
+  **once** per tag. `scripts/h7_content_free.py` rebuilt
+  `np.random.default_rng(cf_seed)` per tag with `cf_seed` fixed at 0, so every
+  tag in a condition shared one realisation — `roll_permutation`'s roll offsets
+  were literally identical across all 35 tags — and the spread across tags was
+  arm-to-arm variation with the draw held constant. No draw-to-draw variance was
+  estimable anywhere.
+
+  That is a defect in the construction, not in the aggregation, and it matters
+  because the gate is a **maximum** over tags: a maximum over a single
+  realisation cannot distinguish a member that sits above 0.05 from a member
+  whose one draw happened to. Measured on `mh_abmil_seed0` at four draws, the
+  draw-to-draw standard deviation of `entropy_matched_random` is **0.0849** —
+  larger than the 0.05 threshold itself — with the single published realisation
+  (+0.0776) sitting at the top of its own range (−0.0917 to +0.0776).
+
+  Each member is now drawn 30 times per tag and each tag's reported skill is the
+  **mean over its draws**. 30 because `protocol.floor` already commits to "≥ 30"
+  for the one other place this document makes a distributional claim; reusing a
+  number the document already stands behind is a better justification than a
+  fresh one chosen while looking at a result. Draw 0 is seeded exactly as the
+  single-draw form was, so the published number stays locatable inside its own
+  distribution, and every per-draw value is emitted.
+
+  **The aggregation rule is unchanged.** The gate still takes the maximum over
+  tags, for the reason given when it was written: "every content-free baseline's
+  is below 0.05" is a statement about the set, and an average over tags would let
+  a well-behaved arm hide a badly-behaved one. What changes is only how a single
+  tag's value is estimated. `content_free_unit` is now declared in the config
+  rather than living solely in two source comments — it was the one chosen unit
+  absent from `undeclared_units_taken`, so it was neither declared nor recorded
+  as taken.
+
+- **Why:** to close the arm set before the 2026-09-22 drop deadline while a
+  re-run is affordable, and because a maximum over an unreplicated stochastic
+  null is not a measurement of that null.
+
+- **Results already seen?** **Split, and the split is the point.**
+
+  For TransMIL: **no.** No TransMIL number of any kind existed before the arm was
+  declared implemented. The smoke job that decided the promotion ran on the
+  **discovery** split under `--role exploratory` into `runs/smoke_transmil`, and
+  its val AUC 0.8441 is validation on the discovery split — neither a
+  confirmatory number nor a hypothesis input. No hypothesis reads it.
+
+  For H7's replication: **yes, the single-draw numbers had been seen**, including
+  the max of 0.0784 that put H7 at FAIL. The replicated numbers did not exist and
+  do not yet exist. This must not be read as the weaker claim that only the
+  aggregation was known: the full per-member table under mean, median and max was
+  computed for all three conditions before this amendment was drafted, and it
+  showed H7 clearing under mean or median in every condition and failing under
+  max in every condition. The amendment was nonetheless written to leave the
+  maximum in force, and H7's outcome after replication is not predicted here.
+
+- **Consequence for the paper:** every confirmatory result on disk is superseded
+  and re-runs at the new hash — ten arms × three conditions × five seeds, plus
+  the MosMed condition for H9. H7 is reported with its draw distribution and a
+  mean/median/max sensitivity table beside the verdict, and the paper states
+  plainly that the pre-registered form of this member was unreplicated and that
+  the replication was added after its single-draw values were seen.
