@@ -62,6 +62,34 @@ echo "=============== chain ==============="
 # preserved on disk on purpose.
 python scripts/prereg_freeze.py --check | tail -3
 
+echo "=============== dirty stamps ==============="
+# The defect that cost the 2026-08-16 re-run, checked rather than remembered.
+# train_cached.py samples git state ONCE per task before the seed loop, so a
+# task launched from an uncommitted tree brands all five of its seeds
+# git_dirty:true and they can carry no confirmatory claim under any hash. It is
+# cheap to detect and expensive to discover later.
+python - <<'PY'
+import json
+from pathlib import Path
+
+roots = [p for p in Path("runs").glob("*_confirmatory")
+         if "superseded" not in p.name]
+dirty, clean = [], 0
+for r in roots:
+    for f in r.rglob("result.json"):
+        stamp = json.loads(f.read_text()).get("prereg", {})
+        if stamp.get("git_dirty"):
+            dirty.append((str(f), stamp.get("git_commit", "")[:7]))
+        else:
+            clean += 1
+print(f"{clean} clean, {len(dirty)} dirty across {len(roots)} confirmatory roots")
+for f, c in dirty[:20]:
+    print(f"  DIRTY {c} {f}")
+if dirty:
+    print("\nThese seeds cannot carry a confirmatory claim. Re-run the affected")
+    print("tasks from a committed tree; see AMENDMENTS.md 2026-08-16.")
+PY
+
 echo "=============== verdicts ==============="
 python - <<'PY'
 import json

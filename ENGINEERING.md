@@ -41,12 +41,26 @@ Two invariants that are tested and that silent breakage would hide:
   mass. `_masked_softmax` in `slotmil/models/baselines.py` fills with `-inf` and
   gets this for free — use it rather than a second masking convention.
 - **`attn` normalisation differs by family.** Slot attention softmaxes over the
-  *slot* axis; ABMIL, gated ABMIL, MH-ABMIL and `centre_gaussian` softmax over the
-  *instance* axis. This is not cosmetic: `localization.instance_auc(slot=None)`
-  takes a max over slots and is **invalid** for slot-normalised attention — it
-  reads 0.4885 where the frozen-slot path reads 0.8423. That discrepancy is the
-  project's most expensive past bug. Any new arm must document which axis it
-  normalises on.
+  *slot* axis; ABMIL, gated ABMIL, MH-ABMIL, `centre_gaussian` and `transmil`
+  softmax over the *instance* axis. This is not cosmetic:
+  `localization.instance_auc(slot=None)` takes a max over slots and is
+  **invalid** for slot-normalised attention — it reads 0.4885 where the
+  frozen-slot path reads 0.8423. That discrepancy is the project's most
+  expensive past bug. Any new arm must document which axis it normalises on.
+
+`transmil` adds a third thing a reader has to know, because its reported
+attention is **not** the tensor its own forward pass used. The block aggregates
+with the Nystrom approximation; `attn` is the class token's *exact* softmax row.
+The contract requires a distribution — padded columns exactly 0, real ones
+summing to 1 — and a Nystrom row is neither normalised nor non-negative, quite
+apart from costing a 1.9e9-entry matrix per head to extract at LIDC bag size.
+The exact row is O(N d) and is the quantity the approximation approximates;
+`tests/test_transmil.py` pins them as the same thing by showing the gap shrinks
+with the pseudo-inverse iteration count rather than by picking a tolerance.
+Its squaring pad is masked, not filled with repeated instances as the reference
+does, and PPEG's convolution therefore has to zero the pad *before* convolving:
+a 7x7 depthwise kernel carries a nonzero pad into real positions, where the
+attention mask can no longer remove it.
 
 ## There is no model registry
 
@@ -82,7 +96,16 @@ refuses the run if it is missing.
 Hard allow-lists that a new arm must also be added to, or it fails only at
 submission time: `scripts/untrained_floor.py` and `scripts/null_collect_attn.py`
 (`--pooling choices=[...]`), `scripts/reeval_all_alignment.py` (`ARMS`), and
-`scripts/slurm/lidc_train_array.sbatch` (`ARMS=(...)` **and** `--array=0-N`).
+**four** sbatch files carrying `ARMS=(...)` **and** `--array=0-N` that must be
+raised together — `lidc_train_array.sbatch`, `lidc_confirmatory_array.sbatch`,
+`lidc_condition_confirmatory_array.sbatch`, `mosmed_confirmatory_array.sbatch`,
+plus `confirmatory_collect_array.sbatch`. Each has a bounds check that exits 1
+when the two drift, which is the only reason this is a nuisance rather than a
+silently short sweep.
+
+Two test guards used to be literal counts of "7 learned_attention arms" and went
+red on the tenth. They now compare against `scoring_class`, because bumping a
+literal is exactly the move that would let a misclassified arm through.
 
 ## Auxiliary losses
 
@@ -243,6 +266,53 @@ as a name, a spec **and** a tag, and every artefact keys its rows by tag — so 
 verdict table keyed by tag is unblinded regardless of what the code column says.
 `prereg_verdict.blind_substitutions` covers all three. Related: **keep arm names out
 of message strings.** Structured fields get substituted; prose does not.
+
+### A second dataset, and the two things that assumed there was only one
+
+`mosmed_severity` became a confirmatory condition on 2026-08-17 because H9 needs
+it. Both analysis arrays are now dataset-generic and resolve the split, the
+feature cache and the run root from the same config stanza, so a third dataset
+needs a condition block and nothing else. Two latent defects had to go first,
+and both had the same shape — a path hardcoded to LIDC next to a value resolved
+from the config:
+
+- `confirmatory_collect_array.sbatch` **refused** non-LIDC conditions. What that
+  guard protected was the hardcoded LIDC feature cache beneath it, which would
+  have paired MosMed checkpoints with LIDC features and written dumps that
+  looked entirely normal. The cache now resolves beside the split, so the
+  pairing cannot come apart.
+- `probe_gate.py` is invoked with a cache, and the analyse array passed LIDC's
+  unconditionally.
+
+MosMed runs a **strict subset** of the analysis: `template_family` and nothing
+else. The config's split note says it "supports the stereotypy contrast (H9) and
+nothing else, and the paper says so", and a number that exists is a number
+someone eventually quotes. The guards are on `dataset`, not on the condition
+name.
+
+`runs/_audit_meta.json` is the uid→patient map every cluster bootstrap resamples
+on, and it is **per dataset**: LIDC groups several series under one patient (999
+series, 991 patients), MosMed is one study per patient so the map is the
+identity. It was read by seven drivers and written by nothing committed until
+`scripts/make_audit_meta.py`; `--check` rebuilds it from the feature cache and
+diffs rather than overwriting. Pass `--meta` explicitly — the default is LIDC's.
+
+### H7's content-free members are drawn, not computed once
+
+Since 2026-08-17 the two stochastic members are drawn `content_free_draws` (30)
+times per tag and each tag's skill is the **mean over its draws**. Before that
+they were computed once: `default_rng(cf_seed)` was rebuilt per tag with
+`cf_seed` fixed at 0, so every tag in a condition shared one realisation and
+draw-to-draw variance was never estimable. That mattered because the gate is a
+**maximum** over tags, which over a single realisation cannot distinguish a
+member above the threshold from a member whose one draw was — the measured
+draw-to-draw sd is larger than the threshold itself.
+
+The aggregation is unchanged and is declared as `content_free_unit`. Draw 0
+keeps the original seed so the published value stays locatable in its own
+distribution. `cluster_bootstrap(reps=0)` returns the point estimate with no
+interval, which is what 29 of every 30 draws want; do not reimplement "drop
+non-finite, then take the mean" in a driver.
 
 ### The `--out` trap in the analysis drivers
 
