@@ -22,6 +22,7 @@ from slotmil.eval.alignment import (
     slot_purity,
 )
 from slotmil.eval.classification import (
+    _auc_variance_components,
     bootstrap_ci,
     classification_metrics,
     delong_test,
@@ -58,6 +59,60 @@ class TestClassification:
         bad = rng.random(300)  # chance
         r = delong_test(y, good, bad)
         assert r["delta"] > 0 and r["p"] < 0.01
+
+
+class TestDelongComponentsAreExact:
+    """The searchsorted form of V10/V01 must equal the double loop it replaced.
+
+    ``_auc_variance_components`` was quadratic in (positives x negatives), which the
+    declared ``statistics.holm_family`` cannot afford: that family is a paired test
+    on the flat instance axis, which pools every patch of every bag -- ~4.5k
+    positives against ~6.5M negatives, so ~3e10 comparisons per model. The binary
+    search is the same quantity, and *bit-identical* is the bar rather than
+    approximately equal, because the pre-registered thresholds were set from
+    discovery numbers and a p-value that moved during a speedup would look exactly
+    like a finding.
+    """
+
+    @staticmethod
+    def _brute(y_true, y_score):
+        pos = y_score[y_true == 1]
+        neg = y_score[y_true == 0]
+        m, n = len(pos), len(neg)
+        v10 = np.array([(np.sum(p > neg) + 0.5 * np.sum(p == neg)) / n for p in pos])
+        v01 = np.array([(np.sum(pos > q) + 0.5 * np.sum(pos == q)) / m for q in neg])
+        return v10.mean(), v10, v01
+
+    @pytest.mark.parametrize("seed", [0, 1, 2])
+    def test_matches_the_double_loop_bitwise(self, seed):
+        rng = np.random.default_rng(seed)
+        y = rng.integers(0, 2, 400)
+        s = rng.random(400)
+        auc, v10, v01 = _auc_variance_components(y, s)
+        b_auc, b_v10, b_v01 = self._brute(y, s)
+        # Exact equality, not allclose: see the class docstring.
+        assert auc == b_auc
+        assert np.array_equal(v10, b_v10)
+        assert np.array_equal(v01, b_v01)
+
+    def test_ties_are_credited_identically(self):
+        """Heavy ties are where a left/right searchsorted mix-up would show up.
+
+        Attention dumps tie constantly -- a padded column is exactly 0.0 and a
+        template repeats 256 values across every slice -- so the tie path is the
+        common case here rather than an edge case.
+        """
+        y = np.array([0, 0, 0, 1, 1, 1, 0, 1])
+        s = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.2, 0.9, 0.9])
+        auc, v10, v01 = _auc_variance_components(y, s)
+        b_auc, b_v10, b_v01 = self._brute(y, s)
+        assert auc == b_auc
+        assert np.array_equal(v10, b_v10)
+        assert np.array_equal(v01, b_v01)
+
+    def test_one_class_still_raises(self):
+        with pytest.raises(ValueError, match="both classes"):
+            _auc_variance_components(np.ones(5, dtype=int), np.arange(5.0))
 
     def test_bootstrap_ci_brackets_the_estimate(self):
         rng = np.random.default_rng(0)

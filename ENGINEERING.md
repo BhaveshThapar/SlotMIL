@@ -16,9 +16,10 @@ rather than 1 failed.
 must both stay clean. Ruff's ignore list carries a reason per rule; `B905`
 (`zip()` without `strict=`) is ignored **pending an audit, not permanently** —
 several sites zip per-bag `attns` against `masks`, where a length mismatch would
-truncate the analysis silently rather than raise. Mypy is scoped to the eight
+truncate the analysis silently rather than raise. Mypy is scoped to the nine
 modules that compute the reported numbers, and that scope is a floor to raise,
-not a convenience to preserve.
+not a convenience to preserve — `slotmil/eval/verdict.py` joined it when the
+hypothesis scorers landed, because it decides every reported PASS/FAIL/VOID.
 
 ## The pooling contract
 
@@ -216,6 +217,69 @@ Related, from the same session: **an amendment supersedes every stamp on disk.**
 Cheap for H3 (two jobs, 3m22s and 6m59s), expensive for the sweep (27 tasks x 5
 seeds x ~8h). Land pre-registration changes *before* submitting long jobs, not
 during them.
+
+## Verdicts
+
+`scripts/prereg_verdict.py` is the pre-registration scorer. `scripts/final_verdict.py`
+is a **discovery-era table** over `runs/control_*.npz` with three conditions
+hardcoded; do not extend it into a scorer. The falsifiers themselves are
+`slotmil/eval/verdict.py`, which takes already-extracted numbers so that the rules
+are testable without data, and **no threshold is retyped into Python** — every bound
+comes from `configs/prereg/isbi2027.yaml` through `Prereg.hypothesis`/`arm_set`.
+
+Four outcomes, and the two extra ones are the point. `VOID` is a falsifier that
+could not be *trusted* — H1's positive controls came in under threshold, the tie
+floor moved, or an input is off the amendment chain — and `NOT_RUN` is a hypothesis
+with no artefact. Collapsing either into PASS makes an unsupported hypothesis read
+as supported.
+
+**Build a dump tag from the arm `spec`, never the `name`.** `slot:div=0.5` has name
+`slot_div0.5` and directory `slot_div=0.5`; a tag from the name looks for a file
+that does not exist, and the symptom is a hypothesis that reads NOT_RUN rather than
+an error. `verdict.arm_tag` is the one place that conversion lives.
+
+Blinding is only as good as its coarsest spelling. An arm reaches the analysis layer
+as a name, a spec **and** a tag, and every artefact keys its rows by tag — so a
+verdict table keyed by tag is unblinded regardless of what the code column says.
+`prereg_verdict.blind_substitutions` covers all three. Related: **keep arm names out
+of message strings.** Structured fields get substituted; prose does not.
+
+### The `--out` trap in the analysis drivers
+
+`axis_gate.py`, `template_family.py` and `h8_in_lung.py` all default to
+`--out runs/nulls/<name>.json` — the *exploratory* artefacts that set every
+threshold in `PREREGISTRATION.md`. A confirmatory run that omits `--out` overwrites
+them. Always pass `--dir` **and** `--out`;
+`scripts/slurm/confirmatory_analyse_array.sbatch` does, and says why.
+
+### Three places the declared analysis is not computable as written
+
+Found by writing the callers, recorded in the artefacts rather than resolved by
+amendment (an amendment supersedes every stamp on disk):
+
+- **`cross_patient` cannot be a paired DeLong member.** It is a label-side null —
+  `shuffle_masks_across_bags` changes the target, not the score — so there is no
+  second score vector to pair. Those members enter the family at `p = NaN`, which is
+  what `holm_adjust` documents: NaN still counts toward the family size, so the size
+  the `note` pins is preserved and the member is never rejected.
+- **`holm_family.axis` and DeLong measure different things.** `flat_instance_auc`'s
+  declared impl (`null_battery.score`) is a *mean of per-bag AUCs*; DeLong is defined
+  for one AUC over one sample set. `holm_family.py` computes z and p on the pooled
+  form and reports the declared mean-per-bag statistic beside every comparison,
+  under its own name.
+- **Holm is not load-bearing at pooled-instance scale.** ~7.4M paired instances put
+  the DeLong p at exactly 0.0 by underflow, so every pairable member is rejected
+  whatever the multiplier. `n_p_underflowed_to_zero` is emitted per seed so "n of m
+  rejected" is not read as discrimination.
+
+### Units the config does not declare
+
+H1 and H4 state a per-arm bound with no unit over seeds; H9 states an ordering with
+no aggregation over arms and seeds. Taken as **mean over seeds** for H1/H4 — H5's
+`unit_rationale` makes exactly this argument for the identical hole, and a per-seed
+maximum takes five draws at the threshold instead of one — and as **every matched
+tag** for H9, the strictest available reading. All three are recorded in the verdict
+artefact under `undeclared_units_taken`, not left implicit.
 
 ## Slice subsampling
 

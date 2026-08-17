@@ -1,5 +1,15 @@
 #!/usr/bin/env python
-"""Consolidated verdict table: reported protocol vs fairer / confound-controlled ones."""
+"""Consolidated verdict table: reported protocol vs fairer / confound-controlled ones.
+
+**This is the discovery-era table, not the pre-registration scorer.** It reads
+``runs/control_*.npz`` from the seed-0 split, hardcodes ``CONDS``, and answers
+"does the reported protocol survive a fairer one?" -- a question that predates the
+freeze. The pre-registered hypotheses are scored by
+``scripts/prereg_verdict.py`` against stamped artefacts, with every threshold read
+from ``configs/prereg/isbi2027.yaml``. Do not extend this file into that one: its
+inputs carry no prereg stamp, so nothing it prints can be confirmatory, and the name
+is close enough to invite the mistake.
+"""
 
 from __future__ import annotations
 

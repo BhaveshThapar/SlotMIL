@@ -54,16 +54,49 @@ def classification_metrics(
 
 
 def _auc_variance_components(y_true: np.ndarray, y_score: np.ndarray):
-    """DeLong structural components (V10, V01) for one model."""
+    """DeLong structural components (V10, V01) for one model.
+
+    ``V10[i]`` is the fraction of negatives that positive *i* beats, ties counted
+    half; ``V01[j]`` is the fraction of positives that beat negative *j*, likewise.
+    The definition is a double loop, and it was written as one until the declared
+    ``statistics.holm_family`` needed it: that family is a paired comparison on the
+    flat instance axis, which pools every patch of every bag, so m is ~4.5k
+    positives against n ~6.5M negatives and the quadratic form is ~3e10 element
+    comparisons per model. Not slow -- unrunnable.
+
+    Computed by binary search instead, which is the same quantity and not an
+    approximation of it. With the opposing class sorted once,
+    ``searchsorted(..., "left")`` counts strictly-less and ``"right"`` counts
+    less-or-equal, so their midpoint *is* the tie-corrected count:
+
+        V10[i] = (L + R) / 2n   with L = #{neg < p_i}, R = #{neg <= p_i}
+        V01[j] = (2m - L' - R') / 2m  with L' = #{pos < q_j}, R' = #{pos <= q_j}
+
+    The arithmetic is **bit-identical** to the double loop, not merely close:
+    ``L``, ``R``, ``m`` and ``n`` are exact integers, ``b/2`` for integer ``b`` is
+    exact in binary, and ``(2a + b) / 2n`` and ``(a + b/2) / n`` have the same
+    exact quotient, so IEEE division rounds both to the same double. That matters
+    because ``configs/prereg/isbi2027.yaml``'s thresholds were set from discovery
+    numbers, and a p-value that moved during a speedup would be indistinguishable
+    from a finding. ``tests/test_eval.py`` pins the equality against a
+    brute-force reference, ties included.
+    """
     pos = y_score[y_true == 1]
     neg = y_score[y_true == 0]
     m, n = len(pos), len(neg)
     if m == 0 or n == 0:
         raise ValueError("DeLong needs both classes present")
 
-    # V10[i] = fraction of negatives that positive i beats (ties count half).
-    v10 = np.array([(np.sum(p > neg) + 0.5 * np.sum(p == neg)) / n for p in pos])
-    v01 = np.array([(np.sum(pos > q) + 0.5 * np.sum(pos == q)) / m for q in neg])
+    neg_sorted = np.sort(neg)
+    lo = np.searchsorted(neg_sorted, pos, side="left")
+    hi = np.searchsorted(neg_sorted, pos, side="right")
+    v10 = (lo + hi) / (2.0 * n)
+
+    pos_sorted = np.sort(pos)
+    lo_p = np.searchsorted(pos_sorted, neg, side="left")
+    hi_p = np.searchsorted(pos_sorted, neg, side="right")
+    v01 = (2.0 * m - lo_p - hi_p) / (2.0 * m)
+
     auc = v10.mean()
     return auc, v10, v01
 

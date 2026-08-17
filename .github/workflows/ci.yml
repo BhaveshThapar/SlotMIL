@@ -51,11 +51,15 @@ jobs:
       - run: ruff check .
 
       # Scoped to the estimand core, not all of slotmil/, and the scope is the point rather than
-      # a convenience. These eight modules compute every number the paper reports and enforce the
+      # a convenience. These nine modules compute every number the paper reports and enforce the
       # pre-registration chain; they are clean and must stay clean. The wider package carries 20
       # pre-existing errors, most of them torch-stub false positives (a registered buffer typed as
       # Module, so `x / self.std` reads as Tensor / Module). Widening the scope means fixing those
       # on their own merits -- it does not mean loosening this gate.
+      #
+      # slotmil/eval/verdict.py joined the scope with the hypothesis scorers: it decides every
+      # reported PASS/FAIL/VOID, which makes it the last module in the repo that should be allowed
+      # to hold an unchecked type.
       - name: Type-check the estimand core
         run: >
           mypy
@@ -65,6 +69,7 @@ jobs:
           slotmil/eval/nulls.py
           slotmil/eval/templates.py
           slotmil/eval/classification.py
+          slotmil/eval/verdict.py
           slotmil/losses.py
           slotmil/data/feature_cache.py
 
