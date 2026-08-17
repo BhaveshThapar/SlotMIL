@@ -573,6 +573,34 @@ class TestEndToEndWiring:
         assert len(score_h4(pre, art, seeds)["skills"]) == n
         assert len(score_h5(pre, art, seeds)["mean_over_seeds"]) == n
 
+    def test_h7_reports_the_aggregations_it_did_not_apply(self, wired, art):
+        """The verdict attaches to the declared unit; mean and median are carried
+        beside it. On the single-draw artefacts the choice between them decided
+        H7's outcome in all three conditions, so a reader who cannot see the other
+        two cannot tell a robust verdict from a knife-edge one.
+        """
+        pre, _, _ = wired
+        v = score_h7(pre, art)
+        assert v["aggregation"] == pre.hypothesis("H7")["content_free_unit"]
+        sens = v["aggregation_sensitivity"]
+        assert set(sens) == set(pre.hypothesis("H7")["content_free_set"])
+        for name, row in sens.items():
+            if row["n_tags"]:
+                assert row["min"] <= row["median"] <= row["max"]
+                assert row["min"] <= row["mean"] <= row["max"]
+                # The verdict must read the max and nothing else.
+                assert v["content_free"][name] == pytest.approx(row["max"])
+
+    def test_h7_survives_an_artefact_with_no_draw_distribution(self, wired, art):
+        """The replication is newer than the artefacts it reads. A pre-replication
+        dump has no draw_distribution, and the scorer must report the spread as
+        unknown rather than fail -- an exception here would turn a legible
+        provenance problem into a crash."""
+        pre, _, _ = wired
+        v = score_h7(pre, art)
+        assert set(v["draw_spread"]) == set(pre.hypothesis("H7")["content_free_set"])
+        assert all(s is None for s in v["draw_spread"].values())
+
     def test_h10_reads_the_pinned_arm_at_every_seed(self, wired, art):
         pre, _, seeds = wired
         v = score_h10(pre, art, seeds)

@@ -391,16 +391,63 @@ def score_h7(pre, art):
 
     # "every content-free baseline's is below 0.05" is a statement about the set, so
     # each member is summarised by its WORST value over the arms it accompanies, not
-    # by an average that a good arm could hide a bad one inside.
-    members: dict[str, float | None] = {m: None
-                                        for m in pre.hypothesis("H7")["content_free_set"]}
+    # by an average that a good arm could hide a bad one inside. Declared since the
+    # 2026-08-17 amendment as `content_free_unit`; it lived only in this comment
+    # before that, which is why it was the one chosen unit absent from
+    # `undeclared_units_taken` below.
+    h7 = pre.hypothesis("H7")
+    per_tag: dict[str, list[float]] = {m: [] for m in h7["content_free_set"]}
+    members: dict[str, float | None] = {m: None for m in h7["content_free_set"]}
     for r in docs["h7_content_free"].get("results", []):
         for name, m in r.get("members", {}).items():
             if m.get("skill") is None:
                 continue
             cur = members.get(name)
             members[name] = m["skill"] if cur is None else max(cur, m["skill"])
-    return h7_verdict(probe, thr["probe"], members, thr["content_free"])
+            if name in per_tag:
+                per_tag[name].append(m["skill"])
+
+    v = h7_verdict(probe, thr["probe"], members, thr["content_free"])
+
+    # The verdict attaches to the max, and the other two aggregations are reported
+    # beside it for the same reason H8 publishes the number its threshold does not
+    # attach to: an exclusion a reader cannot check is indistinguishable from a
+    # number that was never computed. This one is worth checking -- the choice
+    # between max and the others decided H7's outcome in all three conditions on
+    # the single-draw artefacts.
+    v["aggregation"] = h7.get("content_free_unit", "max_over_tags")
+    v["aggregation_sensitivity"] = {
+        name: ({"n_tags": len(vals),
+                "mean": float(np.mean(vals)), "median": float(np.median(vals)),
+                "max": float(np.max(vals)), "min": float(np.min(vals))}
+               if vals else {"n_tags": 0})
+        for name, vals in per_tag.items()
+    }
+    v["aggregation_sensitivity_note"] = (
+        "Reported, not applied. The verdict uses the declared unit above. These are "
+        "the same per-tag values under the two aggregations the unit was chosen "
+        "against, so a reader can see what the choice was worth rather than take it "
+        "on trust."
+    )
+    # How many draws stand behind each per-tag value, carried up from the driver so
+    # the verdict is readable without opening the artefact it was computed from.
+    v["content_free_draws"] = docs["h7_content_free"].get("content_free_draws")
+    v["draw_spread"] = {
+        name: max(
+            (r["members"][name]["draw_distribution"]["sd"]
+             for r in docs["h7_content_free"].get("results", [])
+             if r.get("members", {}).get(name, {}).get("draw_distribution", {}).get("sd")
+             is not None),
+            default=None)
+        for name in h7["content_free_set"]
+    }
+    v["draw_spread_note"] = (
+        "Worst per-tag draw-to-draw standard deviation per member. Before the "
+        "2026-08-17 amendment every tag shared one realisation, so this was not "
+        "estimable and a maximum over tags could not distinguish a member above the "
+        "threshold from a member whose single draw was."
+    )
+    return v
 
 
 def score_h8(pre, art, seeds):
@@ -673,6 +720,11 @@ def main():
                        "kind": art.kinds.get(k),
                        "problem": art.problems.get(k)}
                    for k in sorted(set(art.docs) | set(art.problems))},
+        # H7 is deliberately absent: its unit was the one chosen unit documented
+        # solely in source comments -- neither declared in the config nor recorded
+        # here as taken -- and the 2026-08-17 amendment declared it as
+        # `content_free_unit` rather than adding it to this block. A unit that the
+        # config states is not a unit this file took.
         "undeclared_units_taken": {
             "H1": "mean_over_seeds", "H4": "mean_over_seeds",
             "H9": "every_matched_tag",

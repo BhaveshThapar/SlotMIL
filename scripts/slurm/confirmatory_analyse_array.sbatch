@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
 #SBATCH --time=16:00:00
-#SBATCH --array=0-2
+#SBATCH --array=0-3
 #SBATCH --requeue
 #SBATCH --output=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.out
 #SBATCH --error=/fs/nexus-scratch/bthapar/SlotMIL/logs/%x-%A_%a.err
@@ -50,7 +50,13 @@ source "$PROJ/.venv/bin/activate"
 export TMPDIR=/fs/nexus-scratch/bthapar/.tmp
 export PYTHONUNBUFFERED=1
 
-CONDS=(nodule_present malignancy balanced_presence)
+# mosmed_severity joined on 2026-08-17 for H9, taking --array to 0-3. It runs a
+# strict SUBSET of the steps below -- template_family and nothing else -- because
+# the config's own split note says MosMed "supports the stereotypy contrast (H9)
+# and nothing else, and the paper says so". Running the rest on it would produce
+# a full table of MosMed numbers for hypotheses MosMed is not declared to carry,
+# and a number that exists is a number someone will eventually quote.
+CONDS=(nodule_present malignancy balanced_presence mosmed_severity)
 if [ "$SLURM_ARRAY_TASK_ID" -ge "${#CONDS[@]}" ]; then
     echo "array index $SLURM_ARRAY_TASK_ID beyond ${#CONDS[@]} conditions -- --array and CONDS have drifted" >&2
     exit 1
@@ -63,9 +69,12 @@ if [ ! -d "$DIR" ]; then
     exit 1
 fi
 
-# The split for this condition, resolved from the frozen config so this file holds
-# no second copy of it. Refuses an undeclared condition, same as the collect array.
-SPLITS=$(python - "$COND" <<'PY'
+# The split, dataset and feature cache for this condition, resolved from the frozen
+# config so this file holds no second copy of any of them. Refuses an undeclared
+# condition, same as the collect array. The cache is resolved rather than hardcoded
+# for the reason step 6 makes concrete: probe_gate reads a cache, and a hardcoded
+# LIDC path would have scored a MosMed split against LIDC features.
+read -r SPLITS DATASET CACHE <<<"$(python - "$COND" <<'PY'
 import sys
 sys.path.insert(0, "/fs/nexus-scratch/bthapar/SlotMIL")
 from slotmil import prereg
@@ -76,9 +85,24 @@ cond = next((c for c in pre.get("conditions") if c["name"] == name), None)
 if cond is None:
     declared = ", ".join(c["name"] for c in pre.get("conditions"))
     raise SystemExit(f"condition {name!r} is not pre-registered. Declared: {declared}")
-print(pre.split(cond["dataset"], cond["split"])["path"])
+ds = cond["dataset"]
+print(pre.split(ds, cond["split"])["path"], ds, pre.get("datasets")[ds]["cache"])
 PY
-)
+)"
+
+# The uid -> patient map every cluster bootstrap here resamples on. One per
+# dataset: LIDC groups several series under a patient, MosMed is one study per
+# patient. Rebuilt from the cache if absent -- it is derived, not authored, and a
+# missing derived file should not cost a queue slot.
+if [ "$DATASET" = "lidc" ]; then
+    META=$PROJ/runs/_audit_meta.json
+else
+    META=$PROJ/runs/_audit_meta_${DATASET}.json
+fi
+if [ ! -f "$META" ]; then
+    echo "[$COND] building $META"
+    python scripts/make_audit_meta.py --cache "$PROJ/$CACHE" --out "$META"
+fi
 
 CARRIES=$(python - "$COND" <<'PY'
 import sys
@@ -93,7 +117,10 @@ PY
 N_DUMPS=$(find "$DIR" -name '*_test.npz' | wc -l)
 echo "task $SLURM_ARRAY_TASK_ID | condition '$COND' | $N_DUMPS test dumps"
 echo "  dir     $DIR"
+echo "  dataset $DATASET"
 echo "  splits  $SPLITS"
+echo "  cache   $CACHE"
+echo "  meta    $META"
 echo "  carries the hypothesis family: $CARRIES"
 
 # Skip a step whose artefact already exists AND is stamped at the current config
@@ -129,40 +156,57 @@ step() {          # step <artefact> <command...>
     "$@"
 }
 
+# template_family is the ONLY step MosMed runs: it is H9's sole input. Everything
+# else below is guarded on the dataset rather than on the condition name, so a
+# third dataset would inherit the same scoping without editing each guard.
+if [ "$DATASET" = "lidc" ]; then
+
 # 1. axis_gate      -> H1, H2, and H6's slice column
 step "$DIR/axis_gate.json" \
     python scripts/axis_gate.py --dir "$DIR" --role confirmatory \
-        --out "$DIR/axis_gate.json"
+        --meta "$META" --out "$DIR/axis_gate.json"
+
+fi
 
 # 2. template_family -> H5, H10, H7's beside-the-gate rows, and the skill denominator
-#    that steps 3 and 5 read. Must precede both.
+#    that steps 3 and 5 read. Must precede both. On MosMed it is H9's input and the
+#    only thing produced.
 step "$DIR/template_family.json" \
     python scripts/template_family.py --dir "$DIR" --role confirmatory \
-        --out "$DIR/template_family.json"
+        --meta "$META" --out "$DIR/template_family.json"
+
+if [ "$DATASET" != "lidc" ]; then
+    echo "[$COND] steps 3-8 skipped: $DATASET carries H9 only, through template_family above"
+    echo "[$COND] done"
+    exit 0
+fi
 
 # 3. h4_cross_patient -> H4, H6's skill column, the cross_patient link of the chain
 step "$DIR/h4_cross_patient.json" \
     python scripts/h4_cross_patient.py --dir "$DIR" --role confirmatory \
-        --template-family "$DIR/template_family.json" \
+        --meta "$META" --template-family "$DIR/template_family.json" \
         --out "$DIR/h4_cross_patient.json"
 
 # 4. h8_in_lung -> H8. LIDC only, and the lung masks are keyed by LIDC uid.
 step "$DIR/h8_in_lung.json" \
     python scripts/h8_in_lung.py --dir "$DIR" --role confirmatory \
-        --lung "$PROJ/data/lidc/lung_masks.h5" \
+        --meta "$META" --lung "$PROJ/data/lidc/lung_masks.h5" \
         --out "$DIR/h8_in_lung.json"
 
-# 5. h7_content_free -> H7's content-free half
+# 5. h7_content_free -> H7's content-free half. Since the 2026-08-17 amendment its
+#    two stochastic members are drawn 30 times per tag (hypotheses.H7.
+#    content_free_draws, read by the driver -- not repeated here), so this step is
+#    the slowest of the five after h4: ~4.5s per draw per tag on the roll member.
 step "$DIR/h7_content_free.json" \
     python scripts/h7_content_free.py --dir "$DIR" --role confirmatory \
-        --template-family "$DIR/template_family.json" \
+        --meta "$META" --template-family "$DIR/template_family.json" \
         --out "$DIR/h7_content_free.json"
 
 # 6. probe_gate -> H7's probe half, per condition. It reads the feature cache and the
 #    split rather than the dumps, so it is the one step here that is not pure numpy.
 step "$DIR/probe_gate.json" \
     python scripts/probe_gate.py \
-        --cache "$PROJ/data/lidc/features_dinov2_vitb14.h5" --splits "$SPLITS" \
+        --cache "$PROJ/$CACHE" --splits "$SPLITS" \
         --role confirmatory --out "$DIR/probe_gate.json"
 
 # 7. holm_family -> the declared multiplicity correction. ONLY on the condition
@@ -181,6 +225,25 @@ fi
 # 8. the verdicts. Always re-run -- it is seconds, it reads only stamped artefacts,
 #    and a stale verdict table beside fresh estimands is the single worst artefact
 #    this pipeline could leave behind.
-python scripts/prereg_verdict.py --dir "$DIR" --out "$DIR/prereg_verdict.json"
+#
+# H9 compares MosMed's template family against this condition's, so it is passed
+# only if the MosMed task has already written one. Array tasks are unordered, so
+# on a cold run the LIDC tasks will usually finish first and H9 will read NOT_RUN
+# with `mosmed_template_family: not supplied`. That is a correct verdict for the
+# artefacts that existed, not a failure -- and it is why the verdicts are re-run
+# once after the whole array drains. NOT_RUN and VOID exist so that "the input was
+# not there" cannot be confused with "the hypothesis was tested and held".
+MOSMED_TF=$PROJ/runs/nulls_mosmed_severity_confirmatory/template_family.json
+MOSMED_ARG=()
+if [ -f "$MOSMED_TF" ]; then
+    MOSMED_ARG=(--mosmed-template-family "$MOSMED_TF")
+    echo "[$COND] H9 will read $MOSMED_TF"
+else
+    echo "[$COND] no MosMed template family yet -- H9 will read NOT_RUN; re-run the"
+    echo "[$COND] verdict after the array drains to pick it up"
+fi
+
+python scripts/prereg_verdict.py --dir "$DIR" --out "$DIR/prereg_verdict.json" \
+    "${MOSMED_ARG[@]}"
 
 echo "[$COND] done"
