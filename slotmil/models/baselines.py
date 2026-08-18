@@ -471,19 +471,45 @@ class TransMIL(nn.Module):
         if pad_mask is None:
             pad_mask = torch.ones(b, n, dtype=torch.bool, device=x.device)
 
-        # Square the sequence so PPEG has a grid to convolve over. ceil(sqrt(N)),
-        # per the paper.
+        # One bag at a time, deliberately. The squaring side is ceil(sqrt(n)) of
+        # the bag's OWN instance count, and taking it from the batch's padded
+        # width instead would make a bag's representation depend on which bags it
+        # was batched with -- a 10-instance bag squares to 4x4 alone and to 10x10
+        # beside a deep scan, which are different PPEG neighbourhoods over the
+        # same instances. Measured before this loop existed: 0.012 on attention
+        # and 0.64 on the pooled token for one such bag.
+        #
+        # Same reasoning, and the same remedy, as clam_instance_loss's batch
+        # loop. B is 4 here, and the loop also caps resident memory at ONE bag's
+        # squared grid rather than the batch's -- which is what the deepest LIDC
+        # series (162,560 instances, a 404x404 grid) needs.
+        tokens, rows = [], []
+        for i in range(b):
+            # Indices rather than a prefix slice: nothing in the pooling contract
+            # promises the real instances are contiguous.
+            idx = pad_mask[i].nonzero(as_tuple=True)[0]
+            row = x.new_zeros(n)
+            if idx.numel():
+                tok, a = self._one_bag(x[i].index_select(0, idx).unsqueeze(0))
+                row[idx] = a[0]
+            else:
+                tok = self.norm(self.cls_token)
+            tokens.append(tok)
+            rows.append(row)
+        return torch.cat(tokens, dim=0), torch.stack(rows).unsqueeze(1)  # B,1,D  B,1,N
+
+    def _one_bag(self, x):
+        """``x`` is ``[1, n, D]`` and every column is a real instance."""
+        n = x.shape[1]
         side = int(math.isqrt(n - 1)) + 1 if n > 0 else 1
         pad = side * side - n
+        keep = x.new_ones(1, n, dtype=torch.bool)
         if pad:
-            x = torch.cat([x, x.new_zeros(b, pad, x.shape[-1])], dim=1)
-            keep = torch.cat([pad_mask, pad_mask.new_zeros(b, pad)], dim=1)
-        else:
-            keep = pad_mask
-        x = x * keep.unsqueeze(-1).to(x.dtype)
+            x = torch.cat([x, x.new_zeros(1, pad, x.shape[-1])], dim=1)
+            keep = torch.cat([keep, keep.new_zeros(1, pad)], dim=1)
 
-        x = torch.cat([self.cls_token.expand(b, -1, -1), x], dim=1)
-        mask = torch.cat([keep.new_ones(b, 1), keep], dim=1)
+        x = torch.cat([self.cls_token, x], dim=1)
+        mask = torch.cat([keep.new_ones(1, 1), keep], dim=1)
 
         x = self.layer1(x, mask)
         x = self.ppeg(x, side, keep)
@@ -491,14 +517,14 @@ class TransMIL(nn.Module):
         row = self.layer2.class_token_attention(x, mask)
         x = self.layer2(x, mask)
 
-        tokens = self.norm(x)[:, :1]  # B,1,D -- the class token is the bag
+        tokens = self.norm(x)[:, :1]  # 1,1,D -- the class token is the bag
 
         # Drop the class column and the squaring pad, then renormalise over real
         # instances: the class token attends to itself and that mass is not part
         # of any instance-level estimand.
-        attn = row[:, 1:1 + n].masked_fill(~pad_mask, 0.0)
-        attn = attn / attn.sum(dim=-1, keepdim=True).clamp_min(torch.finfo(attn.dtype).tiny)
-        return tokens, attn.unsqueeze(1)  # B,1,D  B,1,N
+        attn = row[:, 1:1 + n]
+        return tokens, attn / attn.sum(dim=-1, keepdim=True).clamp_min(
+            torch.finfo(attn.dtype).tiny)
 
 
 def count_params(module: nn.Module) -> int:

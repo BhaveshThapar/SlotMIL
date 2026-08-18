@@ -95,6 +95,61 @@ class TestContract:
         assert g is not None and torch.isfinite(g).all() and g.abs().sum() > 0
 
 
+class TestBatchInvariance:
+    """A bag's output must not depend on which bags it was batched with.
+
+    This is the arm's sharpest edge and it was wrong first. The squaring side is
+    ``ceil(sqrt(n))``, and taking ``n`` from the batch's padded width rather than
+    the bag's own instance count made a 10-instance bag square to 4x4 alone and
+    10x10 beside a deep scan -- different PPEG neighbourhoods over identical
+    instances, measured at 0.012 on attention and 0.64 on the pooled token.
+
+    It matters beyond tidiness. Evaluation batches whole bags with no
+    subsampling, so under the batched form a scan's attention -- the thing every
+    localisation estimand ranks -- would have depended on the arbitrary order the
+    DataLoader happened to group it in.
+    """
+
+    def _alone_vs_padded(self, n, width, seed=0):
+        torch.manual_seed(seed)
+        m = TransMIL(16, 32, heads=4, num_landmarks=8).eval()
+        f = torch.randn(1, n, 16)
+        pm = torch.ones(1, n, dtype=torch.bool)
+        wide_f = torch.zeros(1, width, 16)
+        wide_f[0, :n] = f[0]
+        wide_pm = torch.zeros(1, width, dtype=torch.bool)
+        wide_pm[0, :n] = True
+        with torch.no_grad():
+            t_a, a_a = m(f, pm)
+            t_b, a_b = m(wide_f, wide_pm)
+        return (t_a, a_a[0, 0, :n]), (t_b, a_b[0, 0, :n]), a_b
+
+    @pytest.mark.parametrize("n,width", [(10, 100), (17, 64), (9, 81), (4, 5)])
+    def test_a_bag_scores_the_same_alone_as_padded(self, n, width):
+        (t_a, a_a), (t_b, a_b), _ = self._alone_vs_padded(n, width)
+        assert torch.equal(a_a, a_b)
+        assert torch.equal(t_a, t_b)
+
+    def test_padding_still_carries_no_mass(self):
+        _, _, full = self._alone_vs_padded(10, 100)
+        assert full[0, 0, 10:].abs().max().item() == 0.0
+        assert full.sum().item() == pytest.approx(1.0, abs=1e-6)
+
+    def test_real_instances_need_not_be_contiguous(self):
+        """Nothing in the pooling contract promises the pad is a suffix, so the
+        per-bag path indexes by mask rather than slicing a prefix."""
+        torch.manual_seed(0)
+        m = TransMIL(16, 32, heads=4, num_landmarks=8).eval()
+        feats = torch.randn(1, 12, 16)
+        mask = torch.ones(1, 12, dtype=torch.bool)
+        mask[0, [2, 5, 9]] = False
+        feats[0, [2, 5, 9]] = 1e4
+        with torch.no_grad():
+            _, attn = m(feats, mask)
+        assert attn[0, 0, [2, 5, 9]].abs().max().item() == 0.0
+        assert attn.sum().item() == pytest.approx(1.0, abs=1e-6)
+
+
 class TestPadIsolation:
     def test_junk_in_the_pad_changes_nothing(self):
         """The strongest form of the leak test: two batches identical on the real

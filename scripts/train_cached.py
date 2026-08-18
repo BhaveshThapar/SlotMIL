@@ -273,12 +273,41 @@ def main():
             n_params = sum(p.numel() for p in model.parameters())
             print(f"[train] {label} seed={seed} params={n_params/1e3:.0f}k", flush=True)
 
+            # Evaluation sees the FULL bag -- protocol.max_slices is train-only --
+            # so an arm can train comfortably and then run out of memory at the
+            # first validation pass. transmil did.
+            #
+            # The cost this buys back is `collate_bags` padding, not the model:
+            # a batch is padded to its deepest bag, and the deepest LIDC series is
+            # 162,560 instances, so batching one of those with three shallow bags
+            # materialises a [4, 162560, 768] feature tensor -- ~2 GB in fp32 --
+            # of which three quarters is padding that TransMIL then indexes away.
+            # (The model itself is already per-bag: TransMIL.forward loops so the
+            # squaring cannot depend on batch composition, which caps its own
+            # resident grid at one bag regardless of B.)
+            #
+            # The value lives here rather than in the four sbatch files that
+            # enumerate arms, for the same reason AUX_WEIGHTS does: an arm-specific
+            # constant spread across launchers is one an arm is eventually launched
+            # without. Batching moves no number -- the model is batch-invariant
+            # (tests/test_transmil.py), every metric is computed over all bags, and
+            # eval runs with grad disabled -- so this is a memory budget and not a
+            # pre-registered parameter.
+            EVAL_BATCH = {"transmil": 1}
+            eval_bs = EVAL_BATCH.get(pooling)
+            if eval_bs:
+                print(f"[train] {label}: eval batch {eval_bs} "
+                      f"(train batch {args.batch_size}) -- full-bag eval memory",
+                      flush=True)
+
             cfg = TrainConfig(
                 epochs=args.epochs, lr=args.lr, batch_size=args.batch_size,
+                eval_batch_size=eval_bs,
                 num_workers=args.num_workers, seed=seed, select_metric="auc",
                 # Every knob that defines the arm goes in extra, so result.json
                 # records what actually ran rather than what the label implies.
                 extra={"n_params": n_params, "arm": label, "lam": lam,
+                       "eval_batch_size": eval_bs or args.batch_size,
                        "patches_per_slice": pps,
                        "kl_var_floor": NG_VAR_FLOOR_SLICES2,
                        "sigma_z": CENTRE_GAUSSIAN_SIGMA_Z,

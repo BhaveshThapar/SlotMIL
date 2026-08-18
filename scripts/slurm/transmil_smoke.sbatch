@@ -54,49 +54,63 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 echo "host $(hostname)  gpu $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null || echo none)"
 
-echo "=============== 1/2  forward+backward at real bag scale ==============="
+echo "=============== 1/2  both real shapes ==============="
+# TRAIN and EVAL are different shapes and the first version of this job only
+# measured one of them, which is why the arm reached the sweep and OOMed at the
+# first validation pass. protocol.max_slices subsamples to 48 slices at TRAIN
+# time only, so training sees ~12,288 instances at batch 4 while evaluation sees
+# the FULL bag -- and the deepest LIDC series is 162,560 instances, not the
+# 43,812 that "~43.8k instances" in ENGINEERING.md describes.
 python - <<'PY'
+import math
 import time
 
 import torch
 
 from slotmil.models.mil import build_model
 
-# 43812 = the largest LIDC bag: 171 slices x 256 patches. batch_size 4 is what
-# train_cached.py uses, so this is the real resident shape, not a proxy for it.
-N, B, DIN, DIM = 43812, 4, 768, 256
+DIN, DIM = 768, 256
 dev = "cuda" if torch.cuda.is_available() else "cpu"
-side = int(torch.tensor(N - 1).sqrt().item()) + 1
-print(f"bag {N} instances -> squared to {side}x{side} = {side * side} cells")
 
 torch.manual_seed(0)
 model = build_model(pooling="transmil", input_dim=DIN, dim=DIM,
                     num_classes=2, num_slots=8, readout="gated").to(dev)
-n_par = sum(p.numel() for p in model.parameters())
-print(f"parameters {n_par/1e6:.2f}M")
+print(f"parameters {sum(p.numel() for p in model.parameters())/1e6:.2f}M")
 
-feats = torch.randn(B, N, DIN, device=dev)
-pad = torch.ones(B, N, dtype=torch.bool, device=dev)
-pad[1, 30000:] = False          # a mixed-depth batch, as collate_bags produces
-y = torch.tensor([1, 0, 1, 0], device=dev)
 
-if dev == "cuda":
-    torch.cuda.reset_peak_memory_stats()
-t0 = time.time()
-out = model(feats, pad)
-loss = torch.nn.functional.cross_entropy(out["logits"], y)
-loss.backward()
-if dev == "cuda":
-    torch.cuda.synchronize()
-dt = time.time() - t0
+def run(label, n, b, train):
+    side = math.isqrt(n - 1) + 1
+    feats = torch.randn(b, n, DIN, device=dev)
+    pad = torch.ones(b, n, dtype=torch.bool, device=dev)
+    if b > 1:
+        pad[1, n // 2:] = False        # mixed depth, as collate_bags produces
+    y = torch.zeros(b, dtype=torch.long, device=dev)
+    if dev == "cuda":
+        torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
+    t0 = time.time()
+    with torch.set_grad_enabled(train):
+        out = model(feats, pad)
+        if train:
+            torch.nn.functional.cross_entropy(out["logits"], y).backward()
+    if dev == "cuda":
+        torch.cuda.synchronize()
+    attn = out["attn"]
+    peak = torch.cuda.max_memory_allocated() / 2**30 if dev == "cuda" else 0.0
+    total = (torch.cuda.get_device_properties(0).total_memory / 2**30
+             if dev == "cuda" else 0.0)
+    print(f"{label}: n={n} b={b} -> {side}x{side}  {time.time()-t0:.2f}s  "
+          f"peak {peak:.2f} GiB of {total:.2f}")
+    print(f"   attn {tuple(attn.shape)}  row sum {attn[0].sum().item():.6f}"
+          + (f"  pad max {attn[1, :, n // 2:].abs().max().item():.3e}" if b > 1 else ""))
+    model.zero_grad(set_to_none=True)
 
-attn = out["attn"]
-print(f"forward+backward {dt:.2f}s  loss {loss.item():.4f}")
-print(f"attn {tuple(attn.shape)}  pad max {attn[1, :, 30000:].abs().max().item():.3e}  "
-      f"row sum {attn[0].sum().item():.6f}")
-if dev == "cuda":
-    print(f"peak memory {torch.cuda.max_memory_allocated()/2**30:.2f} GiB of "
-          f"{torch.cuda.get_device_properties(0).total_memory/2**30:.2f} GiB")
+
+# 48 slices x 256 patches, the train-time view, with a backward pass.
+run("train", 48 * 256, 4, train=True)
+# The deepest series in the cohort, at the eval batch train_cached.py gives this
+# arm, with grad disabled exactly as run_epoch does for validation.
+run("eval ", 162560, 1, train=False)
 PY
 
 echo "=============== 2/2  two epochs through the real driver ==============="

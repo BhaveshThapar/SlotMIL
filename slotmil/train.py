@@ -27,6 +27,19 @@ class TrainConfig:
     lr: float = 1e-4
     weight_decay: float = 1e-4
     batch_size: int = 8
+    # Evaluation batches separately from training, because the two see different
+    # bag sizes. protocol.max_slices subsamples to 48 slices at TRAIN time only
+    # (`max_slices_applies_to: train_only` -- evaluation always uses the full
+    # bag), so a val bag can be an order of magnitude larger than a train bag:
+    # the deepest LIDC series is 162,560 instances against a 12,288-instance
+    # training view of the same scan.
+    #
+    # None means "same as batch_size", so no arm's behaviour changes unless it
+    # asks. Batching is not an estimand -- every metric is computed over all
+    # bags, and eval runs under `set_grad_enabled(False)` so nothing accumulates
+    # across a batch -- which is what makes this a memory knob that cannot move
+    # a number.
+    eval_batch_size: int | None = None
     num_workers: int = 4
     device: str = "cuda"
     grad_clip: float | None = None  # implicit diff should make this unnecessary
@@ -143,9 +156,9 @@ def fit(
 
     g = torch.Generator()
     g.manual_seed(cfg.seed)
-    mk = lambda ds, shuffle: DataLoader(  # noqa: E731
+    mk = lambda ds, shuffle, bs=None: DataLoader(  # noqa: E731
         ds,
-        batch_size=cfg.batch_size,
+        batch_size=bs or cfg.batch_size,
         shuffle=shuffle,
         num_workers=cfg.num_workers,
         collate_fn=collate_fn,
@@ -154,7 +167,12 @@ def fit(
         generator=g if shuffle else None,
         drop_last=False,
     )
-    train_loader, val_loader = mk(train_ds, True), mk(val_ds, False)
+    # The eval batch is passed explicitly rather than inferred from `shuffle`:
+    # `shuffle` happens to be False for every eval loader today, but tying a
+    # memory budget to a sampling flag would break silently the first time
+    # something shuffled an eval set.
+    train_loader = mk(train_ds, True)
+    val_loader = mk(val_ds, False, cfg.eval_batch_size)
 
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay
@@ -222,7 +240,8 @@ def fit(
     if test_ds is not None:
         if best["state"] is not None:
             model.load_state_dict(best["state"])
-        te = run_epoch(model, mk(test_ds, False), criterion, None, device, cfg.amp, None, multilabel)
+        te = run_epoch(model, mk(test_ds, False, cfg.eval_batch_size), criterion,
+                       None, device, cfg.amp, None, multilabel)
         result["test"] = te
 
     if out_dir:
