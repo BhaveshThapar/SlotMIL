@@ -483,20 +483,31 @@ class TransMIL(nn.Module):
         # loop. B is 4 here, and the loop also caps resident memory at ONE bag's
         # squared grid rather than the batch's -- which is what the deepest LIDC
         # series (162,560 instances, a 404x404 grid) needs.
-        tokens, rows = [], []
+        tokens, bags, idxs = [], [], []
         for i in range(b):
             # Indices rather than a prefix slice: nothing in the pooling contract
             # promises the real instances are contiguous.
             idx = pad_mask[i].nonzero(as_tuple=True)[0]
-            row = x.new_zeros(n)
             if idx.numel():
                 tok, a = self._one_bag(x[i].index_select(0, idx).unsqueeze(0))
-                row[idx] = a[0]
             else:
-                tok = self.norm(self.cls_token)
+                tok, a = self.norm(self.cls_token), None
             tokens.append(tok)
-            rows.append(row)
-        return torch.cat(tokens, dim=0), torch.stack(rows).unsqueeze(1)  # B,1,D  B,1,N
+            bags.append(a)
+            idxs.append(idx)
+
+        # The output row takes the ATTENTION's dtype, not the features'. Under
+        # autocast the projection is half and the softmax is float32, and
+        # scattering into a half row would silently downcast attention -- the one
+        # tensor protocol.dtype pins to float32, because fp16 attention cost seed
+        # 2 0.034 AUC. Assembling here rather than in the loop is what lets the
+        # dtype come from the bags instead of from x.
+        dtype = next((a.dtype for a in bags if a is not None), x.dtype)
+        attn = torch.zeros(b, n, dtype=dtype, device=x.device)
+        for i, (a, idx) in enumerate(zip(bags, idxs)):
+            if a is not None:
+                attn[i, idx] = a[0]
+        return torch.cat(tokens, dim=0), attn.unsqueeze(1)  # B,1,D  B,1,N
 
     def _one_bag(self, x):
         """``x`` is ``[1, n, D]`` and every column is a real instance."""

@@ -135,6 +135,32 @@ class TestBatchInvariance:
         assert full[0, 0, 10:].abs().max().item() == 0.0
         assert full.sum().item() == pytest.approx(1.0, abs=1e-6)
 
+    def test_autocast_does_not_downcast_the_attention(self):
+        """Training runs under AMP, and the per-bag path assembles its output row
+        rather than getting one from `_masked_softmax`. Building that row from
+        the FEATURES' dtype scattered a softmax output into a reduced-precision
+        row: on CUDA it raised outright, and had it not, it would have quietly
+        halved the precision of the one tensor every localisation estimand ranks.
+
+        The invariant is relative, not absolute -- autocast promotes softmax to
+        float32 on CUDA and does not on CPU -- so this pins TransMIL's attention
+        to the same dtype another arm's takes under the identical context, which
+        holds on both. CPU bfloat16 so it runs in CI, which has no GPU; the dtype
+        disagreement reproduces the bug, not the device.
+        """
+        torch.manual_seed(0)
+        m = TransMIL(16, 32, heads=4, num_landmarks=8).eval()
+        reference = build_model(pooling="gated_abmil", input_dim=16, dim=32,
+                                num_classes=2).eval()
+        feats, mask = _bag()
+        with torch.no_grad(), torch.autocast("cpu", dtype=torch.bfloat16):
+            tokens, attn = m(feats, mask)
+            ref_attn = reference(feats, mask)["attn"]
+        assert attn.dtype == ref_attn.dtype, (attn.dtype, ref_attn.dtype)
+        assert attn[1, :, 7:].abs().max().item() == 0.0
+        assert attn.sum(-1).to(torch.float32).allclose(torch.ones(2, 1), atol=1e-2)
+        assert torch.isfinite(tokens).all()
+
     def test_real_instances_need_not_be_contiguous(self):
         """Nothing in the pooling contract promises the pad is a suffix, so the
         per-bag path indexes by mask rather than slicing a prefix."""
