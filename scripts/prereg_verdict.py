@@ -484,6 +484,42 @@ def _template_ci(doc):
     return out
 
 
+def _h9_power(tag, mos_ci, lidc_ci):
+    """What separation this pair's intervals would have needed to order.
+
+    H9 is interval-scored and its falsifier counts *indistinguishable* as a
+    failure, so a FAIL can mean two different things: the orderings are really
+    absent, or the intervals were too wide for any ordering to show. Those are
+    not the same finding and the paper must not report the second as the first.
+
+    The gate is ``mosmed.hi < lidc.lo``, so the point estimates have to be
+    separated by at least the two facing half-widths summed. Reporting the
+    required separation beside the observed one turns "FAIL" into a number a
+    reader can attribute. MosMed contributes 22 test clusters against LIDC's
+    150, and the config already flags 38 clusters as wide enough that most
+    outcomes land indistinguishable by default -- so this is an expected
+    hazard being measured, not a surprise being explained away.
+    """
+    if any(c is None or c.get("lo") is None or c.get("hi") is None
+           for c in (mos_ci, lidc_ci)):
+        return {"tag": tag, "computable": False}
+    observed = lidc_ci["mean"] - mos_ci["mean"]
+    required = (lidc_ci["mean"] - lidc_ci["lo"]) + (mos_ci["hi"] - mos_ci["mean"])
+    return {
+        "tag": tag, "computable": True,
+        "mosmed": {"mean": mos_ci["mean"], "lo": mos_ci["lo"], "hi": mos_ci["hi"],
+                   "width": mos_ci["hi"] - mos_ci["lo"],
+                   "n_clusters": mos_ci.get("n_clusters")},
+        "lidc": {"mean": lidc_ci["mean"], "lo": lidc_ci["lo"], "hi": lidc_ci["hi"],
+                 "width": lidc_ci["hi"] - lidc_ci["lo"],
+                 "n_clusters": lidc_ci.get("n_clusters")},
+        "observed_separation": observed,
+        "required_separation": required,
+        "shortfall": required - observed,
+        "orders": bool(mos_ci["hi"] < lidc_ci["lo"]),
+    }
+
+
 def score_h9(pre, art):
     docs, why = art.need("template_family", "mosmed_template_family")
     if why:
@@ -501,6 +537,29 @@ def score_h9(pre, art):
     outcome = PASS if not failed else FAIL
     if any(v["outcome"] == VOID for v in per_pair):
         outcome = VOID
+    power = [_h9_power(t, mos[t][0], lidc[t][0]) for t in shared]
+    usable = [p for p in power if p["computable"]]
+    # Reported whichever way H9 lands. A PASS with a tiny margin and a FAIL that
+    # was arithmetically unreachable are both things a reader should be able to
+    # see without re-deriving them from the per-tag intervals.
+    summary = {"n_tags": len(power), "n_computable": len(usable)}
+    if usable:
+        short = [p["shortfall"] for p in usable]
+        summary.update({
+            "median_mosmed_ci_width": float(np.median([p["mosmed"]["width"]
+                                                       for p in usable])),
+            "median_lidc_ci_width": float(np.median([p["lidc"]["width"]
+                                                     for p in usable])),
+            "median_required_separation": float(np.median([p["required_separation"]
+                                                           for p in usable])),
+            "median_observed_separation": float(np.median([p["observed_separation"]
+                                                           for p in usable])),
+            "median_shortfall": float(np.median(short)),
+            "n_ordering": sum(1 for p in usable if p["orders"]),
+            "mosmed_n_clusters": usable[0]["mosmed"]["n_clusters"],
+            "lidc_n_clusters": usable[0]["lidc"]["n_clusters"],
+        })
+
     return {
         "id": "H9", "outcome": outcome,
         "reason": (f"{len(shared) - len(failed)}/{len(shared)} matched tags order "
@@ -512,6 +571,17 @@ def score_h9(pre, art):
             "H9 declares no aggregation over arms and seeds. Taken as the strictest "
             "available reading -- one matched pair failing to order fails the "
             "hypothesis -- and flagged as taken rather than declared.",
+        "power": summary,
+        "power_per_tag": {p["tag"]: p for p in power},
+        "power_note":
+            "H9's falsifier counts 'indistinguishable' as a failure, so a FAIL can "
+            "mean the ordering is absent OR that the intervals were too wide for any "
+            "ordering to show. `required_separation` is what the point estimates "
+            "would have had to differ by for the intervals to clear -- the two facing "
+            "half-widths summed -- and `observed_separation` is what they do differ "
+            "by. A FAIL whose median shortfall is positive across nearly every tag is "
+            "a statement about 22 MosMed test clusters, not about stereotypy. "
+            "Reported whichever way the hypothesis lands, and it changes no verdict.",
     }
 
 

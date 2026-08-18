@@ -32,6 +32,7 @@ import pytest
 from scripts.prereg_verdict import (
     Artefacts,
     _blind,
+    _h9_power,
     blind_substitutions,
     score_h1,
     score_h2,
@@ -302,6 +303,55 @@ class TestH9:
 
     def test_a_missing_side_is_not_run(self):
         assert h9_verdict(None, ci(0.78, 0.74, 0.82))["outcome"] == NOT_RUN
+
+
+class TestH9Power:
+    """A FAIL must distinguish 'no ordering' from 'intervals too wide to show one'.
+
+    H9's falsifier counts *indistinguishable* as a failure, and MosMed brings 22
+    test clusters against LIDC's 150. The config already flags 38 clusters as
+    wide enough that most outcomes land indistinguishable by default, so a FAIL
+    here is exactly the kind that could be arithmetic. The diagnostic is what
+    lets the paper tell the two apart; it changes no verdict.
+    """
+
+    def test_a_wide_interval_fail_is_attributable(self):
+        """Point estimates well separated, intervals far too wide to show it."""
+        p = _h9_power("t", ci(0.60, 0.40, 0.80), ci(0.78, 0.58, 0.98))
+        assert p["orders"] is False
+        assert p["observed_separation"] == pytest.approx(0.18)
+        # 0.20 of LIDC's lower half plus 0.20 of MosMed's upper half.
+        assert p["required_separation"] == pytest.approx(0.40)
+        assert p["shortfall"] > 0     # the ordering was arithmetically unreachable
+
+    def test_a_genuinely_absent_ordering_reads_differently(self):
+        """Tight intervals, but the means barely differ. Same FAIL, and the
+        shortfall is small -- the measurement had the power and the effect was
+        not there, which is a finding rather than a limitation."""
+        p = _h9_power("t", ci(0.770, 0.760, 0.780), ci(0.780, 0.770, 0.790))
+        assert p["orders"] is False
+        assert p["observed_separation"] == pytest.approx(0.01, abs=1e-9)
+        assert p["required_separation"] == pytest.approx(0.02, abs=1e-9)
+        assert p["shortfall"] < 0.02
+
+    def test_a_clearing_pair_has_a_negative_shortfall(self):
+        p = _h9_power("t", ci(0.60, 0.55, 0.64), ci(0.78, 0.74, 0.82))
+        assert p["orders"] is True and p["shortfall"] < 0
+
+    def test_an_undefined_interval_is_not_computable_rather_than_a_crash(self):
+        p = _h9_power("t", ci(0.60), ci(0.78, 0.74, 0.82))
+        assert p["computable"] is False
+        assert _h9_power("t", None, ci(0.78, 0.74, 0.82))["computable"] is False
+
+    def test_the_diagnostic_agrees_with_the_verdict_on_the_auc_half(self):
+        """`orders` must not become a second opinion on the ordering. It is the
+        same comparison the falsifier makes, so where the skill half is
+        satisfied the two have to agree."""
+        for mos, lidc in [(ci(0.60, 0.55, 0.64), ci(0.78, 0.74, 0.82)),
+                          (ci(0.72, 0.66, 0.79), ci(0.78, 0.74, 0.82)),
+                          (ci(0.85, 0.82, 0.88), ci(0.70, 0.66, 0.74))]:
+            v = h9_verdict(mos, lidc, 0.30, 0.10)
+            assert _h9_power("t", mos, lidc)["orders"] == (v["outcome"] == PASS)
 
 
 class TestH10:
@@ -600,6 +650,23 @@ class TestEndToEndWiring:
         v = score_h7(pre, art)
         assert set(v["draw_spread"]) == set(pre.hypothesis("H7")["content_free_set"])
         assert all(s is None for s in v["draw_spread"].values())
+
+    def test_h9_carries_its_power_diagnostic_through_the_artefact_path(self, wired, art):
+        """The unit tests pin the arithmetic; this pins that it survives the real
+        artefact plumbing and is keyed by the same matched tags the verdict used.
+        A diagnostic that silently drops out of the payload is worse than none,
+        because the verdict still reads FAIL with nothing to attribute it to."""
+        pre, _, _ = wired
+        v = score_h9(pre, art)
+        assert v["power"]["n_tags"] == len(v["matched_tags"])
+        assert set(v["power_per_tag"]) == set(v["matched_tags"])
+        if v["power"]["n_computable"]:
+            assert "median_required_separation" in v["power"]
+            assert "median_observed_separation" in v["power"]
+            # `orders` must agree with the verdict's own AUC comparison.
+            for tag, p in v["power_per_tag"].items():
+                if p["computable"]:
+                    assert p["orders"] == (v["per_tag"][tag]["outcome"] == PASS)
 
     def test_h10_reads_the_pinned_arm_at_every_seed(self, wired, art):
         pre, _, seeds = wired
