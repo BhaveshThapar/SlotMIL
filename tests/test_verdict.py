@@ -30,6 +30,7 @@ import pytest
 # is what puts the repo root on sys.path for a bare `pytest`, and scripts/ then
 # resolves as a namespace package. Same import route tests/test_lung_mask_io.py uses.
 from scripts.prereg_verdict import (
+    ARM_KEYED,
     Artefacts,
     _blind,
     _h9_power,
@@ -303,6 +304,63 @@ class TestH9:
 
     def test_a_missing_side_is_not_run(self):
         assert h9_verdict(None, ci(0.78, 0.74, 0.82))["outcome"] == NOT_RUN
+
+
+class TestBlindingDoesNotEatStatistics:
+    """Blinding must rename arms, not the fields that report numbers.
+
+    Substitution is by exact string match and one arm is literally named ``mean``
+    -- which is also what ``cluster_bootstrap`` calls its point estimate. Blinding
+    keys unconditionally renamed the point estimate of every confidence interval
+    in every verdict artefact to that arm's code, so ``ci["mean"]`` raised on the
+    published file. The fix is an allow-list of arm-keyed containers, and the
+    risk it carries is the opposite one: a container missing from the list leaves
+    an arm name in the clear.
+    """
+
+    SUBS = {"mean": "ARM-B91812", "abmil": "ARM-799118",
+            "mh_abmil": "ARM-BE28CF", "slot:div=0.5": "ARM-0984A5"}
+
+    def test_a_statistic_named_like_an_arm_survives(self):
+        ci_like = {"mean": 0.83, "lo": 0.80, "hi": 0.86, "n": 9, "n_clusters": 9}
+        out = _blind(self.SUBS, {"lidc_template_auc": ci_like})
+        assert out["lidc_template_auc"]["mean"] == 0.83
+        assert "ARM-B91812" not in out["lidc_template_auc"]
+
+    def test_an_arm_keyed_container_is_still_blinded(self):
+        out = _blind(self.SUBS, {"gaps": {"mean": 0.01, "abmil": 0.02}})
+        assert set(out["gaps"]) == {"ARM-B91812", "ARM-799118"}
+
+    def test_nested_statistics_inside_an_arm_keyed_container_survive(self):
+        """`per_arm` keys are arms; the dicts underneath them are statistics."""
+        out = _blind(self.SUBS, {"per_arm": {"mean": {"mean": 0.7, "lo": 0.6}}})
+        inner = out["per_arm"]["ARM-B91812"]
+        assert inner == {"mean": 0.7, "lo": 0.6}
+
+    def test_arm_names_in_values_are_blinded_anywhere(self):
+        out = _blind(self.SUBS, {"arms_over_threshold": ["mean", "abmil"],
+                                 "arm": "mh_abmil"})
+        assert out["arms_over_threshold"] == ["ARM-B91812", "ARM-799118"]
+        assert out["arm"] == "ARM-BE28CF"
+
+    def test_the_allow_list_covers_every_arm_keyed_field_the_scorers_emit(self):
+        """If a scorer grows a new arm-keyed container and it is not added to
+        ARM_KEYED, that arm name ships unblinded. Pinned against the falsifiers'
+        actual output rather than against a remembered list."""
+        ctl = {"masks:axial": 0.1, "masks:separable": 0.03, "centre_prior": 0.05}
+        arms = {"mean": 0.01, "abmil": 0.02}
+        emitted = [
+            h1_verdict(arms, 0.02, ctl, 0.0, 0.0),
+            h2_verdict(0.64, arms),
+            h4_verdict(arms, 0.15, 0.10),
+            h5_verdict(arms, 0.30, {"mean": [0.01], "abmil": [0.02]}),
+        ]
+        for v in emitted:
+            for key, val in v.items():
+                if isinstance(val, dict) and set(val) & set(self.SUBS):
+                    assert key in ARM_KEYED, (
+                        f"{v['id']}.{key} is keyed by arm names but is not in "
+                        "ARM_KEYED, so those names would ship unblinded")
 
 
 class TestH9Power:

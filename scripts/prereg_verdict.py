@@ -625,18 +625,48 @@ def blind_substitutions(pre, key, seeds):
     return subs
 
 
-def _blind(subs, obj):
-    """Recursively substitute arm names, specs and tags, in keys and in values.
+# The containers whose KEYS are arm names, specs or tags. Keys are substituted
+# only inside these, and everywhere else they are left alone.
+#
+# The distinction is not fussiness. Substitution is by exact string match, and one
+# arm is literally named `mean` -- which is also what `cluster_bootstrap` calls its
+# point estimate. Blinding keys unconditionally therefore renamed the point
+# estimate of EVERY confidence interval in every verdict artefact to that arm's
+# code, so `ci["mean"]` raised on the file a reader is meant to check, and H7's
+# per-member sensitivity block lost its mean the same way.
+#
+# The inverse fix -- never blinding the key `mean` -- would be worse: it would
+# leave the `mean` arm unblinded in every per-arm table. Hence an allow-list of
+# containers rather than a deny-list of words. A container missing from this set
+# leaks an arm name in a form a reader can see; that is the safer direction to
+# fail, and `tests/test_verdict.py` pins the set against what the scorers emit.
+ARM_KEYED = frozenset({
+    "gaps",                           # H1
+    "arm_slice_auc",                  # H2
+    "per_pooling",                    # H3
+    "skills",                         # H4
+    "mean_over_seeds", "seeds_over_threshold",   # H5
+    "per_arm", "reported_beside_the_threshold",  # H8
+    "per_tag", "power_per_tag",       # H9
+    "per_seed",                       # H1, H2, H4, H5, H8 (a list for H10 -- no-op)
+})
+
+
+def _blind(subs, obj, blind_keys=False):
+    """Recursively substitute arm names, specs and tags.
+
+    Values are always substituted; keys only inside :data:`ARM_KEYED` containers.
 
     Reason strings are *not* rewritten by pattern -- they are written without arm
     names in the first place (see ``h4_verdict``), because substituting inside prose
     would silently depend on formatting.
     """
     if isinstance(obj, dict):
-        return {(subs.get(k, k) if isinstance(k, str) else k): _blind(subs, v)
+        return {(subs.get(k, k) if blind_keys and isinstance(k, str) else k):
+                _blind(subs, v, isinstance(k, str) and k in ARM_KEYED)
                 for k, v in obj.items()}
     if isinstance(obj, list):
-        return [_blind(subs, x) for x in obj]
+        return [_blind(subs, x, blind_keys) for x in obj]
     if isinstance(obj, str):
         return subs.get(obj, obj)
     return obj
@@ -699,12 +729,19 @@ def main():
     ap.add_argument("--h7-content-free", default=None)
     ap.add_argument("--h8-in-lung", default=None)
     ap.add_argument("--probe-gate", default=None)
-    # The rehash4 pair is the current, clean-tree stamping of the two floors. The
-    # bare runs/untrained_floor.json is stamped 20bdd93b781d950d from a dirty tree
-    # and is two amendments behind; defaulting to it would void H3 on every run.
+    # The rehash5 pair is the current, clean-tree stamping of the two floors,
+    # re-run at 4fd6e801157ecef5 after the 2026-08-17 amendment superseded
+    # rehash4. Defaulting to a superseded floor voids H3 on every run -- which it
+    # duly did, on all three conditions, until this line was bumped.
+    #
+    # This is the fifth such re-run and the fifth time the numbers came back
+    # unchanged: rehash4 and rehash5 agree bit-for-bit on `floor` and `per_init`
+    # (p95 0.7665760928 slot, 0.7678969515 mh_abmil) and differ only in the
+    # stamp. The floor is a property of the initialisation distribution and the
+    # split, neither of which any amendment here touched.
     ap.add_argument("--untrained-floor", nargs="*",
-                    default=["runs/untrained_floor_rehash4.json",
-                             "runs/untrained_floor_mh_rehash4.json"],
+                    default=["runs/untrained_floor_rehash5.json",
+                             "runs/untrained_floor_mh_rehash5.json"],
                     help="one floor artefact per pooling; the verdict takes the "
                          "weakest 95th percentile among them")
     ap.add_argument("--mosmed-template-family", default=None,
