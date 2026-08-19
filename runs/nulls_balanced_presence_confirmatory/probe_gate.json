@@ -1,0 +1,95 @@
+{
+  "reps": 10000,
+  "analysis_role": "confirmatory",
+  "splits_file": "data/lidc/splits_balanced_confirmatory.json",
+  "splits_hash": "554390c2a05a663b",
+  "cache": "/fs/nexus-scratch/bthapar/SlotMIL/data/lidc/features_dinov2_vitb14.h5",
+  "n_fit_series": 184,
+  "n_val_bags": 40,
+  "neg_per_pos": 20,
+  "score_coverage": "every_patch_of_every_bag",
+  "n_patches_scored": 2150144,
+  "scorers": [
+    {
+      "scorer": "probe",
+      "n_bags_scored": 19,
+      "source": "supervised_patch_probe",
+      "flat_auc": {
+        "mean": 0.9251578379842166,
+        "lo": 0.8969299707153663,
+        "hi": 0.9512147317037115,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "slice_auc": {
+        "mean": 0.5869639821074649,
+        "lo": 0.5047265721819457,
+        "hi": 0.6690631602793979,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "within_slice_auc": {
+        "mean": 0.9173041014122205,
+        "lo": 0.8868733378795278,
+        "hi": 0.9443610517069142,
+        "n": 19,
+        "n_clusters": 19
+      }
+    },
+    {
+      "scorer": "probe:own_inplane_template",
+      "n_bags_scored": 19,
+      "source": "content_free_fitted",
+      "pre_registered_denominator": true,
+      "flat_auc": {
+        "mean": 0.8568329062127241,
+        "lo": 0.8094264685264144,
+        "hi": 0.9004531732297547,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "within_slice_auc": {
+        "mean": 0.8591541359059673,
+        "lo": 0.8113596428736665,
+        "hi": 0.9032072752273345,
+        "n": 19,
+        "n_clusters": 19
+      }
+    }
+  ],
+  "prior_normalised_skill": {
+    "denominator": "probe:own_inplane_template (H7.probe_denominator)",
+    "auc_probe": 0.9251578379842166,
+    "auc_template": 0.8568329062127241,
+    "skill": 0.4772390775286165
+  },
+  "h7_probe_half": {
+    "threshold": 0.5,
+    "skill": 0.4772390775286165,
+    "clears": false
+  },
+  "content_free": {
+    "set": [
+      "chance",
+      "roll_permutation",
+      "entropy_matched_random",
+      "fitted_template"
+    ],
+    "threshold": 0.05,
+    "status": "not computed here -- needs the confirmatory attention dumps; H7 clears only if this half holds too"
+  },
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+    "git_dirty": false
+  }
+}

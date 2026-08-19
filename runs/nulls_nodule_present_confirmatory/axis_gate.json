@@ -1,0 +1,1439 @@
+{
+  "reps": 10000,
+  "analysis_role": "confirmatory",
+  "results": [
+    {
+      "tag": "abmil_seed0",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.4354809196396503,
+        "lo": 0.40525339133212784,
+        "hi": 0.46512618997955024,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.409946506186153,
+        "lo": 0.3740322656444683,
+        "hi": 0.446167961206938,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.4539797962887325,
+        "lo": 0.42576147860879254,
+        "hi": 0.48269360325288535,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "abmil_seed1",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.2550105105277319,
+        "lo": 0.23542309218715768,
+        "hi": 0.2739204366479596,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.3790249500601136,
+        "lo": 0.3424570353230203,
+        "hi": 0.41597941545175365,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.28114798940073354,
+        "lo": 0.2620009789338451,
+        "hi": 0.30032784923950306,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "abmil_seed2",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.34119774719876955,
+        "lo": 0.3134371482741626,
+        "hi": 0.36906957053831785,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.43584452644744365,
+        "lo": 0.39883419050473184,
+        "hi": 0.47147492966720056,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.3553167107029514,
+        "lo": 0.32963320723180206,
+        "hi": 0.3809583513247532,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "abmil_seed3",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.18147701139311337,
+        "lo": 0.16663750969697338,
+        "hi": 0.1965209552732369,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.41878949223733886,
+        "lo": 0.37926642123919296,
+        "hi": 0.4570420237909931,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.19848639650389613,
+        "lo": 0.18259756162824733,
+        "hi": 0.21463121734877105,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "abmil_seed4",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.26836574125518076,
+        "lo": 0.24675202189214274,
+        "hi": 0.28940812926893383,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4064160636631685,
+        "lo": 0.36764856891812364,
+        "hi": 0.4440068700934699,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.28739432160411926,
+        "lo": 0.26446799908253116,
+        "hi": 0.30940094068325047,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "centre_gaussian_seed0",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.6310655525029211,
+        "lo": 0.5965427733396611,
+        "hi": 0.6650467530034072,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6427944592456306,
+        "lo": 0.6072240423560044,
+        "hi": 0.678130006446774,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5004037900594368,
+        "lo": 0.4916031966461289,
+        "hi": 0.5095405843555129,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "centre_gaussian_seed1",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.6310655525029211,
+        "lo": 0.5965427733396611,
+        "hi": 0.6650467530034072,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6427944592456306,
+        "lo": 0.6072240423560044,
+        "hi": 0.678130006446774,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5004037900594368,
+        "lo": 0.4916031966461289,
+        "hi": 0.5095405843555129,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "centre_gaussian_seed2",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.6310655525029211,
+        "lo": 0.5965427733396611,
+        "hi": 0.6650467530034072,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6427944592456306,
+        "lo": 0.6072240423560044,
+        "hi": 0.678130006446774,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5004037900594368,
+        "lo": 0.4916031966461289,
+        "hi": 0.5095405843555129,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "centre_gaussian_seed3",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.6310655525029211,
+        "lo": 0.5965427733396611,
+        "hi": 0.6650467530034072,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6427944592456306,
+        "lo": 0.6072240423560044,
+        "hi": 0.678130006446774,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5004037900594368,
+        "lo": 0.4916031966461289,
+        "hi": 0.5095405843555129,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "centre_gaussian_seed4",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.6310655525029211,
+        "lo": 0.5965427733396611,
+        "hi": 0.6650467530034072,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6427944592456306,
+        "lo": 0.6072240423560044,
+        "hi": 0.678130006446774,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5004037900594368,
+        "lo": 0.4916031966461289,
+        "hi": 0.5095405843555129,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "clam_sb_seed0",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.2645034867600192,
+        "lo": 0.24262071593871942,
+        "hi": 0.28615841030456957,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.3939764470024357,
+        "lo": 0.3568793405802471,
+        "hi": 0.4310087565588353,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.2874608642453098,
+        "lo": 0.2661376796619106,
+        "hi": 0.3090208302687871,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "clam_sb_seed1",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.312604474688564,
+        "lo": 0.2845493859396204,
+        "hi": 0.33963635785182555,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.38387127792861575,
+        "lo": 0.34852206196685953,
+        "hi": 0.41965695772612543,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.3359681760463985,
+        "lo": 0.3094943388099805,
+        "hi": 0.362035246768395,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "clam_sb_seed2",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.2544453534468008,
+        "lo": 0.23101179475929598,
+        "hi": 0.2782489409779355,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4247008090598757,
+        "lo": 0.38681506415759365,
+        "hi": 0.46135699509096967,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.26949703558692006,
+        "lo": 0.24872203025072134,
+        "hi": 0.29088441200290516,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "clam_sb_seed3",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.20597748339065663,
+        "lo": 0.18839079595405575,
+        "hi": 0.22291701382689638,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.41696324143816593,
+        "lo": 0.37588038191636225,
+        "hi": 0.45787750071500205,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.2145269659914249,
+        "lo": 0.19849366196715046,
+        "hi": 0.23095663400293173,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "clam_sb_seed4",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.1574929459804724,
+        "lo": 0.14368872520035536,
+        "hi": 0.17129669071918588,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4056229312121299,
+        "lo": 0.3672791140279834,
+        "hi": 0.44421257220269905,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.17072275721097713,
+        "lo": 0.15580756107842145,
+        "hi": 0.18610837698407137,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "dsmil_seed0",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.25287168459335696,
+        "lo": 0.2285025267689243,
+        "hi": 0.2779269773399898,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4497945122323714,
+        "lo": 0.4141234507628728,
+        "hi": 0.48544209708912023,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.26006789610212705,
+        "lo": 0.23571602592601207,
+        "hi": 0.2850041103021178,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "dsmil_seed1",
+      "frozen_slot": 1,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.5025783910128488,
+        "lo": 0.4764190892456338,
+        "hi": 0.5295662982970477,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5045304573552124,
+        "lo": 0.4682636041052821,
+        "hi": 0.5388188039170463,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5052405283096576,
+        "lo": 0.47923245139024645,
+        "hi": 0.5321537566307828,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "dsmil_seed2",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.2416753054267514,
+        "lo": 0.2177233872273791,
+        "hi": 0.2662832497586319,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5136757354128056,
+        "lo": 0.47638847049428334,
+        "hi": 0.5502542762800069,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.24164738807596797,
+        "lo": 0.21801898020375168,
+        "hi": 0.26691382072545144,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "dsmil_seed3",
+      "frozen_slot": 1,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.48365883728447895,
+        "lo": 0.4530731903435551,
+        "hi": 0.5149898029506713,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5968620437815355,
+        "lo": 0.5613275888023223,
+        "hi": 0.631758464328146,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.4648022630304186,
+        "lo": 0.4343075814440993,
+        "hi": 0.49583410576823383,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "dsmil_seed4",
+      "frozen_slot": 1,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.4996782510877633,
+        "lo": 0.47934118402590464,
+        "hi": 0.5210269983006408,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.48034119086652,
+        "lo": 0.44312144463364783,
+        "hi": 0.5191688092463937,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5031557325206697,
+        "lo": 0.483162800575462,
+        "hi": 0.523733525656291,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "gated_abmil_seed0",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.2679680242958638,
+        "lo": 0.24100786717582653,
+        "hi": 0.2949158573709779,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.40609256971600555,
+        "lo": 0.3690419441491749,
+        "hi": 0.44390030173935013,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.2830992232345061,
+        "lo": 0.25939016609142695,
+        "hi": 0.3065093408724844,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "gated_abmil_seed1",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.2782349185536652,
+        "lo": 0.2542530721522282,
+        "hi": 0.3011781705734524,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4097900764099886,
+        "lo": 0.37216927755920404,
+        "hi": 0.44606865374126686,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.29428546445103543,
+        "lo": 0.27086740999967873,
+        "hi": 0.31681569142169197,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "gated_abmil_seed2",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.34419196409007663,
+        "lo": 0.3165102596493208,
+        "hi": 0.3723193723578207,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4044815291940615,
+        "lo": 0.3670981117520054,
+        "hi": 0.4410664088603872,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.36590740748454165,
+        "lo": 0.3405649060906609,
+        "hi": 0.391954006643226,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "gated_abmil_seed3",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.20974240665304641,
+        "lo": 0.19109509563416685,
+        "hi": 0.2284848185424809,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5085428113712986,
+        "lo": 0.466780087921572,
+        "hi": 0.5489082625443541,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.21222271450951025,
+        "lo": 0.19444775738573947,
+        "hi": 0.2299161285278187,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "gated_abmil_seed4",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.21425571596646803,
+        "lo": 0.1961706947502395,
+        "hi": 0.23186844071551613,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.39264681765552767,
+        "lo": 0.3580911785795491,
+        "hi": 0.42679169304219045,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.2330910351582699,
+        "lo": 0.21416714492253022,
+        "hi": 0.2519261266589005,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mean_seed0",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mean_seed1",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mean_seed2",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mean_seed3",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mean_seed4",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mh_abmil_seed0",
+      "frozen_slot": 4,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.6025288957414031,
+        "lo": 0.5729528355262807,
+        "hi": 0.6314997230851642,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.40936344891053994,
+        "lo": 0.3763196215650039,
+        "hi": 0.442478852795332,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.6271977512900033,
+        "lo": 0.5987948936985574,
+        "hi": 0.6554901112065761,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mh_abmil_seed1",
+      "frozen_slot": 2,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.4549917836162098,
+        "lo": 0.42466547807198596,
+        "hi": 0.48449008680802713,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4131737379944699,
+        "lo": 0.37615690707919885,
+        "hi": 0.4506182407314498,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.47567672775330244,
+        "lo": 0.44486167906702967,
+        "hi": 0.5057339189686558,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mh_abmil_seed2",
+      "frozen_slot": 5,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.4476359516160832,
+        "lo": 0.41879977094921206,
+        "hi": 0.47494190614567483,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4427937269054957,
+        "lo": 0.4056834557665266,
+        "hi": 0.4787252915982904,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.46252542419044607,
+        "lo": 0.434324496409645,
+        "hi": 0.49026053970314404,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mh_abmil_seed3",
+      "frozen_slot": 2,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.2501323213450115,
+        "lo": 0.22702800197298056,
+        "hi": 0.27283389872155356,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4336252534534272,
+        "lo": 0.39647720245580037,
+        "hi": 0.4692904860460324,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.2593235703392145,
+        "lo": 0.23574196130761307,
+        "hi": 0.28290508400592596,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "mh_abmil_seed4",
+      "frozen_slot": 6,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.3076660904311507,
+        "lo": 0.28625865616178375,
+        "hi": 0.32866832290796916,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4154379036348912,
+        "lo": 0.37837764893771053,
+        "hi": 0.4536810240063546,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.3277953297881544,
+        "lo": 0.3063425224091555,
+        "hi": 0.3485536664738147,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed0",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.6585181856793265,
+        "lo": 0.6256939609102842,
+        "hi": 0.6899932922149016,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6306051226664893,
+        "lo": 0.5931887096557585,
+        "hi": 0.6674306438762172,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5907542216810715,
+        "lo": 0.5665542077823302,
+        "hi": 0.614131986001217,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed1",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.595548581709867,
+        "lo": 0.5580229431013074,
+        "hi": 0.6311306501304942,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6322359979702818,
+        "lo": 0.5948996409326379,
+        "hi": 0.6680362305254293,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5257611052953858,
+        "lo": 0.49516348048039244,
+        "hi": 0.55533499203936,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed2",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.7373985448665287,
+        "lo": 0.7068171083059807,
+        "hi": 0.7666020329645905,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6311682412658642,
+        "lo": 0.5930533099841951,
+        "hi": 0.668254848835049,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.701957879476954,
+        "lo": 0.6771827419116636,
+        "hi": 0.7256589722333681,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed3",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.46701714936375244,
+        "lo": 0.4363231568001272,
+        "hi": 0.49692117407582814,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.635452906250451,
+        "lo": 0.5977925589983435,
+        "hi": 0.671751230372545,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.37772129325358095,
+        "lo": 0.35433900247421257,
+        "hi": 0.4011953499384571,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed4",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.568997195953768,
+        "lo": 0.5375459399406006,
+        "hi": 0.5996424915712122,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6295181636270142,
+        "lo": 0.5909617600160334,
+        "hi": 0.6672548695448317,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.4969602627926421,
+        "lo": 0.4720369560479448,
+        "hi": 0.5222834265689079,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "slot_div=0.5_seed0",
+      "frozen_slot": 6,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.8215849298781427,
+        "lo": 0.8093128830892471,
+        "hi": 0.8339200463312766,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5466130481282,
+        "lo": 0.5065805258549998,
+        "hi": 0.5869320944217462,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.8175140741104073,
+        "lo": 0.8042780523688057,
+        "hi": 0.8303666921547879,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "slot_div=0.5_seed1",
+      "frozen_slot": 3,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.8613883913690922,
+        "lo": 0.8474618427659883,
+        "hi": 0.8743867188417961,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5772139500612646,
+        "lo": 0.5356581871503878,
+        "hi": 0.6200007444147244,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.8463303847620717,
+        "lo": 0.8321465826931155,
+        "hi": 0.8595916879470349,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "slot_div=0.5_seed2",
+      "frozen_slot": 7,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.7654385136630838,
+        "lo": 0.7488935692918878,
+        "hi": 0.7819954643722163,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5796116142977186,
+        "lo": 0.5402414263135862,
+        "hi": 0.6190036376040057,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.7577704388183004,
+        "lo": 0.7417870102001936,
+        "hi": 0.7732947982916192,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "slot_div=0.5_seed3",
+      "frozen_slot": 1,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.8654701003029807,
+        "lo": 0.8501970347266732,
+        "hi": 0.8802909223497464,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.6137302924339627,
+        "lo": 0.5778673525334803,
+        "hi": 0.6501609461178012,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.8577085972462886,
+        "lo": 0.8440029296049708,
+        "hi": 0.8706831064483326,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "slot_div=0.5_seed4",
+      "frozen_slot": 4,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.809813285414702,
+        "lo": 0.7937564795000313,
+        "hi": 0.8257306418072612,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5462060374837314,
+        "lo": 0.504189693471897,
+        "hi": 0.5887074915464642,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.8024729484560242,
+        "lo": 0.7860388920628093,
+        "hi": 0.8190769537866679,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "transmil_seed0",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.36264121185866477,
+        "lo": 0.3362660764452786,
+        "hi": 0.388253327462228,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4835979839106873,
+        "lo": 0.44195436855983056,
+        "hi": 0.5242524509303685,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.35900383929879637,
+        "lo": 0.33276952332087567,
+        "hi": 0.38538302130101515,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "transmil_seed1",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.3577614176996292,
+        "lo": 0.33089234984713944,
+        "hi": 0.38411009253252615,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.46801110664065276,
+        "lo": 0.4376900495188985,
+        "hi": 0.4989348755256235,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.36344569390524284,
+        "lo": 0.33568051220026485,
+        "hi": 0.39074765847599524,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "transmil_seed2",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.5130599114191933,
+        "lo": 0.48518265426370916,
+        "hi": 0.540705317869647,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.46874675428432544,
+        "lo": 0.42801378209855057,
+        "hi": 0.5091758988918735,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.5226278861662003,
+        "lo": 0.49690718528210875,
+        "hi": 0.5485233034211582,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "transmil_seed3",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.4866017041650503,
+        "lo": 0.45710785926416797,
+        "hi": 0.5165593244534495,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.5351678192007151,
+        "lo": 0.5007612410466376,
+        "hi": 0.56918961131717,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.478647294800371,
+        "lo": 0.44879752378944027,
+        "hi": 0.508468134825206,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "transmil_seed4",
+      "frozen_slot": 0,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.4113762155202798,
+        "lo": 0.3796187782815405,
+        "hi": 0.44387108115448615,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.4865479216772669,
+        "lo": 0.45163209421574924,
+        "hi": 0.522420576784915,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.4134905542737215,
+        "lo": 0.3815613579742465,
+        "hi": 0.4458504512300468,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "mean_slices_per_bag": 210.54961832061068,
+      "mean_lesion_slices_per_bag": 13.793893129770993
+    },
+    {
+      "tag": "centre_prior",
+      "frozen_slot": null,
+      "n_bags_scored": 131,
+      "flat_auc": {
+        "mean": 0.7832728138893909,
+        "lo": 0.7624204344092987,
+        "hi": 0.8037165021095865,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "slice_auc": {
+        "mean": 0.642668681497915,
+        "lo": 0.6070829153880473,
+        "hi": 0.6779445800072352,
+        "n": 131,
+        "n_clusters": 129
+      },
+      "within_slice_auc": {
+        "mean": 0.7314493687837683,
+        "lo": 0.7119140000442138,
+        "hi": 0.7509103485079318,
+        "n": 131,
+        "n_clusters": 129
+      }
+    }
+  ],
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+    "git_dirty": false
+  }
+}

@@ -1,0 +1,296 @@
+{
+  "analysis_role": "confirmatory",
+  "splits": "data/lidc/splits_confirmatory.json",
+  "splits_hash": "efcac704eb540cc8",
+  "pooling": "slot",
+  "seed_base": 20270000,
+  "floor": {
+    "n_inits": 30,
+    "median": 0.6739091193488429,
+    "mean": 0.6735710399286573,
+    "p5": 0.6039640971188222,
+    "p95": 0.7665760928074817,
+    "min": 0.5322106721871239,
+    "max": 0.816684568963109,
+    "H3_p95_above_0.70": true
+  },
+  "per_init": [
+    {
+      "init_seed": 20270000,
+      "frozen_slot": 3,
+      "instance_auc": 0.5322106721871239,
+      "lo": 0.5034330536004121,
+      "hi": 0.5605032736743998,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270001,
+      "frozen_slot": 1,
+      "instance_auc": 0.656334797949032,
+      "lo": 0.6288675763332574,
+      "hi": 0.6833925501287409,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270002,
+      "frozen_slot": 6,
+      "instance_auc": 0.6998509219968366,
+      "lo": 0.6761885697088981,
+      "hi": 0.7233342301630649,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270003,
+      "frozen_slot": 7,
+      "instance_auc": 0.6125871751474364,
+      "lo": 0.5896711770950903,
+      "hi": 0.6364054262746061,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270004,
+      "frozen_slot": 0,
+      "instance_auc": 0.653576036328107,
+      "lo": 0.6198575437959637,
+      "hi": 0.6860295496265567,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270005,
+      "frozen_slot": 7,
+      "instance_auc": 0.6140858526389279,
+      "lo": 0.58129151624263,
+      "hi": 0.6469163864182897,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270006,
+      "frozen_slot": 5,
+      "instance_auc": 0.750586205100748,
+      "lo": 0.7279136423239441,
+      "hi": 0.7729694346060305,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270007,
+      "frozen_slot": 7,
+      "instance_auc": 0.6735739622329489,
+      "lo": 0.6456112444505042,
+      "hi": 0.7011433909347355,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270008,
+      "frozen_slot": 5,
+      "instance_auc": 0.6897879502241149,
+      "lo": 0.659448561141429,
+      "hi": 0.7197444968752942,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270009,
+      "frozen_slot": 2,
+      "instance_auc": 0.7705996503866596,
+      "lo": 0.7493246027257874,
+      "hi": 0.7909496446979215,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270010,
+      "frozen_slot": 0,
+      "instance_auc": 0.6535778050776635,
+      "lo": 0.624019299862687,
+      "hi": 0.6824624688566562,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270011,
+      "frozen_slot": 0,
+      "instance_auc": 0.816684568963109,
+      "lo": 0.7965402573516321,
+      "hi": 0.8354768857808431,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270012,
+      "frozen_slot": 4,
+      "instance_auc": 0.6768631268725661,
+      "lo": 0.6486054403045648,
+      "hi": 0.7042112919081566,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270013,
+      "frozen_slot": 0,
+      "instance_auc": 0.6070063112672588,
+      "lo": 0.580809024882113,
+      "hi": 0.6322145805676719,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270014,
+      "frozen_slot": 2,
+      "instance_auc": 0.6324241359657854,
+      "lo": 0.6072344020030224,
+      "hi": 0.6565764360480678,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270015,
+      "frozen_slot": 7,
+      "instance_auc": 0.6773022326150543,
+      "lo": 0.6489045683813773,
+      "hi": 0.7058299688650189,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270016,
+      "frozen_slot": 0,
+      "instance_auc": 0.6920831792211835,
+      "lo": 0.6628522688109277,
+      "hi": 0.7206701238618352,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270017,
+      "frozen_slot": 3,
+      "instance_auc": 0.6196211731462979,
+      "lo": 0.5957532621777962,
+      "hi": 0.6432481151530007,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270018,
+      "frozen_slot": 7,
+      "instance_auc": 0.72640908376337,
+      "lo": 0.697285325372395,
+      "hi": 0.754783947235154,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270019,
+      "frozen_slot": 5,
+      "instance_auc": 0.7616584113218201,
+      "lo": 0.7325109650543079,
+      "hi": 0.7896317927087699,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270020,
+      "frozen_slot": 7,
+      "instance_auc": 0.7070011071069405,
+      "lo": 0.6796516773857879,
+      "hi": 0.7339376663563002,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270021,
+      "frozen_slot": 1,
+      "instance_auc": 0.6913333139137718,
+      "lo": 0.6610244388180972,
+      "hi": 0.7204423564289941,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270022,
+      "frozen_slot": 1,
+      "instance_auc": 0.6578070525607425,
+      "lo": 0.6287868050599792,
+      "hi": 0.6857420128316019,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270023,
+      "frozen_slot": 0,
+      "instance_auc": 0.674244276464737,
+      "lo": 0.6482085637013817,
+      "hi": 0.6996770367610259,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270024,
+      "frozen_slot": 4,
+      "instance_auc": 0.6273113690908788,
+      "lo": 0.5946975579520059,
+      "hi": 0.6588511955154758,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270025,
+      "frozen_slot": 2,
+      "instance_auc": 0.6014750128155558,
+      "lo": 0.5705270869763103,
+      "hi": 0.6318421335261439,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270026,
+      "frozen_slot": 2,
+      "instance_auc": 0.6619080807380906,
+      "lo": 0.6311159899846742,
+      "hi": 0.6927908671088866,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270027,
+      "frozen_slot": 3,
+      "instance_auc": 0.7060280749286084,
+      "lo": 0.6770749528585899,
+      "hi": 0.7345354056118073,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270028,
+      "frozen_slot": 1,
+      "instance_auc": 0.6730905291430899,
+      "lo": 0.64121172811709,
+      "hi": 0.7041229469886429,
+      "n_bags": 131,
+      "n_patients": 129
+    },
+    {
+      "init_seed": 20270029,
+      "frozen_slot": 7,
+      "instance_auc": 0.6901091286912628,
+      "lo": 0.6675450864060657,
+      "hi": 0.7122947105701705,
+      "n_bags": 131,
+      "n_patients": 129
+    }
+  ],
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+    "git_dirty": false
+  }
+}

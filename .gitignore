@@ -12,8 +12,27 @@ __pycache__/
 # commits. Anchor these to the repo root so they only ever match the top-level
 # data/, runs/ and logs/ directories.
 /data/
-/runs/
 /logs/
+
+# runs/ is excluded except for the stamped analysis artefacts, which are the
+# paper's evidence and are named in its abstract. Committing them is what makes
+# "the analysis plan and its amendment chain ship with the code" checkable from a
+# clone: `prereg_freeze.py --check` walks runs/**/*.json, and prereg_verdict.py
+# recomputes nothing -- it reads only these files. ~4.3 MB in total.
+#
+# The attention dumps themselves (*.npz, 13+ GB) stay out. A re-include cannot
+# resurrect a file under an excluded *directory*, so runs/ is excluded by its
+# contents (`/runs/*`) rather than as a directory.
+/runs/*
+!/runs/nulls_*_confirmatory/
+/runs/nulls_*_confirmatory/*
+!/runs/nulls_*_confirmatory/*.json
+!/runs/prereg/
+/runs/prereg/*
+!/runs/prereg/unblind_key.json
+# H3's two inputs, which live at the top level rather than under a condition.
+!/runs/untrained_floor_rehash5.json
+!/runs/untrained_floor_mh_rehash5.json
 /wandb/
 *.h5
 *.pt

@@ -1,0 +1,17 @@
+{
+  "analysis_role": "confirmatory",
+  "tag": "dsmil_seed4",
+  "split": "test",
+  "dtype": "float32",
+  "pooling": "dsmil",
+  "splits": "data/lidc/splits_confirmatory.json",
+  "splits_file_sha256": "a9a7ad41a2700ab5",
+  "ckpt": "/fs/nexus-scratch/bthapar/SlotMIL/runs/lidc_confirmatory/dsmil/seed4/best.pt",
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+    "git_dirty": false
+  }
+}

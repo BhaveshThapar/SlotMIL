@@ -686,8 +686,14 @@ this becomes the paper's recommendation rather than a defeat.
 
 ## H9 — FAIL, and the power block says why
 
-2 of 50 matched tags order MosMed's fitted-template AUC below LIDC's. The
-falsifier counts *indistinguishable* as a failure, so a FAIL could mean the
+1 of 50 matched tags clears the falsifier — MosMed's fitted-template AUC below
+LIDC's *with the intervals separated*; 2 of 50 order on the point estimate alone.
+The two counts are the artefact's `reason` and `power.n_ordering`, and they
+measure different things: `prereg_verdict.py` builds `reason` from the tags
+clearing the full falsifier and `n_ordering` from `p["orders"]`, which ignores
+the intervals. Both are correct; only the prose was ambiguous.
+
+The falsifier counts *indistinguishable* as a failure, so a FAIL could mean the
 ordering is absent or that 22 MosMed test scans could not resolve one. It is
 neither: **the ordering is reversed.**
 
@@ -740,11 +746,31 @@ fixing it moved the smoke AUC from 0.8441 to 0.8760.
 
 ## Caveats that cut against us
 
-**H5's denominator sits below chance.** The pinned denominator is
-`attention:inplane`, the arm's own in-plane marginal, whose median is 0.4208 and
-which is below 0.5 for most dumps. `(AUC − AUC_t)/(1 − AUC_t)` is therefore not
-"the fraction of achievable gain over a prior" as the prose reads, and the
-arithmetic makes H5 *easier* to pass. Stated because it weakens our own result.
+**H5's denominator sits below chance — and the conservative recomputation does
+not move the verdict.** The pinned denominator is `attention:inplane`, the arm's
+own in-plane marginal, whose median over the 40 scored dumps is 0.4208 and which
+is below 0.5 for 24 of them. `(AUC − AUC_t)/(1 − AUC_t)` is therefore not "the
+fraction of achievable gain over a prior" as the prose reads, and the arithmetic
+makes H5 *easier* to pass. Stated because it weakens our own result — and then
+computed, because disclosing an arithmetic objection is weaker than answering it.
+`scripts/h5_floored_denominator.py` recomputes the identical statistic (floor per
+tag, mean over seeds, max over `arm_set("H5")`, bar read from the frozen config)
+with the denominator floored at 0.5:
+
+| condition | max skill, as published | denominator floored at 0.5 | bar |
+|---|---|---|---|
+| `nodule_present` | +0.1990 | **+0.1990** | 0.30 |
+| `malignancy` | +0.2812 | **+0.2304** | 0.30 |
+| `balanced_presence` | +0.0885 | **+0.0220** | 0.30 |
+
+H5 PASS survives in every condition, and flooring *lowers* the maximum wherever
+it binds. This is **not** a pre-registered analysis: it is stamped
+`declared_in_prereg: false` and `role: sensitivity_outside_confirmatory_family`,
+it changes no verdict, and it required no amendment. The mechanism behind the
+sub-chance denominator is itself reportable — the template rule is fit to *the
+arm's own attention*, so fit to the supervised probe's output it scores 0.8358
+and fit to a MIL arm's attention it collapses, because there is no in-plane
+structure to fit.
 
 **Two hypotheses carry units this document did not declare** — H1 and H4 as mean
 over seeds, H9 as every matched tag — recorded in the verdict artefact under

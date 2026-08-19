@@ -1,0 +1,2464 @@
+{
+  "reps": 10000,
+  "analysis_role": "confirmatory",
+  "cross_patient": {
+    "axis": "flat",
+    "impl": "nulls.shuffle_masks_across_bags",
+    "n_derangements": 100,
+    "rng_seed": 0,
+    "aggregate": "mean_over_derangements",
+    "pairing": "per_bag_against_the_real_score",
+    "interval": "estimands.cluster_bootstrap, reps and seed from statistics.bootstrap"
+  },
+  "unit_over_seeds": "mean_over_seeds",
+  "unit_over_seeds_note": "H4 declares no unit over seeds. Taken as the mean over seeds by the argument H5.unit_rationale makes for the identical hole -- 'no ARM's skill' is the statement's own noun, and a per-seed maximum takes five draws at the threshold instead of one. Per-seed values are reported regardless and the verdict runner recomputes the aggregate from them.",
+  "results": [
+    {
+      "tag": "abmil_seed0",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.29728727526333093,
+        "lo": 0.2425707654560077,
+        "hi": 0.3495730183717554,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.3913849448883992,
+        "lo": 0.37008728441090605,
+        "hi": 0.4112205545626207,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.4172830845484121,
+      "patient_specific_skill": {
+        "mean": -0.09409766962506834,
+        "lo": -0.14657838604283024,
+        "hi": -0.044864223205377196,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.09409766962506827,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.10895021338849081,
+          "frac": 0.5374611462108309
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.000335158276890013,
+          "frac": -0.0016533657535578751
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.09409766962506827,
+          "frac": 0.464192219542727
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.20271272473666907,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.5
+    },
+    {
+      "tag": "abmil_seed1",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.36628393911853935,
+        "lo": 0.3212336282549342,
+        "hi": 0.4127966776840756,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.3485977336595008,
+        "lo": 0.32047083007470695,
+        "hi": 0.3772118386797761,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.3433618137608578,
+      "patient_specific_skill": {
+        "mean": 0.017686205459038557,
+        "lo": -0.019747356342184132,
+        "hi": 0.055805744187060316,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.01768620545903854,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.20701947546558763,
+          "frac": 1.5482020192705983
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.05561720912508844,
+          "frac": -0.41593514465246717
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.01768620545903854,
+          "frac": -0.13226687461813108
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.13371606088146065,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.1
+    },
+    {
+      "tag": "abmil_seed2",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.395715971643994,
+        "lo": 0.3293008408885462,
+        "hi": 0.4586567102341868,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.3855824768494821,
+        "lo": 0.3616826218240498,
+        "hi": 0.4086794767896997,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.39096500702599973,
+      "patient_specific_skill": {
+        "mean": 0.010133494794512,
+        "lo": -0.0448045847763992,
+        "hi": 0.06525924739078778,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.010133494794511921,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.12707359885869335,
+          "frac": 1.2185336610213031
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.012656075708175452,
+          "frac": -0.12136159206441469
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.010133494794511921,
+          "frac": -0.09717206895688843
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.10428402835600598,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.8
+    },
+    {
+      "tag": "abmil_seed3",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.2624337587743141,
+        "lo": 0.21572388240712911,
+        "hi": 0.30982792000347126,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.33741126254901926,
+        "lo": 0.3171104434787539,
+        "hi": 0.35820485483854386,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.34953258695338824,
+      "patient_specific_skill": {
+        "mean": -0.07497750377470513,
+        "lo": -0.12011940618684792,
+        "hi": -0.02777765981484632,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.07497750377470519,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.18970242682373895,
+          "frac": 0.798524343547294
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.02711368937275821,
+          "frac": -0.11413107027694408
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.07497750377470519,
+          "frac": 0.31560672672965007
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.23756624122568593,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.7
+    },
+    {
+      "tag": "abmil_seed4",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.28981622169200233,
+        "lo": 0.23496805314895758,
+        "hi": 0.35113454309409114,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.3510730932018293,
+        "lo": 0.3208275114092234,
+        "hi": 0.3813249002920778,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.3770884258761961,
+      "patient_specific_skill": {
+        "mean": -0.06125687150982697,
+        "lo": -0.12500524413336372,
+        "hi": 0.008736578855863498,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.06125687150982695,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.234266713636258,
+          "frac": 1.1145803711500981
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.08533980683808728,
+          "frac": -0.4060247062122588
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.06125687150982695,
+          "frac": 0.29144433506216055
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.21018377830799767,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.8
+    },
+    {
+      "tag": "gated_abmil_seed0",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.3206173840545141,
+        "lo": 0.2768365347021394,
+        "hi": 0.3643967990820955,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.34725408861772633,
+        "lo": 0.3274685158807105,
+        "hi": 0.36795036978112133,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.3704939236513168,
+      "patient_specific_skill": {
+        "mean": -0.026636704563212193,
+        "lo": -0.07626309078670923,
+        "hi": 0.021765970910729977,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.02663670456321221,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.2091369579606342,
+          "frac": 1.1658708223108454
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.056391046578360526,
+          "frac": -0.31436182531476564
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.02663670456321221,
+          "frac": 0.1484910030039202
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.17938261594548588,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.0
+    },
+    {
+      "tag": "gated_abmil_seed1",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.4318747548879416,
+        "lo": 0.3564722897604501,
+        "hi": 0.5073985219387429,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.37194408228017484,
+        "lo": 0.3442344672539259,
+        "hi": 0.3986510515328037,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.38726269920885975,
+      "patient_specific_skill": {
+        "mean": 0.059930672607766786,
+        "lo": -0.011315331437739561,
+        "hi": 0.134395305064902,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.059930672607766744,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.2069910558122951,
+          "frac": 3.038389887211678
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.07893513809246994,
+          "frac": -1.1586767572377972
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.059930672607766744,
+          "frac": -0.879713129973881
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.06812524511205842,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.0
+    },
+    {
+      "tag": "gated_abmil_seed2",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.2655755104737785,
+        "lo": 0.22281461335184494,
+        "hi": 0.3080558677717779,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.31375093131730014,
+        "lo": 0.28893397688721256,
+        "hi": 0.34060262912424,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.3282585735597975,
+      "patient_specific_skill": {
+        "mean": -0.048175420843521596,
+        "lo": -0.09580621002079955,
+        "hi": -0.002624239406819596,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.048175420843521666,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.2398326474033765,
+          "frac": 1.0230699356030806
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.05358357872067665,
+          "frac": -0.2285750043818825
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.048175420843521666,
+          "frac": 0.20550506877880184
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.23442448952622152,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.5
+    },
+    {
+      "tag": "gated_abmil_seed3",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.19933059911607295,
+        "lo": 0.16205001084772033,
+        "hi": 0.23841394301765,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.2678050752001255,
+        "lo": 0.2491807863194215,
+        "hi": 0.2867712512076089,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.28067524519977466,
+      "patient_specific_skill": {
+        "mean": -0.0684744760840525,
+        "lo": -0.11217854987909254,
+        "hi": -0.021989400889579094,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.06847447608405252,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.32795831618224236,
+          "frac": 1.0907605337227189
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.09576339138236786,
+          "frac": -0.3185006226135302
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.06847447608405252,
+          "frac": 0.22774008889081132
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.300669400883927,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.9
+    },
+    {
+      "tag": "gated_abmil_seed4",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.2935128026851464,
+        "lo": 0.23225104704746757,
+        "hi": 0.3541704912058332,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.3739243264681443,
+        "lo": 0.33395956630478574,
+        "hi": 0.42164455277021606,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.39715655598117955,
+      "patient_specific_skill": {
+        "mean": -0.08041152378299794,
+        "lo": -0.15248141571975773,
+        "hi": -0.01393032422528535,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.08041152378299787,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.15031468643087248,
+          "frac": 0.7279612895402481
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.024239012899016754,
+          "frac": -0.1173874855885466
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.08041152378299787,
+          "frac": 0.3894261960482985
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.2064871973148536,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.9
+    },
+    {
+      "tag": "mh_abmil_seed0",
+      "frozen_slot": 6,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.26982878871100313,
+        "lo": 0.2146857972115799,
+        "hi": 0.3292701179226252,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.26882756631075183,
+        "lo": 0.2545108320793839,
+        "hi": 0.2838103913531905,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.2635270903670951,
+      "patient_specific_skill": {
+        "mean": 0.0010012224002513355,
+        "lo": -0.04692875063505769,
+        "hi": 0.05201143588635198,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.0010012224002513004,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.316762228353668,
+          "frac": 1.3762026388085076
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.08558979466441985,
+          "frac": -0.3718527359920593
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.0010012224002513004,
+          "frac": -0.0043499028164481965
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.23017121128899687,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.1
+    },
+    {
+      "tag": "mh_abmil_seed1",
+      "frozen_slot": 7,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.6966448701703324,
+        "lo": 0.6244407438262275,
+        "hi": 0.7667914538015336,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.5574377135400058,
+        "lo": 0.5234043860747826,
+        "hi": 0.5884116352359939,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.5394851560710273,
+      "patient_specific_skill": {
+        "mean": 0.13920715663032668,
+        "lo": 0.054308885983545274,
+        "hi": 0.22694916917922694,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.13920715663032657,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.14349023866088695,
+          "frac": 0.729692254553077
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.08605252512088113,
+          "frac": -0.43760371194195424
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.13920715663032657,
+          "frac": 0.7079114573888773
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.1966448701703324,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.2
+    },
+    {
+      "tag": "mh_abmil_seed2",
+      "frozen_slot": 4,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.7168296003557205,
+        "lo": 0.6557563063771565,
+        "hi": 0.7784746565462544,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.6410234271164914,
+        "lo": 0.6126844921493501,
+        "hi": 0.6678986016680213,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.6207715573390288,
+      "patient_specific_skill": {
+        "mean": 0.07580617323922917,
+        "lo": 0.01956120436770654,
+        "hi": 0.13006308383751702,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.07580617323922911,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.17897093514297946,
+          "frac": 0.8253989992573343
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.03794750802648805,
+          "frac": -0.17501073637655165
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.07580617323922911,
+          "frac": 0.34961173711921734
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.21682960035572052,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.5
+    },
+    {
+      "tag": "mh_abmil_seed3",
+      "frozen_slot": 3,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.6477305459120644,
+        "lo": 0.5716752794977105,
+        "hi": 0.7227581847423005,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.5270923184816322,
+        "lo": 0.5028749983664202,
+        "hi": 0.5511756634612206,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.5294725420147859,
+      "patient_specific_skill": {
+        "mean": 0.12063822743043218,
+        "lo": 0.04502731022080913,
+        "hi": 0.19544469872887926,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.12063822743043218,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.07735176973042213,
+          "frac": 0.523600378329782
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.050259451248789944,
+          "frac": -0.3402102858179821
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.12063822743043218,
+          "frac": 0.8166099074882002
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.14773054591206436,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.0
+    },
+    {
+      "tag": "mh_abmil_seed4",
+      "frozen_slot": 6,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.6604478166300897,
+        "lo": 0.6028241676910242,
+        "hi": 0.7172933433447466,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.6195491823589659,
+        "lo": 0.5959012052900411,
+        "hi": 0.6445703328920651,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.5977470352983907,
+      "patient_specific_skill": {
+        "mean": 0.040898634271123786,
+        "lo": -0.01691061097237006,
+        "hi": 0.1017775992900793,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.040898634271123724,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.1905332406432052,
+          "frac": 1.1875090895283236
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.07098405828423926,
+          "frac": -0.4424121173795221
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.040898634271123724,
+          "frac": 0.2549030278511984
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.16044781663008967,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.2
+    },
+    {
+      "tag": "slot_div=0.5_seed0",
+      "frozen_slot": 4,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.8238976923966351,
+        "lo": 0.796957441334077,
+        "hi": 0.850964459504588,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.7599989025315393,
+        "lo": 0.7437715632698162,
+        "hi": 0.7760142760083525,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.752853593117178,
+      "patient_specific_skill": {
+        "mean": 0.0638987898650957,
+        "lo": 0.04238562114722497,
+        "hi": 0.08665620877278016,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.06389878986509578,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.2758205736592765,
+          "frac": 0.851566961216615
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.015821671127737136,
+          "frac": -0.048847742664255865
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.06389878986509578,
+          "frac": 0.19728078144764086
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.32389769239663513,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.0
+    },
+    {
+      "tag": "slot_div=0.5_seed1",
+      "frozen_slot": 1,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.8093878689344459,
+        "lo": 0.7814639064444608,
+        "hi": 0.8364722622088098,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.7713118377945062,
+        "lo": 0.7544671470030532,
+        "hi": 0.7873094977564528,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.7612843817921428,
+      "patient_specific_skill": {
+        "mean": 0.03807603113993992,
+        "lo": 0.016907800598737754,
+        "hi": 0.05786833743672281,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.03807603113993974,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.2788664776976839,
+          "frac": 0.9013491015601877
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.007554639903177729,
+          "frac": -0.024418022365248038
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.03807603113993974,
+          "frac": 0.12306892080506042
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.3093878689344459,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.1
+    },
+    {
+      "tag": "slot_div=0.5_seed2",
+      "frozen_slot": 2,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.7617901738973956,
+        "lo": 0.7287957462983238,
+        "hi": 0.7945442333747693,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.7458070481149024,
+        "lo": 0.7303598015331908,
+        "hi": 0.7596887494005609,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.7410616935173531,
+      "patient_specific_skill": {
+        "mean": 0.015983125782493324,
+        "lo": -0.013666548532105936,
+        "hi": 0.04506705119065889,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.01598312578249317,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.2639962033188211,
+          "frac": 1.0084267082625118
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.018189155203918728,
+          "frac": -0.06947990038406741
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.01598312578249317,
+          "frac": 0.0610531921215557
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.26179017389739556,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.6
+    },
+    {
+      "tag": "slot_div=0.5_seed3",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.8176194786457448,
+        "lo": 0.7850978868515242,
+        "hi": 0.8495379527164807,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.7459126603350256,
+        "lo": 0.7268682227095672,
+        "hi": 0.7631486039627027,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.7371034999397398,
+      "patient_specific_skill": {
+        "mean": 0.07170681831071928,
+        "lo": 0.036279464609973756,
+        "hi": 0.10952683956469943,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.07170681831071923,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.30719058501715757,
+          "frac": 0.967165446927079
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.061277924682132,
+          "frac": -0.19292873643457495
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.07170681831071923,
+          "frac": 0.22576328950749602
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.3176194786457448,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.0
+    },
+    {
+      "tag": "slot_div=0.5_seed4",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.6798769007456936,
+        "lo": 0.6406264605346922,
+        "hi": 0.719887736145613,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.7079566280730545,
+        "lo": 0.6871826849173821,
+        "hi": 0.7276153146665462,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.7060396512554692,
+      "patient_specific_skill": {
+        "mean": -0.02807972732736083,
+        "lo": -0.07237415649289095,
+        "hi": 0.014719880396027507,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.02807972732736086,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.2513361432806621,
+          "frac": 1.397267477028616
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.04337951520760763,
+          "frac": -0.24116223388202984
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.02807972732736086,
+          "frac": -0.15610524314658622
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.17987690074569362,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.0
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed0",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.5923387395706896,
+        "lo": 0.5028781572225653,
+        "hi": 0.6780188433748864,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.508881800840876,
+        "lo": 0.48858197167856826,
+        "hi": 0.5301247662538712,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.5081590375480151,
+      "patient_specific_skill": {
+        "mean": 0.08345693872981344,
+        "lo": 0.0033988668607650265,
+        "hi": 0.15724631332143085,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.08345693872981363,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.007026595327904894,
+          "frac": -0.07609585489875252
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.01590839616878087,
+          "frac": 0.17228301190533635
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.08345693872981363,
+          "frac": 0.9038128429934161
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.09233873957068961,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.1
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed1",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.6556035632545786,
+        "lo": 0.5568666609293943,
+        "hi": 0.7538912521742083,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.5951998470338351,
+        "lo": 0.5612550202029593,
+        "hi": 0.626918920830442,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.5870484317239,
+      "patient_specific_skill": {
+        "mean": 0.06040371622074333,
+        "lo": -0.024980630684554642,
+        "hi": 0.14572303775170659,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.060403716220743475,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.17570102107119578,
+          "frac": 1.1291580822203686
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.08050117403736068,
+          "frac": -0.5173478830022356
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.060403716220743475,
+          "frac": 0.3881898007818668
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.15560356325457858,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.3
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed2",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.5198736439411846,
+        "lo": 0.4736067613602215,
+        "hi": 0.5698971518837864,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.518989263350192,
+        "lo": 0.4939292987243163,
+        "hi": 0.5455016409185093,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.5269146931599112,
+      "patient_specific_skill": {
+        "mean": 0.0008843805909925535,
+        "lo": -0.05167465445059752,
+        "hi": 0.051678458090730316,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.0008843805909926061,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.011585616202258286,
+          "frac": 0.582963860907719
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.007403647147933734,
+          "frac": 0.37253596621961105
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.0008843805909926061,
+          "frac": 0.044500172872669976
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.019873643941184627,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.2
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed3",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.403336197906651,
+        "lo": 0.33832144132685044,
+        "hi": 0.46559734812640546,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.379437535541207,
+        "lo": 0.34897646024480444,
+        "hi": 0.41722683085689516,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.38062748308324623,
+      "patient_specific_skill": {
+        "mean": 0.023898662365444023,
+        "lo": -0.045903019541967204,
+        "hi": 0.09181941903943878,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.023898662365443968,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.2847822444897906,
+          "frac": 2.946110522476388
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.16421978003099763,
+          "frac": -1.6988756543262105
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.023898662365443968,
+          "frac": -0.2472348681501772
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.09666380209334902,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.1
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed4",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.6781536471453226,
+        "lo": 0.6167686897097746,
+        "hi": 0.733819184930709,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.6182262947631739,
+        "lo": 0.5877855664377241,
+        "hi": 0.6523205409142727,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.5978607802483348,
+      "patient_specific_skill": {
+        "mean": 0.059927352382148844,
+        "lo": 0.00815470773825822,
+        "hi": 0.09807236667014214,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.059927352382148635,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.18946799849032703,
+          "frac": 1.0635089515499796
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.0712417037271531,
+          "frac": -0.39988911183524745
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.059927352382148635,
+          "frac": 0.33638016028526774
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.17815364714532256,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.1
+    },
+    {
+      "tag": "clam_sb_seed0",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.2923520686068473,
+        "lo": 0.23929447679711727,
+        "hi": 0.3458198736249832,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.2875305690437433,
+        "lo": 0.2717015916180768,
+        "hi": 0.3021894568444963,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.29792608432550344,
+      "patient_specific_skill": {
+        "mean": 0.0048214995631040555,
+        "lo": -0.04761353970682224,
+        "hi": 0.059155371881682475,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.004821499563104015,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.33854716302612353,
+          "frac": 1.6303902512042425
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.1260777320698668,
+          "frac": -0.6071706624958186
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.004821499563104015,
+          "frac": -0.023219588708423833
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.20764793139315268,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.2
+    },
+    {
+      "tag": "clam_sb_seed1",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.4125896896229268,
+        "lo": 0.3583064617986318,
+        "hi": 0.46630609098950326,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.3202389856041221,
+        "lo": 0.2962900658225732,
+        "hi": 0.34179761635683015,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.3393332255002158,
+      "patient_specific_skill": {
+        "mean": 0.09235070401880474,
+        "lo": 0.038101364538072204,
+        "hi": 0.1508529980823124,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.09235070401880469,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.27778344723917014,
+          "frac": 3.1779254191051334
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.09802243284329223,
+          "frac": -1.1214058435491208
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.09235070401880469,
+          "frac": -1.0565195755560124
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.0874103103770732,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.1
+    },
+    {
+      "tag": "clam_sb_seed2",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.2838663721905165,
+        "lo": 0.24205397674615692,
+        "hi": 0.3252521856435306,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.31727711804852754,
+        "lo": 0.2975417838799173,
+        "hi": 0.3369578926498644,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.33736437940442005,
+      "patient_specific_skill": {
+        "mean": -0.033410745858010904,
+        "lo": -0.07251113214691714,
+        "hi": 0.005772562833168833,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.033410745858011015,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.25207614483063934,
+          "frac": 1.1662976621705454
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.06935326287916688,
+          "frac": -0.32088140833086876
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.033410745858011015,
+          "frac": 0.15458374616032344
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.21613362780948348,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.3
+    },
+    {
+      "tag": "clam_sb_seed3",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.4837489472457616,
+        "lo": 0.41500230587983306,
+        "hi": 0.5494476291011271,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.5133613709034512,
+        "lo": 0.4833484298275952,
+        "hi": 0.5496970876382464,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.522294764082124,
+      "patient_specific_skill": {
+        "mean": -0.02961242365768962,
+        "lo": -0.12180135525311143,
+        "hi": 0.05054125415243874,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.029612423657689624,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.14423441257952296,
+          "frac": -8.875388860078967
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.13087304167607172,
+          "frac": 8.05320391578565
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.029612423657689624,
+          "frac": 1.8221849442933171
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.016251052754238382,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.9
+    },
+    {
+      "tag": "clam_sb_seed4",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.21585848113522346,
+        "lo": 0.18527881533999935,
+        "hi": 0.24712725244335337,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.2680711691906694,
+        "lo": 0.2533341890924246,
+        "hi": 0.2831990682238367,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.2784766024459424,
+      "patient_specific_skill": {
+        "mean": -0.052212688055445954,
+        "lo": -0.08232407028875345,
+        "hi": -0.018852305136482683,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.05221268805544596,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.26959645264455795,
+          "frac": 0.9488104861326492
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.03766762183522737,
+          "frac": -0.13256641263029728
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.05221268805544596,
+          "frac": 0.18375592649764805
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.28414151886477657,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.7
+    },
+    {
+      "tag": "dsmil_seed0",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.4740294624112324,
+        "lo": 0.4000193687007235,
+        "hi": 0.549363173690602,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.3977225460656495,
+        "lo": 0.34990453468678107,
+        "hi": 0.4488308230411333,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.4098495151615229,
+      "patient_specific_skill": {
+        "mean": 0.07630691634558287,
+        "lo": -0.004473576363067451,
+        "hi": 0.1557551621408306,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.0763069163455829,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.08497506260679716,
+          "frac": 3.271979346455628
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.017302391327553346,
+          "frac": 0.6662315428940802
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.0763069163455829,
+          "frac": -2.9382108893497083
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.025970537588767606,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.7
+    },
+    {
+      "tag": "dsmil_seed1",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.3130498393136114,
+        "lo": 0.2446523542515086,
+        "hi": 0.38419277401173824,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.3594533998644012,
+        "lo": 0.3338541845262925,
+        "hi": 0.3855029217648848,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.3581681967903993,
+      "patient_specific_skill": {
+        "mean": -0.046403560550789896,
+        "lo": -0.11689434433189222,
+        "hi": 0.02546113833384981,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.04640356055078981,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.25525776717560267,
+          "frac": 1.3653786989988257
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.11471116704000389,
+          "frac": -0.6135922355928509
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.04640356055078981,
+          "frac": 0.24821353659402523
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.1869501606863886,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.1
+    },
+    {
+      "tag": "dsmil_seed2",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.42786171539898615,
+        "lo": 0.3581360412123917,
+        "hi": 0.5004599625912115,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.48325271699546907,
+        "lo": 0.4326382228196458,
+        "hi": 0.5344036120688865,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.4485654129472802,
+      "patient_specific_skill": {
+        "mean": -0.055391001596482914,
+        "lo": -0.11236552372809643,
+        "hi": -0.00016986406281155423,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": -0.055391001596482914,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.15081343235509476,
+          "frac": 2.09061572768498
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.13406614935056382,
+          "frac": -1.8584604567749816
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": -0.055391001596482914,
+          "frac": 0.7678447290900017
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.07213828460101385,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.2
+    },
+    {
+      "tag": "dsmil_seed3",
+      "frozen_slot": 1,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.42772053366016916,
+        "lo": 0.34473491716958393,
+        "hi": 0.5177496216586515,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.3803548075872919,
+        "lo": 0.30744101838125193,
+        "hi": 0.45873366294636575,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.3867383522573374,
+      "patient_specific_skill": {
+        "mean": 0.04736572607287727,
+        "lo": 0.00398829424466642,
+        "hi": 0.09048299567422302,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.04736572607287726,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.2495341394301891,
+          "frac": 3.4523517129605454
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.129888947017481,
+          "frac": -1.7970379914925223
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.04736572607287726,
+          "frac": -0.655313721468023
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.07227946633983084,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.8
+    },
+    {
+      "tag": "dsmil_seed4",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.6342438887694941,
+        "lo": 0.5838822912362706,
+        "hi": 0.6864691547738775,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.6193756689237064,
+        "lo": 0.5902227886002058,
+        "hi": 0.6467784593663081,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.6216982438276178,
+      "patient_specific_skill": {
+        "mean": 0.014868219845787754,
+        "lo": -0.0381938725556469,
+        "hi": 0.07240479599031198,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.014868219845787678,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.22845319837218292,
+          "frac": 1.7017772687176294
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.10907752944847648,
+          "frac": -0.812532551375728
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.014868219845787678,
+          "frac": 0.11075528265809867
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.1342438887694941,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.3
+    },
+    {
+      "tag": "transmil_seed0",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.5625309212572379,
+        "lo": 0.4446267198026958,
+        "hi": 0.6746454142693729,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.5442661145286894,
+        "lo": 0.5041459877711377,
+        "hi": 0.583947948888831,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.5536871579104238,
+      "patient_specific_skill": {
+        "mean": 0.01826480672854843,
+        "lo": -0.07379441672475683,
+        "hi": 0.1088487279495455,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.018264806728548466,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.05438132377828453,
+          "frac": 0.869670919361194
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.01011520924959508,
+          "frac": -0.16176331719124082
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.018264806728548466,
+          "frac": 0.29209239783004676
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.06253092125723791,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 13.9
+    },
+    {
+      "tag": "transmil_seed1",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.4943792403737608,
+        "lo": 0.44712876685867653,
+        "hi": 0.5376044825379817,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.4844342071049871,
+        "lo": 0.4481785888190901,
+        "hi": 0.5216435636778916,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.4923758222241201,
+      "patient_specific_skill": {
+        "mean": 0.009945033268773863,
+        "lo": -0.04534078381483929,
+        "hi": 0.06016676457095788,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.009945033268773718,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.10475982845179777,
+          "frac": 18.638019666016493
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.08919403555678485,
+          "frac": -15.868679945038629
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.009945033268773718,
+          "frac": -1.7693397209778647
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.005620759626239202,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.4
+    },
+    {
+      "tag": "transmil_seed2",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.43922350356266654,
+        "lo": 0.33553437865279967,
+        "hi": 0.5459159209093277,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.4041057924183978,
+        "lo": 0.37542820281436584,
+        "hi": 0.43510748702256197,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.3992960701976228,
+      "patient_specific_skill": {
+        "mean": 0.03511771114426864,
+        "lo": -0.06493998535525981,
+        "hi": 0.141601801974224,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.03511771114426876,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.12682068086741927,
+          "frac": 2.0866731105203447
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.030926473285817047,
+          "frac": -0.5088558093786351
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.03511771114426876,
+          "frac": -0.5778173011417098
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": -0.06077649643733346,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.4
+    },
+    {
+      "tag": "transmil_seed3",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.6804200341267795,
+        "lo": 0.6046857206309939,
+        "hi": 0.750391757531095,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.6536775233031115,
+        "lo": 0.6284235011372498,
+        "hi": 0.6790529972032706,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.6249592659813002,
+      "patient_specific_skill": {
+        "mean": 0.02674251082366798,
+        "lo": -0.0465083531617803,
+        "hi": 0.09915814738664888,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.026742510823668075,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": 0.22191457405863735,
+          "frac": 1.2299885383166482
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": -0.06823705075552589,
+          "frac": -0.3782121596738881
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.026742510823668075,
+          "frac": 0.14822362135723993
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.18042003412677954,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.3
+    },
+    {
+      "tag": "transmil_seed4",
+      "frozen_slot": 0,
+      "axis": "flat",
+      "n_derangements": 100,
+      "rng_seed": 0,
+      "impl": "nulls.shuffle_masks_across_bags",
+      "n_bags_scored": 19,
+      "n_bags_without_any_derangement": 0,
+      "flat_auc_real": {
+        "mean": 0.5891904154614804,
+        "lo": 0.5046772750192786,
+        "hi": 0.6695266722422902,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient": {
+        "mean": 0.5245287221518661,
+        "lo": 0.4947268697161896,
+        "hi": 0.5565428954702093,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "flat_auc_cross_patient_mean_over_derangements": 0.5194425490455121,
+      "patient_specific_skill": {
+        "mean": 0.06466169330961434,
+        "lo": -0.010753342805113107,
+        "hi": 0.14018789295232809,
+        "n": 19,
+        "n_clusters": 19
+      },
+      "patient_specific_skill_point": 0.06466169330961435,
+      "paired_matches_difference_of_means": true,
+      "reference_chain": [
+        {
+          "from": "chance",
+          "to": "fitted_template",
+          "delta": -0.025705011551063084,
+          "frac": -0.28820374272350563
+        },
+        {
+          "from": "fitted_template",
+          "to": "cross_patient",
+          "delta": 0.05023373370292916,
+          "frac": 0.5632189674531128
+        },
+        {
+          "from": "cross_patient",
+          "to": "full",
+          "delta": 0.06466169330961435,
+          "frac": 0.7249847752703927
+        },
+        {
+          "from": "chance",
+          "to": "full",
+          "delta": 0.08919041546148043,
+          "frac": 1.0
+        }
+      ],
+      "seconds": 14.3
+    }
+  ],
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+    "git_dirty": false
+  }
+}

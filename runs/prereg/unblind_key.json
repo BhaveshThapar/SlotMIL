@@ -1,0 +1,16 @@
+{
+  "salt": "9c8e043d83a628061461c6f11e06a4d4",
+  "prefix": "ARM",
+  "nibbles": 6,
+  "codes": {
+    "mean": "ARM-B91812",
+    "abmil": "ARM-799118",
+    "gated_abmil": "ARM-3E8E96",
+    "mh_abmil": "ARM-BE28CF",
+    "slot_div0.5": "ARM-0984A5",
+    "normal_guidance": "ARM-AEFB92",
+    "clam_sb": "ARM-F80052",
+    "dsmil": "ARM-3B896D",
+    "transmil": "ARM-CDE60B"
+  }
+}

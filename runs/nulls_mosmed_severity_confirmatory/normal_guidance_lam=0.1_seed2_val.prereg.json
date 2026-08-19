@@ -1,0 +1,17 @@
+{
+  "analysis_role": "confirmatory",
+  "tag": "normal_guidance_lam=0.1_seed2",
+  "split": "val",
+  "dtype": "float32",
+  "pooling": "normal_guidance",
+  "splits": "data/mosmed/splits.json",
+  "splits_file_sha256": "8f991d4f18083928",
+  "ckpt": "/fs/nexus-scratch/bthapar/SlotMIL/runs/mosmed_severity_confirmatory/normal_guidance_lam=0.1/seed2/best.pt",
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+    "git_dirty": false
+  }
+}

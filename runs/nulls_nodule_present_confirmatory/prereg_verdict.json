@@ -1,0 +1,3002 @@
+{
+  "analysis_role": "confirmatory",
+  "condition_dir": "runs/nulls_nodule_present_confirmatory",
+  "condition": "nodule_present",
+  "carries_hypothesis_family": true,
+  "carries_hypothesis_family_note": "hypothesis_family_condition names exactly one condition, ruled 2026-08-15 before any confirmatory number existed. A verdict table computed on any other condition is a consistency check and must not be reported as the pre-registered verdict -- choosing which condition leads after seeing three tables is the best-of-k error the template denominator ruling already refuses.",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "blinded": true,
+  "blinding_note": "Arm names are the codes from blinding.key_path. Unblinding is a separate dated act through scripts/prereg_unblind.py, which appends to AMENDMENTS.md. Procedural, not cryptographic -- the key is on the same disk, as PREREGISTRATION.md states.",
+  "inputs": {
+    "axis_gate": {
+      "lineage": "current",
+      "kind": null,
+      "problem": null
+    },
+    "h4_cross_patient": {
+      "lineage": "current",
+      "kind": null,
+      "problem": null
+    },
+    "h7_content_free": {
+      "lineage": "current",
+      "kind": null,
+      "problem": null
+    },
+    "h8_in_lung": {
+      "lineage": "current",
+      "kind": null,
+      "problem": null
+    },
+    "mosmed_template_family": {
+      "lineage": "current",
+      "kind": null,
+      "problem": null
+    },
+    "probe_gate": {
+      "lineage": "current",
+      "kind": null,
+      "problem": null
+    },
+    "template_family": {
+      "lineage": "current",
+      "kind": null,
+      "problem": null
+    },
+    "untrained_floor[0]": {
+      "lineage": "current",
+      "kind": null,
+      "problem": null
+    },
+    "untrained_floor[1]": {
+      "lineage": "current",
+      "kind": null,
+      "problem": null
+    }
+  },
+  "undeclared_units_taken": {
+    "H1": "mean_over_seeds",
+    "H4": "mean_over_seeds",
+    "H9": "every_matched_tag"
+  },
+  "verdicts": [
+    {
+      "id": "H1",
+      "outcome": "PASS",
+      "reason": "1/8 arms have |flat - within_slice| >= 0.02; a majority is 5",
+      "gaps": {
+        "ARM-799118": 0.01895865689719739,
+        "ARM-3E8E96": 0.014842563055748641,
+        "ARM-BE28CF": 0.017912752122252483,
+        "ARM-0984A5": 0.008379755446981819,
+        "ARM-AEFB92": 0.06686497901472166,
+        "ARM-F80052": 0.01663041096290347,
+        "ARM-3B896D": 0.006444064368665797,
+        "ARM-CDE60B": 0.0057916743261219985
+      },
+      "threshold": 0.02,
+      "arms_over_threshold": [
+        "ARM-AEFB92"
+      ],
+      "n_arms": 8,
+      "majority_needed": 5,
+      "controls": {
+        "masks:axial": 0.1064422906745176,
+        "masks:separable": 0.02344873786769142,
+        "centre_prior": 0.051823445105622534
+      },
+      "tie_gap": 0.0,
+      "per_seed": {
+        "ARM-799118": [
+          0.018498876649082174,
+          0.026137478873001663,
+          0.014118963504181847,
+          0.01700938511078276,
+          0.019028580348938506
+        ],
+        "ARM-3E8E96": [
+          0.015131198938642287,
+          0.016050545897370205,
+          0.021715443394465017,
+          0.0024803078564638315,
+          0.01883531919180187
+        ],
+        "ARM-BE28CF": [
+          0.02466885554860021,
+          0.020684944137092653,
+          0.01488947257436285,
+          0.009191248994202983,
+          0.020129239357003725
+        ],
+        "ARM-0984A5": [
+          0.00407085576773536,
+          0.015058006607020502,
+          0.007668074844783379,
+          0.007761503056692098,
+          0.007340336958677751
+        ],
+        "ARM-AEFB92": [
+          0.06776396399825502,
+          0.06978747641448124,
+          0.03544066538957469,
+          0.08929585611017149,
+          0.07203693316112586
+        ],
+        "ARM-F80052": [
+          0.022957377485290587,
+          0.0233637013578345,
+          0.01505168214011926,
+          0.008549482600768266,
+          0.013229811230504734
+        ],
+        "ARM-3B896D": [
+          0.0071962115087700895,
+          0.002662137296808753,
+          2.7917350783418504e-05,
+          0.018856574254060343,
+          0.003477481432906382
+        ],
+        "ARM-CDE60B": [
+          0.0036373725598684015,
+          0.005684276205613625,
+          0.009567974747006991,
+          0.007954409364679282,
+          0.0021143387534416913
+        ]
+      },
+      "unit_over_seeds": "mean_over_seeds (undeclared for H1; see the module docstring)"
+    },
+    {
+      "id": "H2",
+      "outcome": "PASS",
+      "reason": "0/8 arms match or beat the centre prior's slice AUC of 0.6427",
+      "centre_prior_slice_auc": 0.642668681497915,
+      "arm_slice_auc": {
+        "ARM-799118": 0.41000430771884355,
+        "ARM-3E8E96": 0.4243107608693764,
+        "ARM-BE28CF": 0.4228788141797648,
+        "ARM-0984A5": 0.5726749884809754,
+        "ARM-AEFB92": 0.6317960863560201,
+        "ARM-F80052": 0.40502694132824457,
+        "ARM-3B896D": 0.509040787929689,
+        "ARM-CDE60B": 0.48841431714272954
+      },
+      "arms_at_or_above": [],
+      "per_seed": {
+        "ARM-799118": [
+          0.409946506186153,
+          0.3790249500601136,
+          0.43584452644744365,
+          0.41878949223733886,
+          0.4064160636631685
+        ],
+        "ARM-3E8E96": [
+          0.40609256971600555,
+          0.4097900764099886,
+          0.4044815291940615,
+          0.5085428113712986,
+          0.39264681765552767
+        ],
+        "ARM-BE28CF": [
+          0.40936344891053994,
+          0.4131737379944699,
+          0.4427937269054957,
+          0.4336252534534272,
+          0.4154379036348912
+        ],
+        "ARM-0984A5": [
+          0.5466130481282,
+          0.5772139500612646,
+          0.5796116142977186,
+          0.6137302924339627,
+          0.5462060374837314
+        ],
+        "ARM-AEFB92": [
+          0.6306051226664893,
+          0.6322359979702818,
+          0.6311682412658642,
+          0.635452906250451,
+          0.6295181636270142
+        ],
+        "ARM-F80052": [
+          0.3939764470024357,
+          0.38387127792861575,
+          0.4247008090598757,
+          0.41696324143816593,
+          0.4056229312121299
+        ],
+        "ARM-3B896D": [
+          0.4497945122323714,
+          0.5045304573552124,
+          0.5136757354128056,
+          0.5968620437815355,
+          0.48034119086652
+        ],
+        "ARM-CDE60B": [
+          0.4835979839106873,
+          0.46801110664065276,
+          0.46874675428432544,
+          0.5351678192007151,
+          0.4865479216772669
+        ]
+      },
+      "excluded_arms": [
+        "centre_gaussian"
+      ]
+    },
+    {
+      "id": "H3",
+      "outcome": "PASS",
+      "reason": "95th-percentile untrained instance AUC 0.7666 vs 0.7",
+      "p95": 0.7665760928074817,
+      "threshold": 0.7,
+      "n_inits": 30,
+      "per_pooling": {
+        "slot": {
+          "p95": 0.7665760928074817,
+          "n_inits": 30,
+          "median": 0.6739091193488429,
+          "p5": 0.6039640971188222
+        },
+        "ARM-BE28CF": {
+          "p95": 0.7678969514750311,
+          "n_inits": 30,
+          "median": 0.6449237060863904,
+          "p5": 0.5824875481001772
+        }
+      },
+      "aggregation": "weakest_floor_over_poolings"
+    },
+    {
+      "id": "H4",
+      "outcome": "PASS",
+      "reason": "every arm below 0.15 and median -0.0466 below 0.1",
+      "skills": {
+        "ARM-799118": -0.10755822036161138,
+        "ARM-3E8E96": -0.10190577435658599,
+        "ARM-BE28CF": -0.04474340445319415,
+        "ARM-0984A5": 0.07399522325673094,
+        "ARM-AEFB92": 0.04897565009483194,
+        "ARM-F80052": -0.08347629217591086,
+        "ARM-3B896D": -0.04841705651581581,
+        "ARM-CDE60B": 0.017694153873507777
+      },
+      "median": -0.04658023048450498,
+      "threshold_per_arm": 0.15,
+      "threshold_median": 0.1,
+      "arms_over_threshold": [],
+      "per_seed": {
+        "ARM-799118": [
+          -0.07380340916767096,
+          -0.1391344864065955,
+          -0.09003053124313266,
+          -0.11711123009656059,
+          -0.11771144489409723
+        ],
+        "ARM-3E8E96": [
+          -0.11257973414695131,
+          -0.10359957899023751,
+          -0.0960475428528922,
+          -0.12568421472362523,
+          -0.07161780106922368
+        ],
+        "ARM-BE28CF": [
+          0.009980540995027314,
+          -0.041058696469525216,
+          -0.039840393542932305,
+          -0.060232794811795276,
+          -0.09256567843674525
+        ],
+        "ARM-0984A5": [
+          0.07583227219593097,
+          0.09195503852808111,
+          0.03205818422219453,
+          0.11246432786166127,
+          0.05766629347578682
+        ],
+        "ARM-AEFB92": [
+          0.05713571424751089,
+          0.0491474426072686,
+          0.09461385397885352,
+          0.0011219123532717602,
+          0.04285932728725495
+        ],
+        "ARM-F80052": [
+          -0.090986164857753,
+          -0.04878788460915308,
+          -0.08627221139298324,
+          -0.07685182892933658,
+          -0.11448337109032841
+        ],
+        "ARM-3B896D": [
+          -0.05586242069145251,
+          -0.04599172227725481,
+          -0.0754162508007022,
+          0.005326148890947472,
+          -0.07014103770061701
+        ],
+        "ARM-CDE60B": [
+          0.0447385589722923,
+          -0.017021829932112483,
+          -0.0395518621344784,
+          0.042635754515520936,
+          0.057670147946316544
+        ]
+      },
+      "unit_over_seeds": "mean_over_seeds (undeclared for H4; see the module docstring)"
+    },
+    {
+      "id": "H5",
+      "outcome": "PASS",
+      "reason": "0/8 arms exceed 0.3 on the mean over seeds",
+      "mean_over_seeds": {
+        "ARM-799118": -0.26775375456468076,
+        "ARM-3E8E96": -0.12146984340030764,
+        "ARM-BE28CF": -0.19111819646781267,
+        "ARM-0984A5": 0.19895230943757838,
+        "ARM-AEFB92": 0.08360857672481507,
+        "ARM-F80052": -0.0462279739502031,
+        "ARM-3B896D": -0.046235622388744645,
+        "ARM-CDE60B": 0.09806110850492755
+      },
+      "threshold": 0.3,
+      "arms_over_threshold": [],
+      "unit": "mean_over_seeds",
+      "per_seed": {
+        "ARM-799118": [
+          -0.3363111569935964,
+          -0.550377503777219,
+          -0.23242883175788995,
+          -0.045313858138771645,
+          -0.17433742215592696
+        ],
+        "ARM-3E8E96": [
+          -0.18154232055624145,
+          -0.09590350642451471,
+          -0.26423738903222915,
+          -0.05625760193320727,
+          -0.009408399055345679
+        ],
+        "ARM-BE28CF": [
+          -0.3862939395907405,
+          -0.28844889807311314,
+          -0.13742379094131368,
+          -0.001788451725215851,
+          -0.14163590200868034
+        ],
+        "ARM-0984A5": [
+          0.220362049915185,
+          0.34319423340712185,
+          -0.007301134203012076,
+          0.2966373500631817,
+          0.14186904800541536
+        ],
+        "ARM-AEFB92": [
+          0.06955990246617595,
+          0.1523931917892246,
+          -0.14509145336019602,
+          0.1730998795262047,
+          0.16808136320266615
+        ],
+        "ARM-F80052": [
+          -0.08275725571267424,
+          -0.09183790742885042,
+          0.018903842901626854,
+          -0.03295747547641495,
+          -0.04249107403470276
+        ],
+        "ARM-3B896D": [
+          0.07775484864635783,
+          -0.17196165709064204,
+          -0.009707753217752675,
+          0.06458432807142107,
+          -0.19184787835310743
+        ],
+        "ARM-CDE60B": [
+          0.19040566637180711,
+          0.09777925604529378,
+          -0.21976327297969603,
+          0.19675530107959127,
+          0.2251285920076416
+        ]
+      },
+      "seeds_over_threshold": {
+        "ARM-0984A5": [
+          0.34319423340712185
+        ]
+      }
+    },
+    {
+      "id": "H6",
+      "outcome": "FAIL",
+      "reason": "patient-specific skill moved +0.1509 against a falsifier at >= 0.02",
+      "delta_patient_specific_skill": 0.15088142445141794,
+      "threshold": 0.02,
+      "skill_base": -0.10190577435658599,
+      "skill_arm": 0.04897565009483194,
+      "delta_slice_auc": 0.20748532548664372,
+      "slice_base": 0.4243107608693764,
+      "slice_arm": 0.6317960863560201,
+      "slice_rose": true,
+      "note": "the falsifier names the skill only; the slice column is reported beside it",
+      "comparison": {
+        "arm": "ARM-AEFB92",
+        "base": "ARM-3E8E96",
+        "axes": [
+          "slice_auc",
+          "patient_specific_skill"
+        ]
+      }
+    },
+    {
+      "id": "H7",
+      "outcome": "PASS",
+      "reason": "probe 0.7305 > 0.5 and every computed content-free member < 0.05",
+      "probe_skill": 0.7305174564573299,
+      "probe_threshold": 0.5,
+      "content_free": {
+        "chance": 0.0,
+        "roll_permutation": 0.01047802559205239,
+        "entropy_matched_random": -7.396813867266427e-05,
+        "fitted_template": 0.0
+      },
+      "content_free_threshold": 0.05,
+      "members_over_threshold": [],
+      "uncomputable": [],
+      "aggregation": "max_over_tags_of_the_mean_over_draws",
+      "aggregation_sensitivity": {
+        "chance": {
+          "n_tags": 40,
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "roll_permutation": {
+          "n_tags": 40,
+          "mean": -0.00037566251543607687,
+          "median": -0.0007302519134004392,
+          "max": 0.01047802559205239,
+          "min": -0.0070289170667830435
+        },
+        "entropy_matched_random": {
+          "n_tags": 15,
+          "mean": -0.005528493012137662,
+          "median": -0.0049671503011999895,
+          "max": -7.396813867266427e-05,
+          "min": -0.011472746789829725
+        },
+        "fitted_template": {
+          "n_tags": 40,
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        }
+      },
+      "aggregation_sensitivity_note": "Reported, not applied. The verdict uses the declared unit above. These are the same per-tag values under the two aggregations the unit was chosen against, so a reader can see what the choice was worth rather than take it on trust.",
+      "content_free_draws": 30,
+      "draw_spread": {
+        "chance": null,
+        "roll_permutation": 0.04832412751629044,
+        "entropy_matched_random": 0.06727134917082611,
+        "fitted_template": null
+      },
+      "draw_spread_note": "Worst per-tag draw-to-draw standard deviation per member. Before the 2026-08-17 amendment every tag shared one realisation, so this was not estimable and a maximum over tags could not distinguish a member above the threshold from a member whose single draw was."
+    },
+    {
+      "id": "H8",
+      "outcome": "REPORTED",
+      "reason": "in_lung_auc 0.4884 is below 0.65 (two-sided, no falsifier)",
+      "value": 0.4883871550600398,
+      "threshold": 0.65,
+      "exceeds": false,
+      "estimand": "in_lung_auc",
+      "per_arm": {
+        "ARM-B91812": 0.5,
+        "ARM-799118": 0.45292483550625884,
+        "ARM-3E8E96": 0.45833424748169005,
+        "ARM-BE28CF": 0.48480192698222685,
+        "ARM-0984A5": 0.48273826289385163,
+        "centre_gaussian": 0.5,
+        "ARM-AEFB92": 0.5836618368546812,
+        "ARM-F80052": 0.46610165618757604,
+        "ARM-3B896D": 0.4853539092031752,
+        "ARM-CDE60B": 0.46995487549093806
+      },
+      "per_seed": {
+        "ARM-B91812": [
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "ARM-799118": [
+          0.4383633933936182,
+          0.44175416871846834,
+          0.45788852663312,
+          0.5033395891488125,
+          0.42327849963727476
+        ],
+        "ARM-3E8E96": [
+          0.3944739905465833,
+          0.458717467580964,
+          0.4792186447476853,
+          0.4934442644638287,
+          0.4658168700693886
+        ],
+        "ARM-BE28CF": [
+          0.5225216817931694,
+          0.46798204467857396,
+          0.5002694387467291,
+          0.4490000782872564,
+          0.48423639140540514
+        ],
+        "ARM-0984A5": [
+          0.45725190815624056,
+          0.48874872656803675,
+          0.45705613479048557,
+          0.542029863250367,
+          0.46860468170412833
+        ],
+        "centre_gaussian": [
+          0.5,
+          0.5,
+          0.5,
+          0.5,
+          0.5
+        ],
+        "ARM-AEFB92": [
+          0.5848531200231437,
+          0.5808217100537663,
+          0.6347663880225637,
+          0.564349598738657,
+          0.5535183674352756
+        ],
+        "ARM-F80052": [
+          0.4392650181501276,
+          0.4274141260160058,
+          0.4812808881308874,
+          0.5182008390275501,
+          0.46434740961330917
+        ],
+        "ARM-3B896D": [
+          0.38027176035722404,
+          0.4810144199598645,
+          0.5506869088713027,
+          0.5699453345791821,
+          0.4448511222483031
+        ],
+        "ARM-CDE60B": [
+          0.4385565828692724,
+          0.4515786762803342,
+          0.5905807420214438,
+          0.4721234218364215,
+          0.3969349544472184
+        ]
+      },
+      "reported_beside_the_threshold": {
+        "ARM-799118_seed0": 0.46981616841986146,
+        "ARM-799118_seed1": 0.4700981109917339,
+        "ARM-799118_seed2": 0.4748003554088632,
+        "ARM-799118_seed3": 0.4519024114694826,
+        "ARM-799118_seed4": 0.4388953872644704,
+        "centre_gaussian_seed0": 0.5,
+        "centre_gaussian_seed1": 0.5,
+        "centre_gaussian_seed2": 0.5,
+        "centre_gaussian_seed3": 0.5,
+        "centre_gaussian_seed4": 0.5,
+        "ARM-F80052_seed0": 0.46451542883233377,
+        "ARM-F80052_seed1": 0.46476548495290776,
+        "ARM-F80052_seed2": 0.449325238203789,
+        "ARM-F80052_seed3": 0.4851380575804843,
+        "ARM-F80052_seed4": 0.45098258700753324,
+        "ARM-3B896D_seed0": 0.41671416772712666,
+        "ARM-3B896D_seed1": 0.5034822056010655,
+        "ARM-3B896D_seed2": 0.4851343485367761,
+        "ARM-3B896D_seed3": 0.5401256673865712,
+        "ARM-3B896D_seed4": 0.4189417922775314,
+        "ARM-3E8E96_seed0": 0.42851254288632923,
+        "ARM-3E8E96_seed1": 0.47601998896236636,
+        "ARM-3E8E96_seed2": 0.4965607103115408,
+        "ARM-3E8E96_seed3": 0.4306069421850183,
+        "ARM-3E8E96_seed4": 0.47940467462979575,
+        "ARM-B91812_seed0": 0.5,
+        "ARM-B91812_seed1": 0.5,
+        "ARM-B91812_seed2": 0.5,
+        "ARM-B91812_seed3": 0.5,
+        "ARM-B91812_seed4": 0.5,
+        "ARM-BE28CF_seed0": 0.5414022692779403,
+        "ARM-BE28CF_seed1": 0.48861544935440293,
+        "ARM-BE28CF_seed2": 0.5157191012629555,
+        "ARM-BE28CF_seed3": 0.45268121484433244,
+        "ARM-BE28CF_seed4": 0.49211327433869007,
+        "ARM-AEFB92_seed0": 0.5544646343648146,
+        "ARM-AEFB92_seed1": 0.5489256078887819,
+        "ARM-AEFB92_seed2": 0.6056061426961505,
+        "ARM-AEFB92_seed3": 0.5153510441790631,
+        "ARM-AEFB92_seed4": 0.530879935014885,
+        "ARM-0984A5_seed0": 0.5203141852077223,
+        "ARM-0984A5_seed1": 0.5534017053951146,
+        "ARM-0984A5_seed2": 0.5270387297622062,
+        "ARM-0984A5_seed3": 0.5831208557321361,
+        "ARM-0984A5_seed4": 0.5391888853273121,
+        "ARM-CDE60B_seed0": 0.45272274730021606,
+        "ARM-CDE60B_seed1": 0.49414478886985275,
+        "ARM-CDE60B_seed2": 0.5595549523844957,
+        "ARM-CDE60B_seed3": 0.4877185371794851,
+        "ARM-CDE60B_seed4": 0.42366935939645595
+      }
+    },
+    {
+      "id": "H9",
+      "outcome": "FAIL",
+      "reason": "1/50 matched tags order MosMed's template AUC below LIDC's with higher skill",
+      "matched_tags": [
+        "ARM-799118_seed0",
+        "ARM-799118_seed1",
+        "ARM-799118_seed2",
+        "ARM-799118_seed3",
+        "ARM-799118_seed4",
+        "centre_gaussian_seed0",
+        "centre_gaussian_seed1",
+        "centre_gaussian_seed2",
+        "centre_gaussian_seed3",
+        "centre_gaussian_seed4",
+        "ARM-F80052_seed0",
+        "ARM-F80052_seed1",
+        "ARM-F80052_seed2",
+        "ARM-F80052_seed3",
+        "ARM-F80052_seed4",
+        "ARM-3B896D_seed0",
+        "ARM-3B896D_seed1",
+        "ARM-3B896D_seed2",
+        "ARM-3B896D_seed3",
+        "ARM-3B896D_seed4",
+        "ARM-3E8E96_seed0",
+        "ARM-3E8E96_seed1",
+        "ARM-3E8E96_seed2",
+        "ARM-3E8E96_seed3",
+        "ARM-3E8E96_seed4",
+        "ARM-B91812_seed0",
+        "ARM-B91812_seed1",
+        "ARM-B91812_seed2",
+        "ARM-B91812_seed3",
+        "ARM-B91812_seed4",
+        "ARM-BE28CF_seed0",
+        "ARM-BE28CF_seed1",
+        "ARM-BE28CF_seed2",
+        "ARM-BE28CF_seed3",
+        "ARM-BE28CF_seed4",
+        "ARM-AEFB92_seed0",
+        "ARM-AEFB92_seed1",
+        "ARM-AEFB92_seed2",
+        "ARM-AEFB92_seed3",
+        "ARM-AEFB92_seed4",
+        "ARM-0984A5_seed0",
+        "ARM-0984A5_seed1",
+        "ARM-0984A5_seed2",
+        "ARM-0984A5_seed3",
+        "ARM-0984A5_seed4",
+        "ARM-CDE60B_seed0",
+        "ARM-CDE60B_seed1",
+        "ARM-CDE60B_seed2",
+        "ARM-CDE60B_seed3",
+        "ARM-CDE60B_seed4"
+      ],
+      "tags_not_ordering": [
+        "ARM-799118_seed0",
+        "ARM-799118_seed1",
+        "ARM-799118_seed2",
+        "ARM-799118_seed3",
+        "ARM-799118_seed4",
+        "centre_gaussian_seed0",
+        "centre_gaussian_seed1",
+        "centre_gaussian_seed2",
+        "centre_gaussian_seed3",
+        "centre_gaussian_seed4",
+        "ARM-F80052_seed0",
+        "ARM-F80052_seed1",
+        "ARM-F80052_seed2",
+        "ARM-F80052_seed3",
+        "ARM-F80052_seed4",
+        "ARM-3B896D_seed0",
+        "ARM-3B896D_seed1",
+        "ARM-3B896D_seed2",
+        "ARM-3B896D_seed3",
+        "ARM-3B896D_seed4",
+        "ARM-3E8E96_seed0",
+        "ARM-3E8E96_seed1",
+        "ARM-3E8E96_seed2",
+        "ARM-3E8E96_seed3",
+        "ARM-3E8E96_seed4",
+        "ARM-B91812_seed0",
+        "ARM-B91812_seed1",
+        "ARM-B91812_seed2",
+        "ARM-B91812_seed3",
+        "ARM-B91812_seed4",
+        "ARM-BE28CF_seed0",
+        "ARM-BE28CF_seed1",
+        "ARM-BE28CF_seed2",
+        "ARM-BE28CF_seed3",
+        "ARM-BE28CF_seed4",
+        "ARM-AEFB92_seed0",
+        "ARM-AEFB92_seed1",
+        "ARM-AEFB92_seed2",
+        "ARM-AEFB92_seed3",
+        "ARM-AEFB92_seed4",
+        "ARM-0984A5_seed0",
+        "ARM-0984A5_seed1",
+        "ARM-0984A5_seed2",
+        "ARM-0984A5_seed3",
+        "ARM-0984A5_seed4",
+        "ARM-CDE60B_seed0",
+        "ARM-CDE60B_seed1",
+        "ARM-CDE60B_seed3",
+        "ARM-CDE60B_seed4"
+      ],
+      "per_tag": {
+        "ARM-799118_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8335726104664173,
+            "lo": 0.8081780831564072,
+            "hi": 0.8591077086753874,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5775541666280836,
+            "lo": 0.5531481050015531,
+            "hi": 0.6015076344625598,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.9194980481902785,
+          "lidc_skill": -0.3363111569935964,
+          "basis": "interval"
+        },
+        "ARM-799118_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8296724400155785,
+            "lo": 0.799367824856613,
+            "hi": 0.858370247913178,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5194786510657993,
+            "lo": 0.48435821415037283,
+            "hi": 0.5557342830930132,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.08145044076317232,
+          "lidc_skill": -0.550377503777219,
+          "basis": "interval"
+        },
+        "ARM-799118_seed2": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.822443984736442,
+            "lo": 0.7953506004067031,
+            "hi": 0.8482197379640579,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.46544397873138055,
+            "lo": 0.4353129567649287,
+            "hi": 0.495870487536764,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.9384573735884302,
+          "lidc_skill": -0.23242883175788995,
+          "basis": "interval"
+        },
+        "ARM-799118_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8231371400294591,
+            "lo": 0.7880121938905406,
+            "hi": 0.8549354636705682,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.21695959329927603,
+            "lo": 0.19593714332709702,
+            "hi": 0.23877263064776263,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.2454597142985317,
+          "lidc_skill": -0.045313858138771645,
+          "basis": "interval"
+        },
+        "ARM-799118_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8370489538934097,
+            "lo": 0.8047963071701371,
+            "hi": 0.8669047665238236,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.37698122793222727,
+            "lo": 0.3462550994014573,
+            "hi": 0.4077543102184354,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.4853208515366012,
+          "lidc_skill": -0.17433742215592696,
+          "basis": "interval"
+        },
+        "centre_gaussian_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.5110222308340822,
+          "lidc_skill": 0.26213110500584214,
+          "basis": "interval"
+        },
+        "centre_gaussian_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.5110222308340822,
+          "lidc_skill": 0.26213110500584214,
+          "basis": "interval"
+        },
+        "centre_gaussian_seed2": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.5110222308340822,
+          "lidc_skill": 0.26213110500584214,
+          "basis": "interval"
+        },
+        "centre_gaussian_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.5110222308340822,
+          "lidc_skill": 0.26213110500584214,
+          "basis": "interval"
+        },
+        "centre_gaussian_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.5110222308340822,
+          "lidc_skill": 0.26213110500584214,
+          "basis": "interval"
+        },
+        "ARM-F80052_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8252953580683209,
+            "lo": 0.7913299591341347,
+            "hi": 0.8552333298049517,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.32071892443161265,
+            "lo": 0.29074306165096264,
+            "hi": 0.3507093017473904,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -1.257956473063063,
+          "lidc_skill": -0.08275725571267424,
+          "basis": "interval"
+        },
+        "ARM-F80052_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8246774160719942,
+            "lo": 0.7936692191783994,
+            "hi": 0.8539194634771956,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.3704234661258726,
+            "lo": 0.3385177866591016,
+            "hi": 0.40228082326643055,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.5398802012080695,
+          "lidc_skill": -0.09183790742885042,
+          "basis": "interval"
+        },
+        "ARM-F80052_seed2": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8216825766469306,
+            "lo": 0.791036420620867,
+            "hi": 0.8507276944124157,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.2400799440921228,
+            "lo": 0.212940378194849,
+            "hi": 0.26925124197538103,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.4516537335416003,
+          "lidc_skill": 0.018903842901626854,
+          "basis": "interval"
+        },
+        "ARM-F80052_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8320066771921139,
+            "lo": 0.7999816614150455,
+            "hi": 0.8604733530205565,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.23131151527498392,
+            "lo": 0.21089150751245175,
+            "hi": 0.25140777932906205,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.9869176136256572,
+          "lidc_skill": -0.03295747547641495,
+          "basis": "interval"
+        },
+        "ARM-F80052_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8224758505740141,
+            "lo": 0.7903486922605614,
+            "hi": 0.851520208351377,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.19183283674668472,
+            "lo": 0.17267885382351778,
+            "hi": 0.21123907696510716,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -1.177870161596789,
+          "lidc_skill": -0.04249107403470276,
+          "basis": "interval"
+        },
+        "ARM-3B896D_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.7717243627750879,
+            "lo": 0.7289479089556581,
+            "hi": 0.8126234937927733,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.18988100473064912,
+            "lo": 0.17158546942605565,
+            "hi": 0.20860619911167858,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.9922789072754263,
+          "lidc_skill": 0.07775484864635783,
+          "basis": "interval"
+        },
+        "ARM-3B896D_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.7994107591959239,
+            "lo": 0.7623789779774861,
+            "hi": 0.8350882699107453,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5755649461928775,
+            "lo": 0.548195507699674,
+            "hi": 0.6042260803414519,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.8795839290045884,
+          "lidc_skill": -0.17196165709064204,
+          "basis": "interval"
+        },
+        "ARM-3B896D_seed2": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8324861282287042,
+            "lo": 0.7957414724594355,
+            "hi": 0.8656815479692724,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.24896615663630645,
+            "lo": 0.22782338906089417,
+            "hi": 0.27064097760116895,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.19402333791507556,
+          "lidc_skill": -0.009707753217752675,
+          "basis": "interval"
+        },
+        "ARM-3B896D_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8449723123679178,
+            "lo": 0.8161804654590054,
+            "hi": 0.8718877786958672,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.44800886043424676,
+            "lo": 0.40358445581279834,
+            "hi": 0.4929445921769949,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.008140289121548726,
+          "lidc_skill": 0.06458432807142107,
+          "basis": "interval"
+        },
+        "ARM-3B896D_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8230979960588397,
+            "lo": 0.7886602663960028,
+            "hi": 0.8541021120306498,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5802134164944103,
+            "lo": 0.55221458540072,
+            "hi": 0.6085009441329863,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.07492819550813387,
+          "lidc_skill": -0.19184787835310743,
+          "basis": "interval"
+        },
+        "ARM-3E8E96_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8134592841205006,
+            "lo": 0.7773887340272014,
+            "hi": 0.8453838454160345,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.3804437107597523,
+            "lo": 0.3509227171987263,
+            "hi": 0.4106974255591193,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -1.0541417347853443,
+          "lidc_skill": -0.18154232055624145,
+          "basis": "interval"
+        },
+        "ARM-3E8E96_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8279341649099373,
+            "lo": 0.796801930709353,
+            "hi": 0.8569832322173792,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.34139723322798804,
+            "lo": 0.3135142048228011,
+            "hi": 0.37037993522098667,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.484874669968615,
+          "lidc_skill": -0.09590350642451471,
+          "basis": "interval"
+        },
+        "ARM-3E8E96_seed2": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8055444669244973,
+            "lo": 0.7673764058821894,
+            "hi": 0.8394973693162658,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.4812619515928548,
+            "lo": 0.45404003291042255,
+            "hi": 0.5097340866394209,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -1.2659575880774459,
+          "lidc_skill": -0.26423738903222915,
+          "basis": "interval"
+        },
+        "ARM-3E8E96_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8374134327741359,
+            "lo": 0.8083014882174673,
+            "hi": 0.864674073053336,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.25183251519270416,
+            "lo": 0.2219319333053918,
+            "hi": 0.28336025837719603,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.326474412035289,
+          "lidc_skill": -0.05625760193320727,
+          "basis": "interval"
+        },
+        "ARM-3E8E96_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8244538276794025,
+            "lo": 0.7927368773218406,
+            "hi": 0.8543696113970883,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.22157940753329342,
+            "lo": 0.1991142953552048,
+            "hi": 0.2437523667649084,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.6236936734168962,
+          "lidc_skill": -0.009408399055345679,
+          "basis": "interval"
+        },
+        "ARM-B91812_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.0,
+          "lidc_skill": 0.0,
+          "basis": "interval"
+        },
+        "ARM-B91812_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.0,
+          "lidc_skill": 0.0,
+          "basis": "interval"
+        },
+        "ARM-B91812_seed2": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.0,
+          "lidc_skill": 0.0,
+          "basis": "interval"
+        },
+        "ARM-B91812_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.0,
+          "lidc_skill": 0.0,
+          "basis": "interval"
+        },
+        "ARM-B91812_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.0,
+          "lidc_skill": 0.0,
+          "basis": "interval"
+        },
+        "ARM-BE28CF_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.7970234778003878,
+            "lo": 0.7526620363802432,
+            "hi": 0.8360991033519356,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.7132851173136213,
+            "lo": 0.6817776906976831,
+            "hi": 0.7431389623265784,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.9446520280024479,
+          "lidc_skill": -0.3862939395907405,
+          "basis": "interval"
+        },
+        "ARM-BE28CF_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.7547315215995305,
+            "lo": 0.7053260666216195,
+            "hi": 0.7993894581343908,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5770043987007518,
+            "lo": 0.5517664121664434,
+            "hi": 0.6019460591948714,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.31034547200799634,
+          "lidc_skill": -0.28844889807311314,
+          "basis": "interval"
+        },
+        "ARM-BE28CF_seed2": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8157651788053617,
+            "lo": 0.7767886036434063,
+            "hi": 0.8498569509810782,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.5143726966298207,
+            "lo": 0.48577590318048364,
+            "hi": 0.5425827590144604,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.46604977663090624,
+          "lidc_skill": -0.13742379094131368,
+          "basis": "interval"
+        },
+        "ARM-BE28CF_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.7641601154016221,
+            "lo": 0.71535046491004,
+            "hi": 0.8095569578424497,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.2514710292740803,
+            "lo": 0.22233620368977913,
+            "hi": 0.28134181719898593,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -1.067197472400241,
+          "lidc_skill": -0.001788451725215851,
+          "basis": "interval"
+        },
+        "ARM-BE28CF_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8326152312736791,
+            "lo": 0.7995577984003623,
+            "hi": 0.8627774478347171,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.39355979577139716,
+            "lo": 0.3631683237423158,
+            "hi": 0.42516269844859106,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.7035457084914182,
+          "lidc_skill": -0.14163590200868034,
+          "basis": "interval"
+        },
+        "ARM-AEFB92_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8359413885120426,
+            "lo": 0.8056878633754169,
+            "hi": 0.863305959451105,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.6329889315542319,
+            "lo": 0.6095152960076107,
+            "hi": 0.656016212453533,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.017006483618220665,
+          "lidc_skill": 0.06955990246617595,
+          "basis": "interval"
+        },
+        "ARM-AEFB92_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8303816463103513,
+            "lo": 0.8001361087212587,
+            "hi": 0.858903292830159,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.522831324179787,
+            "lo": 0.4948407606373199,
+            "hi": 0.5502552599478291,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.05835251265566782,
+          "lidc_skill": 0.1523931917892246,
+          "basis": "interval"
+        },
+        "ARM-AEFB92_seed2": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8286110185715422,
+            "lo": 0.7946471921474358,
+            "hi": 0.858908681087704,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.7706720678397481,
+            "lo": 0.7464539649837432,
+            "hi": 0.7939683979072788,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.12241680651359339,
+          "lidc_skill": -0.14509145336019602,
+          "basis": "interval"
+        },
+        "ARM-AEFB92_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8161680392529287,
+            "lo": 0.7744852632383397,
+            "hi": 0.8531863041922064,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.3554447055457432,
+            "lo": 0.32048002582843294,
+            "hi": 0.391451497222853,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.00382936905141056,
+          "lidc_skill": 0.1730998795262047,
+          "basis": "interval"
+        },
+        "ARM-AEFB92_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.8238340271625101,
+            "lo": 0.7939304607353183,
+            "hi": 0.8527170511279216,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.4819171190761172,
+            "lo": 0.4555423661790678,
+            "hi": 0.5088398649394495,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.11040067851151981,
+          "lidc_skill": 0.16808136320266615,
+          "basis": "interval"
+        },
+        "ARM-0984A5_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.7896677036651255,
+            "lo": 0.76184279200516,
+            "hi": 0.8165742266226326,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.771156509117536,
+            "lo": 0.753440383520906,
+            "hi": 0.7884784733244564,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.432952972375906,
+          "lidc_skill": 0.220362049915185,
+          "basis": "interval"
+        },
+        "ARM-0984A5_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.8189642010462382,
+            "lo": 0.77751196453124,
+            "hi": 0.8546173479198587,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.7889610358478683,
+            "lo": 0.7692075729117821,
+            "hi": 0.8081987143017463,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.5644347582174554,
+          "lidc_skill": 0.34319423340712185,
+          "basis": "interval"
+        },
+        "ARM-0984A5_seed2": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.8019223558306746,
+            "lo": 0.7686389204250544,
+            "hi": 0.8324672215560787,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.7671386655168378,
+            "lo": 0.7495903143744352,
+            "hi": 0.7848374579522421,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.08073829081969193,
+          "lidc_skill": -0.007301134203012076,
+          "basis": "interval"
+        },
+        "ARM-0984A5_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.7923908792449607,
+            "lo": 0.7569500478180516,
+            "hi": 0.8256279654689747,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.8087332335472975,
+            "lo": 0.7872078213659198,
+            "hi": 0.8296520383867341,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.12085307645782366,
+          "lidc_skill": 0.2966373500631817,
+          "basis": "interval"
+        },
+        "ARM-0984A5_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the intervals overlap: the ordering is indistinguishable",
+          "mosmed_template_auc": {
+            "mean": 0.7897175550934228,
+            "lo": 0.7536039843027812,
+            "hi": 0.8225139694530446,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.7783709885498942,
+            "lo": 0.7604254446717909,
+            "hi": 0.7959411211776859,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.17799017908254064,
+          "lidc_skill": 0.14186904800541536,
+          "basis": "interval"
+        },
+        "ARM-CDE60B_seed0": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.5965452782088912,
+            "lo": 0.5428514427350905,
+            "hi": 0.6466264534980958,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.21274302244061533,
+            "lo": 0.193157461766132,
+            "hi": 0.23300298579822534,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": -0.1221437012236472,
+          "lidc_skill": 0.19040566637180711,
+          "basis": "interval"
+        },
+        "ARM-CDE60B_seed1": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.356738939136629,
+            "lo": 0.32030715962212514,
+            "hi": 0.3924154939560696,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.2881580404754994,
+            "lo": 0.25747947477027644,
+            "hi": 0.31960496831271273,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.03655213266216211,
+          "lidc_skill": 0.09777925604529378,
+          "basis": "interval"
+        },
+        "ARM-CDE60B_seed2": {
+          "id": "H9",
+          "outcome": "PASS",
+          "reason": "MosMed's template AUC interval sits below LIDC's",
+          "mosmed_template_auc": {
+            "mean": 0.37825790656170316,
+            "lo": 0.33091024413715414,
+            "hi": 0.4255983447631239,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.6007913179814914,
+            "lo": 0.5638124470429954,
+            "hi": 0.635837250703122,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.057771881578899585,
+          "lidc_skill": -0.21976327297969603,
+          "basis": "interval"
+        },
+        "ARM-CDE60B_seed3": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the AUC ordering holds but the skill ordering does not, and the statement asserts both",
+          "mosmed_template_auc": {
+            "mean": 0.22293589381212717,
+            "lo": 0.17696460670802766,
+            "hi": 0.27748075591743127,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.360844464302128,
+            "lo": 0.33010175844855844,
+            "hi": 0.39275590212614986,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.14222358160629636,
+          "lidc_skill": 0.19675530107959127,
+          "basis": "interval"
+        },
+        "ARM-CDE60B_seed4": {
+          "id": "H9",
+          "outcome": "FAIL",
+          "reason": "the ordering reverses -- LIDC's template AUC is lower",
+          "mosmed_template_auc": {
+            "mean": 0.3428530040618204,
+            "lo": 0.29739512134705737,
+            "hi": 0.39042999651274507,
+            "n": 22,
+            "n_clusters": 22
+          },
+          "lidc_template_auc": {
+            "mean": 0.24035939588375538,
+            "lo": 0.2189827120835244,
+            "hi": 0.26215302136920143,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "mosmed_skill": 0.15229644175673632,
+          "lidc_skill": 0.2251285920076416,
+          "basis": "interval"
+        }
+      },
+      "aggregation": "every_matched_tag",
+      "aggregation_note": "H9 declares no aggregation over arms and seeds. Taken as the strictest available reading -- one matched pair failing to order fails the hypothesis -- and flagged as taken rather than declared.",
+      "power": {
+        "n_tags": 50,
+        "n_computable": 50,
+        "median_mosmed_ci_width": 0.06187059671446715,
+        "median_lidc_ci_width": 0.04793698119227119,
+        "median_required_separation": 0.05604572942841335,
+        "median_observed_separation": -0.24945151170138158,
+        "median_shortfall": 0.30392356515188207,
+        "n_ordering": 2,
+        "mosmed_n_clusters": 22,
+        "lidc_n_clusters": 129
+      },
+      "power_per_tag": {
+        "ARM-799118_seed0": {
+          "tag": "ARM-799118_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8335726104664173,
+            "lo": 0.8081780831564072,
+            "hi": 0.8591077086753874,
+            "width": 0.05092962551898028,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5775541666280836,
+            "lo": 0.5531481050015531,
+            "hi": 0.6015076344625598,
+            "width": 0.048359529461006745,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.2560184438383337,
+          "required_separation": 0.049941159835500626,
+          "shortfall": 0.30595960367383435,
+          "orders": false
+        },
+        "ARM-799118_seed1": {
+          "tag": "ARM-799118_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8296724400155785,
+            "lo": 0.799367824856613,
+            "hi": 0.858370247913178,
+            "width": 0.059002423056565,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5194786510657993,
+            "lo": 0.48435821415037283,
+            "hi": 0.5557342830930132,
+            "width": 0.07137606894264037,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.3101937889497792,
+          "required_separation": 0.06381824481302589,
+          "shortfall": 0.3740120337628051,
+          "orders": false
+        },
+        "ARM-799118_seed2": {
+          "tag": "ARM-799118_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.822443984736442,
+            "lo": 0.7953506004067031,
+            "hi": 0.8482197379640579,
+            "width": 0.052869137557354784,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.46544397873138055,
+            "lo": 0.4353129567649287,
+            "hi": 0.495870487536764,
+            "width": 0.06055753077183529,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.35700000600506143,
+          "required_separation": 0.05590677519406778,
+          "shortfall": 0.4129067811991292,
+          "orders": false
+        },
+        "ARM-799118_seed3": {
+          "tag": "ARM-799118_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8231371400294591,
+            "lo": 0.7880121938905406,
+            "hi": 0.8549354636705682,
+            "width": 0.0669232697800276,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.21695959329927603,
+            "lo": 0.19593714332709702,
+            "hi": 0.23877263064776263,
+            "width": 0.04283548732066561,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.6061775467301831,
+          "required_separation": 0.05282077361328802,
+          "shortfall": 0.6589983203434711,
+          "orders": false
+        },
+        "ARM-799118_seed4": {
+          "tag": "ARM-799118_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8370489538934097,
+            "lo": 0.8047963071701371,
+            "hi": 0.8669047665238236,
+            "width": 0.062108459353686585,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.37698122793222727,
+            "lo": 0.3462550994014573,
+            "hi": 0.4077543102184354,
+            "width": 0.06149921081697807,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.46006772596118245,
+          "required_separation": 0.06058194116118387,
+          "shortfall": 0.5206496671223664,
+          "orders": false
+        },
+        "centre_gaussian_seed0": {
+          "tag": "centre_gaussian_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "centre_gaussian_seed1": {
+          "tag": "centre_gaussian_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "centre_gaussian_seed2": {
+          "tag": "centre_gaussian_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "centre_gaussian_seed3": {
+          "tag": "centre_gaussian_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "centre_gaussian_seed4": {
+          "tag": "centre_gaussian_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "ARM-F80052_seed0": {
+          "tag": "ARM-F80052_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8252953580683209,
+            "lo": 0.7913299591341347,
+            "hi": 0.8552333298049517,
+            "width": 0.06390337067081697,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.32071892443161265,
+            "lo": 0.29074306165096264,
+            "hi": 0.3507093017473904,
+            "width": 0.05996624009642776,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.5045764336367082,
+          "required_separation": 0.05991383451728083,
+          "shortfall": 0.5644902681539891,
+          "orders": false
+        },
+        "ARM-F80052_seed1": {
+          "tag": "ARM-F80052_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8246774160719942,
+            "lo": 0.7936692191783994,
+            "hi": 0.8539194634771956,
+            "width": 0.06025024429879622,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.3704234661258726,
+            "lo": 0.3385177866591016,
+            "hi": 0.40228082326643055,
+            "width": 0.06376303660732896,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.45425394994612156,
+          "required_separation": 0.06114772687197245,
+          "shortfall": 0.515401676818094,
+          "orders": false
+        },
+        "ARM-F80052_seed2": {
+          "tag": "ARM-F80052_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8216825766469306,
+            "lo": 0.791036420620867,
+            "hi": 0.8507276944124157,
+            "width": 0.059691273791548705,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.2400799440921228,
+            "lo": 0.212940378194849,
+            "hi": 0.26925124197538103,
+            "width": 0.05631086378053202,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.5816026325548078,
+          "required_separation": 0.056184683662758916,
+          "shortfall": 0.6377873162175667,
+          "orders": false
+        },
+        "ARM-F80052_seed3": {
+          "tag": "ARM-F80052_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8320066771921139,
+            "lo": 0.7999816614150455,
+            "hi": 0.8604733530205565,
+            "width": 0.060491691605511044,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.23131151527498392,
+            "lo": 0.21089150751245175,
+            "hi": 0.25140777932906205,
+            "width": 0.0405162718166103,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.6006951619171299,
+          "required_separation": 0.04888668359097481,
+          "shortfall": 0.6495818455081047,
+          "orders": false
+        },
+        "ARM-F80052_seed4": {
+          "tag": "ARM-F80052_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8224758505740141,
+            "lo": 0.7903486922605614,
+            "hi": 0.851520208351377,
+            "width": 0.061171516090815614,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.19183283674668472,
+            "lo": 0.17267885382351778,
+            "hi": 0.21123907696510716,
+            "width": 0.038560223141589384,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.6306430138273293,
+          "required_separation": 0.04819834070052986,
+          "shortfall": 0.6788413545278592,
+          "orders": false
+        },
+        "ARM-3B896D_seed0": {
+          "tag": "ARM-3B896D_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.7717243627750879,
+            "lo": 0.7289479089556581,
+            "hi": 0.8126234937927733,
+            "width": 0.08367558483711524,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.18988100473064912,
+            "lo": 0.17158546942605565,
+            "hi": 0.20860619911167858,
+            "width": 0.03702072968562292,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.5818433580444389,
+          "required_separation": 0.05919466632227885,
+          "shortfall": 0.6410380243667178,
+          "orders": false
+        },
+        "ARM-3B896D_seed1": {
+          "tag": "ARM-3B896D_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.7994107591959239,
+            "lo": 0.7623789779774861,
+            "hi": 0.8350882699107453,
+            "width": 0.07270929193325915,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5755649461928775,
+            "lo": 0.548195507699674,
+            "hi": 0.6042260803414519,
+            "width": 0.05603057264177791,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.2238458130030464,
+          "required_separation": 0.0630469492080249,
+          "shortfall": 0.2868927622110713,
+          "orders": false
+        },
+        "ARM-3B896D_seed2": {
+          "tag": "ARM-3B896D_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8324861282287042,
+            "lo": 0.7957414724594355,
+            "hi": 0.8656815479692724,
+            "width": 0.06994007550983694,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.24896615663630645,
+            "lo": 0.22782338906089417,
+            "hi": 0.27064097760116895,
+            "width": 0.04281758854027479,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.5835199715923978,
+          "required_separation": 0.05433818731598056,
+          "shortfall": 0.6378581589083783,
+          "orders": false
+        },
+        "ARM-3B896D_seed3": {
+          "tag": "ARM-3B896D_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8449723123679178,
+            "lo": 0.8161804654590054,
+            "hi": 0.8718877786958672,
+            "width": 0.055707313236861844,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.44800886043424676,
+            "lo": 0.40358445581279834,
+            "hi": 0.4929445921769949,
+            "width": 0.08936013636419654,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.39696345193367105,
+          "required_separation": 0.07133987094939781,
+          "shortfall": 0.46830332288306886,
+          "orders": false
+        },
+        "ARM-3B896D_seed4": {
+          "tag": "ARM-3B896D_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8230979960588397,
+            "lo": 0.7886602663960028,
+            "hi": 0.8541021120306498,
+            "width": 0.06544184563464694,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5802134164944103,
+            "lo": 0.55221458540072,
+            "hi": 0.6085009441329863,
+            "width": 0.056286358732266284,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.24288457956442944,
+          "required_separation": 0.059002947065500355,
+          "shortfall": 0.3018875266299298,
+          "orders": false
+        },
+        "ARM-3E8E96_seed0": {
+          "tag": "ARM-3E8E96_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8134592841205006,
+            "lo": 0.7773887340272014,
+            "hi": 0.8453838454160345,
+            "width": 0.06799511138883307,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.3804437107597523,
+            "lo": 0.3509227171987263,
+            "hi": 0.4106974255591193,
+            "width": 0.059774708360393,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.4330155733607483,
+          "required_separation": 0.06144555485655989,
+          "shortfall": 0.4944611282173082,
+          "orders": false
+        },
+        "ARM-3E8E96_seed1": {
+          "tag": "ARM-3E8E96_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8279341649099373,
+            "lo": 0.796801930709353,
+            "hi": 0.8569832322173792,
+            "width": 0.06018130150802614,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.34139723322798804,
+            "lo": 0.3135142048228011,
+            "hi": 0.37037993522098667,
+            "width": 0.05686573039818554,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.4865369316819493,
+          "required_separation": 0.05693209571262875,
+          "shortfall": 0.543469027394578,
+          "orders": false
+        },
+        "ARM-3E8E96_seed2": {
+          "tag": "ARM-3E8E96_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8055444669244973,
+            "lo": 0.7673764058821894,
+            "hi": 0.8394973693162658,
+            "width": 0.07212096343407648,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.4812619515928548,
+            "lo": 0.45404003291042255,
+            "hi": 0.5097340866394209,
+            "width": 0.05569405372899833,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.32428251533164254,
+          "required_separation": 0.06117482107420075,
+          "shortfall": 0.3854573364058433,
+          "orders": false
+        },
+        "ARM-3E8E96_seed3": {
+          "tag": "ARM-3E8E96_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8374134327741359,
+            "lo": 0.8083014882174673,
+            "hi": 0.864674073053336,
+            "width": 0.05637258483586871,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.25183251519270416,
+            "lo": 0.2219319333053918,
+            "hi": 0.28336025837719603,
+            "width": 0.061428325071804235,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.5855809175814317,
+          "required_separation": 0.057161222166512426,
+          "shortfall": 0.6427421397479441,
+          "orders": false
+        },
+        "ARM-3E8E96_seed4": {
+          "tag": "ARM-3E8E96_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8244538276794025,
+            "lo": 0.7927368773218406,
+            "hi": 0.8543696113970883,
+            "width": 0.06163273407524772,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.22157940753329342,
+            "lo": 0.1991142953552048,
+            "hi": 0.2437523667649084,
+            "width": 0.044638071409703606,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.602874420146109,
+          "required_separation": 0.05238089589577449,
+          "shortfall": 0.6552553160418835,
+          "orders": false
+        },
+        "ARM-B91812_seed0": {
+          "tag": "ARM-B91812_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "ARM-B91812_seed1": {
+          "tag": "ARM-B91812_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "ARM-B91812_seed2": {
+          "tag": "ARM-B91812_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "ARM-B91812_seed3": {
+          "tag": "ARM-B91812_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "ARM-B91812_seed4": {
+          "tag": "ARM-B91812_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "width": 0.0,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.0,
+          "required_separation": 0.0,
+          "shortfall": 0.0,
+          "orders": false
+        },
+        "ARM-BE28CF_seed0": {
+          "tag": "ARM-BE28CF_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.7970234778003878,
+            "lo": 0.7526620363802432,
+            "hi": 0.8360991033519356,
+            "width": 0.0834370669716924,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.7132851173136213,
+            "lo": 0.6817776906976831,
+            "hi": 0.7431389623265784,
+            "width": 0.061361271628895264,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.08373836048676653,
+          "required_separation": 0.07058305216748595,
+          "shortfall": 0.15432141265425248,
+          "orders": false
+        },
+        "ARM-BE28CF_seed1": {
+          "tag": "ARM-BE28CF_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.7547315215995305,
+            "lo": 0.7053260666216195,
+            "hi": 0.7993894581343908,
+            "width": 0.09406339151277132,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5770043987007518,
+            "lo": 0.5517664121664434,
+            "hi": 0.6019460591948714,
+            "width": 0.05017964702842803,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.17772712289877868,
+          "required_separation": 0.0698959230691687,
+          "shortfall": 0.24762304596794737,
+          "orders": false
+        },
+        "ARM-BE28CF_seed2": {
+          "tag": "ARM-BE28CF_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8157651788053617,
+            "lo": 0.7767886036434063,
+            "hi": 0.8498569509810782,
+            "width": 0.07306834733767187,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.5143726966298207,
+            "lo": 0.48577590318048364,
+            "hi": 0.5425827590144604,
+            "width": 0.056806855833976766,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.30139248217554104,
+          "required_separation": 0.06268856562505348,
+          "shortfall": 0.3640810478005945,
+          "orders": false
+        },
+        "ARM-BE28CF_seed3": {
+          "tag": "ARM-BE28CF_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.7641601154016221,
+            "lo": 0.71535046491004,
+            "hi": 0.8095569578424497,
+            "width": 0.09420649293240979,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.2514710292740803,
+            "lo": 0.22233620368977913,
+            "hi": 0.28134181719898593,
+            "width": 0.0590056135092068,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.5126890861275417,
+          "required_separation": 0.07453166802512884,
+          "shortfall": 0.5872207541526706,
+          "orders": false
+        },
+        "ARM-BE28CF_seed4": {
+          "tag": "ARM-BE28CF_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8326152312736791,
+            "lo": 0.7995577984003623,
+            "hi": 0.8627774478347171,
+            "width": 0.06321964943435476,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.39355979577139716,
+            "lo": 0.3631683237423158,
+            "hi": 0.42516269844859106,
+            "width": 0.06199437470627528,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.43905543550228193,
+          "required_separation": 0.06055368859011939,
+          "shortfall": 0.4996091240924013,
+          "orders": false
+        },
+        "ARM-AEFB92_seed0": {
+          "tag": "ARM-AEFB92_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8359413885120426,
+            "lo": 0.8056878633754169,
+            "hi": 0.863305959451105,
+            "width": 0.05761809607568813,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.6329889315542319,
+            "lo": 0.6095152960076107,
+            "hi": 0.656016212453533,
+            "width": 0.04650091644592236,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.20295245695781072,
+          "required_separation": 0.0508382064856836,
+          "shortfall": 0.2537906634434943,
+          "orders": false
+        },
+        "ARM-AEFB92_seed1": {
+          "tag": "ARM-AEFB92_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8303816463103513,
+            "lo": 0.8001361087212587,
+            "hi": 0.858903292830159,
+            "width": 0.05876718410890025,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.522831324179787,
+            "lo": 0.4948407606373199,
+            "hi": 0.5502552599478291,
+            "width": 0.05541449931050918,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.3075503221305643,
+          "required_separation": 0.05651221006227475,
+          "shortfall": 0.3640625321928391,
+          "orders": false
+        },
+        "ARM-AEFB92_seed2": {
+          "tag": "ARM-AEFB92_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8286110185715422,
+            "lo": 0.7946471921474358,
+            "hi": 0.858908681087704,
+            "width": 0.06426148894026817,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.7706720678397481,
+            "lo": 0.7464539649837432,
+            "hi": 0.7939683979072788,
+            "width": 0.04751443292353563,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.057938950731794114,
+          "required_separation": 0.054515765372166736,
+          "shortfall": 0.11245471610396085,
+          "orders": false
+        },
+        "ARM-AEFB92_seed3": {
+          "tag": "ARM-AEFB92_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8161680392529287,
+            "lo": 0.7744852632383397,
+            "hi": 0.8531863041922064,
+            "width": 0.07870104095386676,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.3554447055457432,
+            "lo": 0.32048002582843294,
+            "hi": 0.391451497222853,
+            "width": 0.07097147139442006,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.4607233337071855,
+          "required_separation": 0.071982944656588,
+          "shortfall": 0.5327062783637735,
+          "orders": false
+        },
+        "ARM-AEFB92_seed4": {
+          "tag": "ARM-AEFB92_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8238340271625101,
+            "lo": 0.7939304607353183,
+            "hi": 0.8527170511279216,
+            "width": 0.058786590392603366,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.4819171190761172,
+            "lo": 0.4555423661790678,
+            "hi": 0.5088398649394495,
+            "width": 0.053297498760381756,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.3419169080863929,
+          "required_separation": 0.05525777686246092,
+          "shortfall": 0.39717468494885383,
+          "orders": false
+        },
+        "ARM-0984A5_seed0": {
+          "tag": "ARM-0984A5_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.7896677036651255,
+            "lo": 0.76184279200516,
+            "hi": 0.8165742266226326,
+            "width": 0.05473143461747254,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.771156509117536,
+            "lo": 0.753440383520906,
+            "hi": 0.7884784733244564,
+            "width": 0.03503808980355039,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.018511194547589538,
+          "required_separation": 0.044622648554137,
+          "shortfall": 0.06313384310172654,
+          "orders": false
+        },
+        "ARM-0984A5_seed1": {
+          "tag": "ARM-0984A5_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8189642010462382,
+            "lo": 0.77751196453124,
+            "hi": 0.8546173479198587,
+            "width": 0.07710538338861861,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.7889610358478683,
+            "lo": 0.7692075729117821,
+            "hi": 0.8081987143017463,
+            "width": 0.03899114138996418,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.030003165198369985,
+          "required_separation": 0.055406609809706575,
+          "shortfall": 0.08540977500807656,
+          "orders": false
+        },
+        "ARM-0984A5_seed2": {
+          "tag": "ARM-0984A5_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.8019223558306746,
+            "lo": 0.7686389204250544,
+            "hi": 0.8324672215560787,
+            "width": 0.06382830113102422,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.7671386655168378,
+            "lo": 0.7495903143744352,
+            "hi": 0.7848374579522421,
+            "width": 0.035247143577806894,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.03478369031383677,
+          "required_separation": 0.048093216867806654,
+          "shortfall": 0.08287690718164342,
+          "orders": false
+        },
+        "ARM-0984A5_seed3": {
+          "tag": "ARM-0984A5_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.7923908792449607,
+            "lo": 0.7569500478180516,
+            "hi": 0.8256279654689747,
+            "width": 0.06867791765092301,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.8087332335472975,
+            "lo": 0.7872078213659198,
+            "hi": 0.8296520383867341,
+            "width": 0.042444217020814246,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.01634235430233688,
+          "required_separation": 0.05476249840539171,
+          "shortfall": 0.03842014410305483,
+          "orders": false
+        },
+        "ARM-0984A5_seed4": {
+          "tag": "ARM-0984A5_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.7897175550934228,
+            "lo": 0.7536039843027812,
+            "hi": 0.8225139694530446,
+            "width": 0.06890998515026336,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.7783709885498942,
+            "lo": 0.7604254446717909,
+            "hi": 0.7959411211776859,
+            "width": 0.035515676505895044,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.011346566543528613,
+          "required_separation": 0.05074195823772509,
+          "shortfall": 0.06208852478125371,
+          "orders": false
+        },
+        "ARM-CDE60B_seed0": {
+          "tag": "ARM-CDE60B_seed0",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.5965452782088912,
+            "lo": 0.5428514427350905,
+            "hi": 0.6466264534980958,
+            "width": 0.10377501076300533,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.21274302244061533,
+            "lo": 0.193157461766132,
+            "hi": 0.23300298579822534,
+            "width": 0.03984552403209335,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.3838022557682759,
+          "required_separation": 0.06966673596368786,
+          "shortfall": 0.45346899173196376,
+          "orders": false
+        },
+        "ARM-CDE60B_seed1": {
+          "tag": "ARM-CDE60B_seed1",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.356738939136629,
+            "lo": 0.32030715962212514,
+            "hi": 0.3924154939560696,
+            "width": 0.07210833433394448,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.2881580404754994,
+            "lo": 0.25747947477027644,
+            "hi": 0.31960496831271273,
+            "width": 0.062125493542436294,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.0685808986611296,
+          "required_separation": 0.06635512052466358,
+          "shortfall": 0.13493601918579318,
+          "orders": false
+        },
+        "ARM-CDE60B_seed2": {
+          "tag": "ARM-CDE60B_seed2",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.37825790656170316,
+            "lo": 0.33091024413715414,
+            "hi": 0.4255983447631239,
+            "width": 0.09468810062596977,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.6007913179814914,
+            "lo": 0.5638124470429954,
+            "hi": 0.635837250703122,
+            "width": 0.07202480366012665,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.22253341141978827,
+          "required_separation": 0.08431930913991681,
+          "shortfall": -0.13821410227987146,
+          "orders": true
+        },
+        "ARM-CDE60B_seed3": {
+          "tag": "ARM-CDE60B_seed3",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.22293589381212717,
+            "lo": 0.17696460670802766,
+            "hi": 0.27748075591743127,
+            "width": 0.1005161492094036,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.360844464302128,
+            "lo": 0.33010175844855844,
+            "hi": 0.39275590212614986,
+            "width": 0.06265414367759142,
+            "n_clusters": 129
+          },
+          "observed_separation": 0.13790857049000085,
+          "required_separation": 0.08528756795887368,
+          "shortfall": -0.05262100253112717,
+          "orders": true
+        },
+        "ARM-CDE60B_seed4": {
+          "tag": "ARM-CDE60B_seed4",
+          "computable": true,
+          "mosmed": {
+            "mean": 0.3428530040618204,
+            "lo": 0.29739512134705737,
+            "hi": 0.39042999651274507,
+            "width": 0.0930348751656877,
+            "n_clusters": 22
+          },
+          "lidc": {
+            "mean": 0.24035939588375538,
+            "lo": 0.2189827120835244,
+            "hi": 0.26215302136920143,
+            "width": 0.04317030928567703,
+            "n_clusters": 129
+          },
+          "observed_separation": -0.10249360817806502,
+          "required_separation": 0.06895367625115564,
+          "shortfall": 0.17144728442922066,
+          "orders": false
+        }
+      },
+      "power_note": "H9's falsifier counts 'indistinguishable' as a failure, so a FAIL can mean the ordering is absent OR that the intervals were too wide for any ordering to show. `required_separation` is what the point estimates would have had to differ by for the intervals to clear -- the two facing half-widths summed -- and `observed_separation` is what they do differ by. A FAIL whose median shortfall is positive across nearly every tag is a statement about 22 MosMed test clusters, not about stereotypy. Reported whichever way the hypothesis lands, and it changes no verdict."
+    },
+    {
+      "id": "H10",
+      "outcome": "PASS",
+      "reason": "trained_wins on 0/5 seeds; a majority is 3",
+      "per_seed": [
+        "oracle_wins",
+        "indistinguishable",
+        "oracle_wins",
+        "indistinguishable",
+        "oracle_wins"
+      ],
+      "tally": {
+        "oracle_wins": 3,
+        "indistinguishable": 2,
+        "trained_wins": 0
+      },
+      "n_scored": 5,
+      "majority_needed": 3,
+      "undefined_seeds": 0,
+      "arm": "ARM-0984A5",
+      "member": "separable",
+      "tags": [
+        "ARM-0984A5_seed0",
+        "ARM-0984A5_seed1",
+        "ARM-0984A5_seed2",
+        "ARM-0984A5_seed3",
+        "ARM-0984A5_seed4"
+      ]
+    }
+  ],
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "4b49dd7f11a67620f7c6dae1f770d74a8036e1eb",
+    "git_dirty": false
+  }
+}

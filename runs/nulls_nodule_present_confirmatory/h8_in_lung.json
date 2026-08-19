@@ -1,0 +1,2565 @@
+{
+  "reps": 10000,
+  "analysis_role": "confirmatory",
+  "verdict_estimand": "in_lung_auc",
+  "lung_mask": "/fs/nexus-scratch/bthapar/SlotMIL/data/lidc/lung_masks.h5",
+  "results": [
+    {
+      "tag": "abmil_seed0",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4383633933936182,
+            "lo": 0.40226789686857306,
+            "hi": 0.4735857998484234,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5775541666280836,
+            "lo": 0.5531481050015531,
+            "hi": 0.6015076344625598,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.46981616841986146,
+            "lo": 0.43108907203564595,
+            "hi": 0.507805589225675,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.48745054811488925,
+            "lo": 0.4546916878607953,
+            "hi": 0.519449877203377,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4383633933936182,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "abmil_seed1",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.44175416871846834,
+            "lo": 0.40102555351898644,
+            "hi": 0.4838001176752669,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5194786510657993,
+            "lo": 0.48435821415037283,
+            "hi": 0.5557342830930132,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4700981109917339,
+            "lo": 0.4269415187405262,
+            "hi": 0.51284254771317,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4253265758871659,
+            "lo": 0.38318642574222644,
+            "hi": 0.4676470114136153,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.44175416871846834,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "abmil_seed2",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.45788852663312,
+            "lo": 0.4188852960200252,
+            "hi": 0.4959310341612629,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.46544397873138055,
+            "lo": 0.4353129567649287,
+            "hi": 0.495870487536764,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4748003554088632,
+            "lo": 0.43453519295255033,
+            "hi": 0.5148258701798875,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.42765906586612723,
+            "lo": 0.3908791038693178,
+            "hi": 0.4645301802284788,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.45788852663312,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "abmil_seed3",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5033395891488125,
+            "lo": 0.46455411538079927,
+            "hi": 0.541530518466869,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.21695959329927603,
+            "lo": 0.19593714332709702,
+            "hi": 0.23877263064776263,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4519024114694826,
+            "lo": 0.41045299416724024,
+            "hi": 0.4937625252256618,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.35508937702902665,
+            "lo": 0.3171129049345741,
+            "hi": 0.39447844772459056,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5033395891488125,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "abmil_seed4",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.42327849963727476,
+            "lo": 0.38595718569668364,
+            "hi": 0.46065464591781585,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.37698122793222727,
+            "lo": 0.3462550994014573,
+            "hi": 0.4077543102184354,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4388953872644704,
+            "lo": 0.398042032939636,
+            "hi": 0.47923833962341333,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.35438886493311156,
+            "lo": 0.3191382109209183,
+            "hi": 0.3901010707164021,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.42327849963727476,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "centre_gaussian_seed0",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "centre_gaussian_seed1",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "centre_gaussian_seed2",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "centre_gaussian_seed3",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "centre_gaussian_seed4",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "clam_sb_seed0",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4392650181501276,
+            "lo": 0.40099831410439507,
+            "hi": 0.477151342155701,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.32071892443161265,
+            "lo": 0.29074306165096264,
+            "hi": 0.3507093017473904,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.46451542883233377,
+            "lo": 0.4222799745058871,
+            "hi": 0.5065680131802963,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4227195593196341,
+            "lo": 0.3814684478943242,
+            "hi": 0.4641051755610806,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4392650181501276,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "clam_sb_seed1",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4274141260160058,
+            "lo": 0.3905214633056072,
+            "hi": 0.46420338900394253,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.3704234661258726,
+            "lo": 0.3385177866591016,
+            "hi": 0.40228082326643055,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.46476548495290776,
+            "lo": 0.4234710248297727,
+            "hi": 0.5064695193620987,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.41032278326003163,
+            "lo": 0.37353699490668374,
+            "hi": 0.44837363937398983,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4274141260160058,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "clam_sb_seed2",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4812808881308874,
+            "lo": 0.4448111467874473,
+            "hi": 0.5185576231309322,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.2400799440921228,
+            "lo": 0.212940378194849,
+            "hi": 0.26925124197538103,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.449325238203789,
+            "lo": 0.4106684376907209,
+            "hi": 0.48756960459577564,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.3511979151926763,
+            "lo": 0.3169922552722555,
+            "hi": 0.38630735082562434,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4812808881308874,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "clam_sb_seed3",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5182008390275501,
+            "lo": 0.47892742236641833,
+            "hi": 0.556342579211386,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.23131151527498392,
+            "lo": 0.21089150751245175,
+            "hi": 0.25140777932906205,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4851380575804843,
+            "lo": 0.4417173809412551,
+            "hi": 0.528655643823999,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.40308774999643876,
+            "lo": 0.3616700325273704,
+            "hi": 0.4449203045149182,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5182008390275501,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "clam_sb_seed4",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.46434740961330917,
+            "lo": 0.42566847611821546,
+            "hi": 0.5017635322441577,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.19183283674668472,
+            "lo": 0.17267885382351778,
+            "hi": 0.21123907696510716,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.45098258700753324,
+            "lo": 0.4095419872092032,
+            "hi": 0.4926528866006765,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.33739414803128853,
+            "lo": 0.3028652848671934,
+            "hi": 0.37255064451334463,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.46434740961330917,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "dsmil_seed0",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.38027176035722404,
+            "lo": 0.34727779166223416,
+            "hi": 0.41325233471851375,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.18988100473064912,
+            "lo": 0.17158546942605565,
+            "hi": 0.20860619911167858,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.41671416772712666,
+            "lo": 0.3793441489644522,
+            "hi": 0.455341726914237,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.305653650868641,
+            "lo": 0.275452064367898,
+            "hi": 0.3365267160778657,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.38027176035722404,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "dsmil_seed1",
+      "frozen_slot": 1,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4810144199598645,
+            "lo": 0.4423055519635348,
+            "hi": 0.520485393317201,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5755649461928775,
+            "lo": 0.548195507699674,
+            "hi": 0.6042260803414519,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5034822056010655,
+            "lo": 0.46417281174507946,
+            "hi": 0.5431244856606521,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4808312106275,
+            "lo": 0.4424172676033906,
+            "hi": 0.5191804563601127,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4810144199598645,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "dsmil_seed2",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5506869088713027,
+            "lo": 0.5178076787639092,
+            "hi": 0.5829637481534212,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.24896615663630645,
+            "lo": 0.22782338906089417,
+            "hi": 0.27064097760116895,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4851343485367761,
+            "lo": 0.44854208515805094,
+            "hi": 0.5220976461875978,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.37844080674226943,
+            "lo": 0.3461752696680948,
+            "hi": 0.41170986575811325,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5506869088713027,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "dsmil_seed3",
+      "frozen_slot": 1,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5699453345791821,
+            "lo": 0.5347601497146713,
+            "hi": 0.6047277305985,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.44800886043424676,
+            "lo": 0.40358445581279834,
+            "hi": 0.4929445921769949,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5401256673865712,
+            "lo": 0.506863299155677,
+            "hi": 0.5724320031462896,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5266087083583664,
+            "lo": 0.48981997311417447,
+            "hi": 0.5628732774767249,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5699453345791821,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "dsmil_seed4",
+      "frozen_slot": 1,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4448511222483031,
+            "lo": 0.4031819230639529,
+            "hi": 0.4861346671483199,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5802134164944103,
+            "lo": 0.55221458540072,
+            "hi": 0.6085009441329863,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4189417922775314,
+            "lo": 0.3814987238405261,
+            "hi": 0.45614967649678917,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.38448702716733013,
+            "lo": 0.34586862659100526,
+            "hi": 0.4233191670830226,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4448511222483031,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "gated_abmil_seed0",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.3944739905465833,
+            "lo": 0.35947059610371995,
+            "hi": 0.42961660050181333,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.3804437107597523,
+            "lo": 0.3509227171987263,
+            "hi": 0.4106974255591193,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.42851254288632923,
+            "lo": 0.39043234719836634,
+            "hi": 0.4678760501618438,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.3649736964654837,
+            "lo": 0.33080380534032333,
+            "hi": 0.40057125180642983,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.3944739905465833,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "gated_abmil_seed1",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.458717467580964,
+            "lo": 0.4222268723007686,
+            "hi": 0.4948032964959537,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.34139723322798804,
+            "lo": 0.3135142048228011,
+            "hi": 0.37037993522098667,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.47601998896236636,
+            "lo": 0.43825442252783553,
+            "hi": 0.5140320304185548,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4101046284252063,
+            "lo": 0.3747816962874794,
+            "hi": 0.44576120973052,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.458717467580964,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "gated_abmil_seed2",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4792186447476853,
+            "lo": 0.4423412079253633,
+            "hi": 0.5168312988530427,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4812619515928548,
+            "lo": 0.45404003291042255,
+            "hi": 0.5097340866394209,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4965607103115408,
+            "lo": 0.4607313014929799,
+            "hi": 0.5326305319367238,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.43743700819412284,
+            "lo": 0.4038301711544205,
+            "hi": 0.4716197668714779,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4792186447476853,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "gated_abmil_seed3",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4934442644638287,
+            "lo": 0.4553313436825772,
+            "hi": 0.5317198191828788,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.25183251519270416,
+            "lo": 0.2219319333053918,
+            "hi": 0.28336025837719603,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4306069421850183,
+            "lo": 0.39272177686223825,
+            "hi": 0.4694307755203142,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.32035994192817485,
+            "lo": 0.2898385172692452,
+            "hi": 0.35189787671700584,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4934442644638287,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "gated_abmil_seed4",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4658168700693886,
+            "lo": 0.4256002408757443,
+            "hi": 0.5044320157728833,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.22157940753329342,
+            "lo": 0.1991142953552048,
+            "hi": 0.2437523667649084,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.47940467462979575,
+            "lo": 0.43617188634550164,
+            "hi": 0.5226467917244009,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.40575167507799326,
+            "lo": 0.36439294686542917,
+            "hi": 0.446699121428291,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4658168700693886,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mean_seed0",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mean_seed1",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mean_seed2",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mean_seed3",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mean_seed4",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5,
+            "lo": 0.5,
+            "hi": 0.5,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mh_abmil_seed0",
+      "frozen_slot": 4,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5225216817931694,
+            "lo": 0.47938464784751394,
+            "hi": 0.564325914499866,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.7132851173136213,
+            "lo": 0.6817776906976831,
+            "hi": 0.7431389623265784,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5414022692779403,
+            "lo": 0.4989483988162171,
+            "hi": 0.582742668926691,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.6043840519332622,
+            "lo": 0.5648105631430014,
+            "hi": 0.642229397601681,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5225216817931694,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mh_abmil_seed1",
+      "frozen_slot": 2,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.46798204467857396,
+            "lo": 0.430203464594467,
+            "hi": 0.5053717045866806,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5770043987007518,
+            "lo": 0.5517664121664434,
+            "hi": 0.6019460591948714,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.48861544935440293,
+            "lo": 0.44770522508758603,
+            "hi": 0.5293450061983177,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4671033422263959,
+            "lo": 0.4311657568460462,
+            "hi": 0.5031684480755209,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.46798204467857396,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mh_abmil_seed2",
+      "frozen_slot": 5,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5002694387467291,
+            "lo": 0.46062750210055836,
+            "hi": 0.5391040586820347,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5143726966298207,
+            "lo": 0.48577590318048364,
+            "hi": 0.5425827590144604,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5157191012629555,
+            "lo": 0.4732577201455817,
+            "hi": 0.5579730288493453,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4745307613841336,
+            "lo": 0.4329343765070635,
+            "hi": 0.5158894709561078,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5002694387467291,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mh_abmil_seed3",
+      "frozen_slot": 2,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4490000782872564,
+            "lo": 0.40912007884760415,
+            "hi": 0.48915379640113565,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.2514710292740803,
+            "lo": 0.22233620368977913,
+            "hi": 0.28134181719898593,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.45268121484433244,
+            "lo": 0.4097761595073992,
+            "hi": 0.4961054078651279,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.35122351041265226,
+            "lo": 0.3140639364292311,
+            "hi": 0.3894585932744273,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4490000782872564,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "mh_abmil_seed4",
+      "frozen_slot": 6,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.48423639140540514,
+            "lo": 0.44494935588822365,
+            "hi": 0.5238630259061894,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.39355979577139716,
+            "lo": 0.3631683237423158,
+            "hi": 0.42516269844859106,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.49211327433869007,
+            "lo": 0.45048545456405314,
+            "hi": 0.5342477172936894,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4269146514937722,
+            "lo": 0.3880685228227717,
+            "hi": 0.46702741242281387,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.48423639140540514,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed0",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5848531200231437,
+            "lo": 0.5530290426715037,
+            "hi": 0.6161706671154557,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.6329889315542319,
+            "lo": 0.6095152960076107,
+            "hi": 0.656016212453533,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5544646343648146,
+            "lo": 0.5185644802612075,
+            "hi": 0.5893140520956154,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5821884470431653,
+            "lo": 0.5513120780162621,
+            "hi": 0.6131022179717677,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5848531200231437,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed1",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5808217100537663,
+            "lo": 0.5499127801841098,
+            "hi": 0.6114890281385221,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.522831324179787,
+            "lo": 0.4948407606373199,
+            "hi": 0.5502552599478291,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5489256078887819,
+            "lo": 0.5106516145750927,
+            "hi": 0.5860705797458357,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5684136916146054,
+            "lo": 0.534794074766153,
+            "hi": 0.6015616411618802,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5808217100537663,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed2",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.6347663880225637,
+            "lo": 0.6004047805583537,
+            "hi": 0.668421370121109,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.7706720678397481,
+            "lo": 0.7464539649837432,
+            "hi": 0.7939683979072788,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.6056061426961505,
+            "lo": 0.5669929738789196,
+            "hi": 0.6423902528476125,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.6782101775507385,
+            "lo": 0.6434708113609199,
+            "hi": 0.7117711409730355,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.6347663880225637,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed3",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.564349598738657,
+            "lo": 0.5306770006070305,
+            "hi": 0.5974828977984251,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.3554447055457432,
+            "lo": 0.32048002582843294,
+            "hi": 0.391451497222853,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5153510441790631,
+            "lo": 0.4805583760068907,
+            "hi": 0.5491033809213393,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5005023748289492,
+            "lo": 0.4672044210440417,
+            "hi": 0.533951455138146,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.564349598738657,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "normal_guidance_lam=0.1_seed4",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5535183674352756,
+            "lo": 0.5210072261574527,
+            "hi": 0.5864312246391341,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4819171190761172,
+            "lo": 0.4555423661790678,
+            "hi": 0.5088398649394495,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.530879935014885,
+            "lo": 0.4944194445913784,
+            "hi": 0.5666359905548527,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.5162371210835609,
+            "lo": 0.4803445443107571,
+            "hi": 0.5520100970898855,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5535183674352756,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "slot_div=0.5_seed0",
+      "frozen_slot": 6,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.45725190815624056,
+            "lo": 0.42380068408813454,
+            "hi": 0.49045939950311257,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.771156509117536,
+            "lo": 0.753440383520906,
+            "hi": 0.7884784733244564,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5203141852077223,
+            "lo": 0.4838663559039823,
+            "hi": 0.5564164428797739,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.6456762446232339,
+            "lo": 0.6151226080733901,
+            "hi": 0.6754568455287282,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.45725190815624056,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "slot_div=0.5_seed1",
+      "frozen_slot": 3,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.48874872656803675,
+            "lo": 0.4529833405675423,
+            "hi": 0.5240831674297617,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.7889610358478683,
+            "lo": 0.7692075729117821,
+            "hi": 0.8081987143017463,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5534017053951146,
+            "lo": 0.5173310268208661,
+            "hi": 0.5886670997328871,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.6887596690394516,
+            "lo": 0.6599253249055299,
+            "hi": 0.7162114577887293,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.48874872656803675,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "slot_div=0.5_seed2",
+      "frozen_slot": 7,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.45705613479048557,
+            "lo": 0.42289543021880643,
+            "hi": 0.4918995993066081,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.7671386655168378,
+            "lo": 0.7495903143744352,
+            "hi": 0.7848374579522421,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5270387297622062,
+            "lo": 0.48886173005420236,
+            "hi": 0.5648718642587,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.6328436311479013,
+            "lo": 0.5982913832128101,
+            "hi": 0.6664961360925474,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.45705613479048557,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "slot_div=0.5_seed3",
+      "frozen_slot": 1,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.542029863250367,
+            "lo": 0.502376933749126,
+            "hi": 0.5806423578800346,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.8087332335472975,
+            "lo": 0.7872078213659198,
+            "hi": 0.8296520383867341,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5831208557321361,
+            "lo": 0.5476068057385624,
+            "hi": 0.6179160686509378,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.7093820398716432,
+            "lo": 0.6812165631482755,
+            "hi": 0.7369122843353137,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.542029863250367,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "slot_div=0.5_seed4",
+      "frozen_slot": 4,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.46860468170412833,
+            "lo": 0.4352950478205066,
+            "hi": 0.5021326992770011,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.7783709885498942,
+            "lo": 0.7604254446717909,
+            "hi": 0.7959411211776859,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5391888853273121,
+            "lo": 0.5025814949557802,
+            "hi": 0.5753385024177441,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.6654992217147935,
+            "lo": 0.6348745044720553,
+            "hi": 0.6956505030688337,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.46860468170412833,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "transmil_seed0",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4385565828692724,
+            "lo": 0.3998749700398623,
+            "hi": 0.47822243255710545,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.21274302244061533,
+            "lo": 0.193157461766132,
+            "hi": 0.23300298579822534,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.45272274730021606,
+            "lo": 0.41354783510277665,
+            "hi": 0.4912496774777782,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.3374337307320789,
+            "lo": 0.304765434955682,
+            "hi": 0.37033015312893675,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4385565828692724,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "transmil_seed1",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4515786762803342,
+            "lo": 0.4135595685775929,
+            "hi": 0.4891876939677365,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.2881580404754994,
+            "lo": 0.25747947477027644,
+            "hi": 0.31960496831271273,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.49414478886985275,
+            "lo": 0.4558786805533488,
+            "hi": 0.5319884958784346,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.42029443797966204,
+            "lo": 0.38318729675210966,
+            "hi": 0.4576572111429793,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4515786762803342,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "transmil_seed2",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.5905807420214438,
+            "lo": 0.5503971107919065,
+            "hi": 0.6286906160888218,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.6007913179814914,
+            "lo": 0.5638124470429954,
+            "hi": 0.635837250703122,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.5595549523844957,
+            "lo": 0.5194863955136029,
+            "hi": 0.5981490692321041,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.602538258511577,
+            "lo": 0.5623573084441096,
+            "hi": 0.6416121272984665,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.5905807420214438,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "transmil_seed3",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.4721234218364215,
+            "lo": 0.4333138113134761,
+            "hi": 0.5117729719907649,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.360844464302128,
+            "lo": 0.33010175844855844,
+            "hi": 0.39275590212614986,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.4877185371794851,
+            "lo": 0.4460271076834286,
+            "hi": 0.5307157493614763,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.4764477265324081,
+            "lo": 0.4358526093738094,
+            "hi": 0.5182439983338754,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.4721234218364215,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    },
+    {
+      "tag": "transmil_seed4",
+      "frozen_slot": 0,
+      "lung_thresh": 0.0,
+      "patch_rule": "a patch is in-lung when it contains any lung at all",
+      "n_bags": 150,
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "n_bags_with_no_lesion_in_lung": 0,
+      "estimands": {
+        "auc": {
+          "in_lung": {
+            "mean": 0.3969349544472184,
+            "lo": 0.3615085147508114,
+            "hi": 0.43340117576371867,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.24035939588375538,
+            "lo": 0.2189827120835244,
+            "hi": 0.26215302136920143,
+            "n": 131,
+            "n_clusters": 129
+          }
+        },
+        "stratified_auc": {
+          "in_lung": {
+            "mean": 0.42366935939645595,
+            "lo": 0.38421129532581394,
+            "hi": 0.4649244764183759,
+            "n": 131,
+            "n_clusters": 129
+          },
+          "unrestricted": {
+            "mean": 0.3348090923392475,
+            "lo": 0.30099254797135944,
+            "hi": 0.370289384982609,
+            "n": 131,
+            "n_clusters": 129
+          }
+        }
+      },
+      "h8": {
+        "estimand": "in_lung_auc",
+        "threshold": 0.65,
+        "value": 0.3969349544472184,
+        "exceeds": false,
+        "falsifier": "none -- two-sided, reported either way",
+        "reported_beside_the_threshold": "in_lung_stratified_auc"
+      }
+    }
+  ],
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+    "git_dirty": false
+  }
+}

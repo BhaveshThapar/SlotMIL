@@ -1,0 +1,27 @@
+\begin{longtable}{@{}p{0.5cm}p{5.4cm}p{1.9cm}p{5.4cm}p{1.5cm}@{}}
+\toprule
+& Pre-registered statement & Bar & Observed & Verdict \\
+\midrule
+\endhead
+H1 & For every arm, |flat instance AUC - within-slice instance AUC| \textless{} 0.02: the reported 3D metric is an in-plane metric wearing 3D clothing. & 0.02 & 1/8 arms have |flat - within\_slice| \textgreater{}= 0.02; a majority is 5 & PASS \\
+\addlinespace[2pt]
+H2 & The model-free centre prior's slice AUC exceeds every trained arm's slice AUC -- attention MIL is worse than geometry on the axial axis. & -- & 0/8 arms match or beat the centre prior's slice AUC of 0.6427 & PASS \\
+\addlinespace[2pt]
+H3 & Over \textgreater{}=30 untrained inits the 95th-percentile instance AUC exceeds 0.70, i.e. 0.5 is not the floor. & 0.7 & 95th-percentile untrained instance AUC 0.7666 vs 0.7 & PASS \\
+\addlinespace[2pt]
+H4 & Every arm's patient-specific skill is \textless{} 0.15, and the median across arms is \textless{} 0.10. & per\_arm 0.15, median 0.1 & every arm below 0.15 and median -0.0466 below 0.1 & PASS \\
+\addlinespace[2pt]
+H5 & No arm's prior-normalised skill, taken as the mean over that arm's float32 seeds, exceeds 0.30. & 0.3 & 0/8 arms exceed 0.3 on the mean over seeds & PASS \\
+\addlinespace[2pt]
+H6 & Normal Guidance raises slice-level AUC over its base arm but raises patient-specific skill by less than 0.02. & 0.02 & patient-specific skill moved +0.1509 against a falsifier at \textgreater{}= 0.02 & \textbf{FAIL} \\
+\addlinespace[2pt]
+H7 & The supervised patch probe's prior-normalised skill exceeds 0.50 while every content-free baseline's is below 0.05. & probe 0.5, content\_free 0.05 & probe 0.7305 \textgreater{} 0.5 and every computed content-free member \textless{} 0.05 & PASS \\
+\addlinespace[2pt]
+H8 & In-lung fitted-template AUC exceeds 0.65. & 0.65 & in\_lung\_auc 0.4884 is below 0.65 (two-sided, no falsifier) & REPORTED \\
+\addlinespace[2pt]
+H9 & MosMed's fitted-template AUC is lower than LIDC's, with correspondingly higher prior-normalised skill -- prior dominance tracks the positional stereo… & -- & 1/50 matched tags order MosMed's template AUC below LIDC's with higher skill & \textbf{FAIL} \\
+\addlinespace[2pt]
+H10 & Per seed, the paired per-bag difference between the mask-fitted separable template and the trained arm on the flat axis does not favour the trained a… & -- & trained\_wins on 0/5 seeds; a majority is 3 & PASS \\
+\addlinespace[2pt]
+\bottomrule
+\end{longtable}

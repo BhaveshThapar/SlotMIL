@@ -1,0 +1,208 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{longtable}
+\usepackage[hidelinks]{hyperref}
+
+\input{macros}
+
+\title{Companion to ``Position priors dominate instance-level localisation
+metrics for weakly-supervised multiple-instance learning in volumetric CT''}
+\author{Bhavesh Thapar}
+\date{}
+
+\begin{document}
+\maketitle
+
+This companion carries the apparatus the main paper summarises in one sentence:
+the full falsifier table, the diff between what was declared and what was
+reported, and the per-condition detail. Everything here is regenerable from the
+repository at configuration hash \preghash{}.
+
+% ==========================================================================
+\section{The full falsifier table}
+
+Statements and thresholds are quoted from the frozen configuration; observed
+values are quoted from the verdict artefact for \condA{}, the condition carrying
+the hypothesis family.
+
+\begin{center}\small
+\input{tables/falsifiers}
+\end{center}
+
+\section{Verdicts across the three LIDC conditions}
+
+\begin{center}
+\input{tables/verdicts}
+\end{center}
+
+\noindent Two entries differ from the family-carrying condition, both on
+\condC{} and both attributable to its $38$ test bags: H7 fails on the probe half
+($0.4772$ against $0.50$, \S\ref{sec:h7}) and H10 returns
+\emph{indistinguishable} more often than the interval test can resolve.
+\condD{} does not appear because it runs a strict subset of the analysis --- the
+content-free template family only --- and supports H9 alone.
+
+% ==========================================================================
+\section{Declared versus reported: the diff}
+
+\subsection{Four conditions are declared; three appear in the verdict table}
+
+The frozen configuration declares four conditions: \condA{}, \condB{}, \condC{}
+and \condD{}. Three are LIDC and receive a full verdict table. \condD{} runs the
+content-free template family only and supports H9, because $50$ of $1110$ MosMed
+studies carry masks and all are at severity CT-1, so re-splitting would leave too
+few annotated scans in test to estimate anything. Where the main paper says
+``three conditions'' it means the three LIDC conditions.
+
+\textbf{No declared condition was dropped.} \condB{} was declared at the freeze,
+received a seed-2027 patient-grouped confirmatory split on 2026-08-15, ran all
+ten arms at five seeds, and reached a verdict on every hypothesis. Its stated
+purpose was recorded at declaration: it has a supervised patch-probe ceiling of
+$0.6516$ against \condA{}'s $0.9102$, so it tests the label rather than the
+method, and it was declared a consistency check for that reason before any
+result existed.
+
+\subsection{Units taken but not declared}
+
+Three hypotheses state a bound without a unit of aggregation. The choices, and
+when each was made:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{H1, mean over seeds.} A per-arm bound on
+$|{\text{flat}}-{\text{within-slice}}|$ with no unit over the five seeds. Taken
+as the arithmetic mean over seeds. H5's own declared rationale makes exactly this
+argument for the identical hole: a per-seed maximum takes five draws at the
+threshold instead of one.
+\item \textbf{H4, mean over seeds.} Same shape, same reasoning.
+\item \textbf{H9, every matched tag.} An ordering with no aggregation over arms
+and seeds. Taken as the strictest available reading --- one matched pair failing
+to order fails the hypothesis --- which is the reading least favourable to the
+paper's own prediction.
+\end{itemize}
+
+All three are recorded in the verdict artefact under
+\texttt{undeclared\_units\_taken} rather than left implicit, and each was chosen
+before the numbers it aggregates were read. H7's aggregation unit was the fourth
+such hole; it was promoted into the configuration itself on 2026-08-17 as
+\texttt{content\_free\_unit} rather than recorded as taken.
+
+\subsection{H5's denominator, and the recomputation}
+\label{sec:h5}
+
+The pre-registered denominator for \pns{} is an in-plane template fit on
+validation to \emph{the arm's own attention}. Fit to the supervised probe's
+output that identical rule scores $0.8358$; fit to a MIL arm's attention its
+median over the $40$ scored dumps on \condA{} is $0.4208$, and it sits below
+$0.5$ for $24$ of them. Since $s = (A - A_t)/(1 - A_t)$, a sub-chance $A_t$
+inflates the denominator above $1$ and shrinks $s$ --- and H5 passes by staying
+\emph{below} a bar, so the arithmetic makes it easier to pass.
+
+We therefore recompute the identical statistic with $A_t$ floored at $0.5$:
+floor per tag, mean over the arm's seeds, maximum over the scored arm set, bar
+read from the frozen configuration. This is \textbf{not} a pre-registered
+analysis, it does not change H5's verdict, and it did not require amending the
+configuration.
+
+\begin{center}
+\input{tables/h5_sensitivity}
+\end{center}
+
+\noindent The verdict does not move in any condition, and flooring lowers the
+maximum wherever it binds. Regenerate with
+\texttt{scripts/h5\_floored\_denominator.py}.
+
+\subsection{H7's replication was added after its single-draw values were seen}
+\label{sec:h7}
+
+Stated plainly because it matters for how the gate is read. H7's two stochastic
+content-free members were originally computed once per tag: the random generator
+was rebuilt per tag with a fixed seed, so every tag in a condition shared one
+realisation --- the roll offsets were literally identical across all tags --- and
+the spread across tags was arm-to-arm variation with the draw held constant. No
+draw-to-draw variance was estimable anywhere.
+
+Under that construction, and under the pre-registered maximum-over-tags
+aggregation, the gate returned $0.0784$ and \textbf{H7 failed}. Draw $0$ of the
+replication, seeded identically, gives $0.0829$ on the current arm set. The pass
+does not hold on the single-draw form and we do not claim it does.
+
+What the amendment of 2026-08-17 changed, and what it deliberately did not:
+
+\begin{itemize}\itemsep2pt
+\item Each member is now drawn $30$ times per tag and each tag's reported skill
+is the mean over its draws. Thirty because the protocol already committed to
+``$\geq 30$'' for the one other place the document makes a distributional claim;
+reusing a number the document already stood behind is a better justification than
+a fresh one chosen while looking at a result.
+\item \textbf{The aggregation rule is unchanged.} The gate still takes the
+maximum over tags --- the stricter choice --- because ``every content-free
+baseline is below $0.05$'' is a statement about the set, and an average over tags
+would let a well-behaved arm hide a badly-behaved one.
+\item Draw $0$ keeps the original seed, so the published single realisation stays
+locatable inside its own distribution and is emitted per tag.
+\item \textbf{Results already seen: yes.} The single-draw numbers had been seen,
+including the maximum that put H7 at \FAIL{}, and the full per-member table under
+mean, median and max was computed for all three conditions before the amendment
+was drafted --- it showed the gate clearing under mean or median in every
+condition and failing under max in every condition. The amendment was nonetheless
+written to leave the maximum in force, and H7's outcome after replication was not
+predicted in it.
+\end{itemize}
+
+The decisive quantity is the replicated spread. Per-tag draw-to-draw standard
+deviations reach $0.0673$ (entropy-matched random) and $0.0483$ (roll
+permutation) on \condA{}, against the $0.05$ threshold a single draw was being
+compared to. A maximum over one draw from a distribution whose spread exceeds the
+threshold is not an unlucky measurement; it is not a measurement. The verdict
+artefact carries \texttt{aggregation\_sensitivity} under all three aggregations
+so the choice is checkable rather than assertable.
+
+\subsection{Two H9 counts that measure different things}
+
+The verdict artefact's \texttt{reason} reports $1$ of $50$ matched tags and its
+\texttt{power.n\_ordering} reports $2$. Both are correct and they are different
+quantities: \texttt{reason} counts tags clearing the \emph{full} falsifier
+(ordering \emph{and} non-overlapping intervals), \texttt{n\_ordering} counts tags
+ordering on the point estimate alone regardless of intervals.
+
+\subsection{TransMIL was promoted after measuring}
+
+TransMIL carried a drop rule --- if it was not training by 2026-09-22 it was cut
+and the paper reported the arm count achieved. The promotion was made
+\emph{after} measuring rather than before, because promoting first would have
+re-hashed the configuration and superseded every stamp on disk to answer one
+question: does an architecture designed for whole-slide bags train on LIDC's
+${\sim}43.8$k-instance bags? It does, at $16.22$ of $23.55$ GiB peak. The rule did
+not fire and the paper reports ten arms rather than nine. The smoke job that
+decided it ran on the discovery split under an exploratory role; no hypothesis
+reads its number.
+
+\section{Reproducing}
+
+Every analysis driver is a standalone CLI reading cached attention dumps, needs
+no GPU, and writes a stamped artefact. The scorer recomputes nothing --- it reads
+only stamped JSON --- so all ten verdicts re-derive in seconds:
+
+\begin{quote}\small\ttfamily
+python scripts/prereg\_verdict.py --dir runs/nulls\_nodule\_present\_confirmatory \ldots
+\end{quote}
+
+\noindent Figures and tables in both documents regenerate from JSON alone with
+\texttt{scripts/make\_paper\_figures.py --out paper/figures --tables
+paper/tables}, which also writes \texttt{paper/figures/figure\_data.json}: every
+plotted number, keyed by figure and series, with its source artefact and that
+artefact's configuration hash and commit. A figure that disagrees with that file
+is a bug in the figure.
+
+The chain itself verifies with \texttt{python scripts/prereg\_freeze.py --check},
+which confirms the document's hash matches the committed configuration, that
+every declared split still hashes as recorded, and that no artefact on disk
+carries a configuration hash absent from the amendment chain.
+
+\end{document}

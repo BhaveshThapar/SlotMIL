@@ -1,0 +1,243 @@
+{
+  "generated_by": "scripts/make_paper_figures.py",
+  "note": "Every number plotted in the paper's figures, with the artefact it came from and that artefact's config hash and commit. A figure that disagrees with this file is a bug in the figure.",
+  "sources": {
+    "nulls_nodule_present_confirmatory/template_family.json": {
+      "path": "runs/nulls_nodule_present_confirmatory/template_family.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+      "git_dirty": false
+    },
+    "nulls_nodule_present_confirmatory/prereg_verdict.json": {
+      "path": "runs/nulls_nodule_present_confirmatory/prereg_verdict.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "4b49dd7f11a67620f7c6dae1f770d74a8036e1eb",
+      "git_dirty": false
+    },
+    "nulls_nodule_present_confirmatory/probe_gate.json": {
+      "path": "runs/nulls_nodule_present_confirmatory/probe_gate.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+      "git_dirty": false
+    },
+    "nulls_nodule_present_confirmatory/axis_gate.json": {
+      "path": "runs/nulls_nodule_present_confirmatory/axis_gate.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+      "git_dirty": false
+    },
+    "nulls_mosmed_severity_confirmatory/template_family.json": {
+      "path": "runs/nulls_mosmed_severity_confirmatory/template_family.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+      "git_dirty": false
+    },
+    "nulls_nodule_present_confirmatory/h8_in_lung.json": {
+      "path": "runs/nulls_nodule_present_confirmatory/h8_in_lung.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+      "git_dirty": false
+    },
+    "nulls_malignancy_confirmatory/prereg_verdict.json": {
+      "path": "runs/nulls_malignancy_confirmatory/prereg_verdict.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "4b49dd7f11a67620f7c6dae1f770d74a8036e1eb",
+      "git_dirty": false
+    },
+    "nulls_balanced_presence_confirmatory/prereg_verdict.json": {
+      "path": "runs/nulls_balanced_presence_confirmatory/prereg_verdict.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "4b49dd7f11a67620f7c6dae1f770d74a8036e1eb",
+      "git_dirty": false
+    },
+    "nulls_nodule_present_confirmatory/h5_floored_denominator.json": {
+      "path": "runs/nulls_nodule_present_confirmatory/h5_floored_denominator.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "b2e28bfb2e44ce71517020cef466e6dcf7e93a21",
+      "git_dirty": true
+    },
+    "nulls_malignancy_confirmatory/h5_floored_denominator.json": {
+      "path": "runs/nulls_malignancy_confirmatory/h5_floored_denominator.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "b2e28bfb2e44ce71517020cef466e6dcf7e93a21",
+      "git_dirty": true
+    },
+    "nulls_balanced_presence_confirmatory/h5_floored_denominator.json": {
+      "path": "runs/nulls_balanced_presence_confirmatory/h5_floored_denominator.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "b2e28bfb2e44ce71517020cef466e6dcf7e93a21",
+      "git_dirty": true
+    }
+  },
+  "figures": {
+    "fig1_reference_ladder": {
+      "panelA_references": {
+        "chance": 0.5,
+        "Content-free, axial only": 0.6136361089287691,
+        "Content-free, joint": 0.6920077082854814,
+        "Untrained-init 95th pct": 0.7665760928074817,
+        "Centre prior (no model, no fit)": 0.7832728138893909,
+        "Content-free, in-plane": 0.8302423494911373,
+        "Content-free, separable": 0.8542793755972934,
+        "Supervised patch probe (ceiling)": 0.9557610206049142
+      },
+      "panelA_trained_per_arm": {
+        "slot_div0.5": 0.8247390441256002,
+        "normal_guidance": 0.6054959315146485,
+        "transmil": 0.42628809213256347,
+        "mh_abmil": 0.41259100854997166,
+        "dsmil": 0.3960924938810399,
+        "abmil": 0.29630638600288917,
+        "gated_abmil": 0.26287860591182405,
+        "clam_sb": 0.2390047488533026
+      },
+      "panelB_flat": {
+        "slot_div0.5": 0.8247390441256002,
+        "normal_guidance": 0.6054959315146485,
+        "transmil": 0.42628809213256347,
+        "mh_abmil": 0.41259100854997166,
+        "dsmil": 0.3960924938810399,
+        "abmil": 0.29630638600288917,
+        "gated_abmil": 0.26287860591182405,
+        "clam_sb": 0.2390047488533026
+      },
+      "panelB_within_slice": {
+        "slot_div0.5": 0.8163592886786184,
+        "normal_guidance": 0.5386309524999269,
+        "mh_abmil": 0.4305037606722242,
+        "transmil": 0.42744305368886637,
+        "dsmil": 0.3949827616077682,
+        "abmil": 0.31526504290008656,
+        "gated_abmil": 0.27772116896757265,
+        "clam_sb": 0.25563515981620605
+      },
+      "panelB_slice": {
+        "normal_guidance": 0.6317960863560201,
+        "slot_div0.5": 0.5726749884809754,
+        "dsmil": 0.509040787929689,
+        "transmil": 0.48841431714272954,
+        "gated_abmil": 0.4243107608693764,
+        "mh_abmil": 0.4228788141797648,
+        "abmil": 0.41000430771884355,
+        "clam_sb": 0.40502694132824457
+      },
+      "panelB_centre_prior_slice_auc": 0.642668681497915
+    },
+    "fig2_normal_guidance": {
+      "axes": {
+        "Slice AUC": {
+          "gated_abmil": 0.4243107608693764,
+          "normal_guidance": 0.6317960863560201,
+          "delta": 0.20748532548664372,
+          "falsifier": null,
+          "auc_scale": true
+        },
+        "Patient-specific skill": {
+          "gated_abmil": -0.10190577435658599,
+          "normal_guidance": 0.04897565009483194,
+          "delta": 0.15088142445141794,
+          "falsifier": 0.02,
+          "auc_scale": false
+        },
+        "Axis gap $|$flat $-$ within$|$": {
+          "gated_abmil": 0.014842563055748641,
+          "normal_guidance": 0.06686497901472166,
+          "delta": 0.052022415958973015,
+          "falsifier": 0.02,
+          "auc_scale": false
+        },
+        "In-lung template AUC": {
+          "gated_abmil": 0.45833424748169005,
+          "normal_guidance": 0.5836618368546812,
+          "delta": 0.12532758937299115,
+          "falsifier": null,
+          "auc_scale": true
+        }
+      },
+      "h6_outcome": "FAIL",
+      "h1_arms_over_threshold": [
+        "normal_guidance"
+      ]
+    },
+    "fig3_dataset_contrast": {
+      "LIDC (nodules)": {
+        "in-plane": {
+          "flat": 0.8302423494911373,
+          "slice": 0.5
+        },
+        "axial": {
+          "flat": 0.6136361089287691,
+          "slice": 0.6179509009203177
+        },
+        "separable": {
+          "flat": 0.8542793755972934,
+          "slice": 0.6179509009203177
+        },
+        "centre prior": {
+          "flat": 0.7832728138893909,
+          "slice": 0.642668681497915
+        }
+      },
+      "MosMed (COVID GGO)": {
+        "in-plane": {
+          "flat": 0.8443579985482036,
+          "slice": 0.5
+        },
+        "axial": {
+          "flat": 0.7473035509356355,
+          "slice": 0.845496336894627
+        },
+        "separable": {
+          "flat": 0.8987823587749659,
+          "slice": 0.845496336894627
+        },
+        "centre prior": {
+          "flat": 0.8579339543447165,
+          "slice": 0.8586256583686751
+        }
+      }
+    },
+    "fig4_in_lung": {
+      "unrestricted": {
+        "slot_div0.5": 0.7828720865158868,
+        "normal_guidance": 0.5527708296391254,
+        "mh_abmil": 0.4899386075379343,
+        "abmil": 0.43128352353135335,
+        "dsmil": 0.408526876897698,
+        "transmil": 0.34057924821669794,
+        "gated_abmil": 0.33530296366131856,
+        "clam_sb": 0.27087333733425534
+      },
+      "in_lung": {
+        "normal_guidance": 0.5836618368546812,
+        "dsmil": 0.4853539092031752,
+        "mh_abmil": 0.48480192698222685,
+        "slot_div0.5": 0.48273826289385163,
+        "transmil": 0.46995487549093806,
+        "clam_sb": 0.46610165618757604,
+        "gated_abmil": 0.45833424748168994,
+        "abmil": 0.4529248355062587
+      },
+      "lost_to_lung_restriction": {
+        "slot_div0.5": 0.30013382362203517,
+        "normal_guidance": -0.03089100721555582,
+        "mh_abmil": 0.005136680555707429,
+        "abmil": -0.021641311974905375,
+        "dsmil": -0.07682703230547722,
+        "transmil": -0.12937562727424012,
+        "gated_abmil": -0.12303128382037137,
+        "clam_sb": -0.1952283188533207
+      },
+      "scored_quantity": "attention-fitted in-plane template, not the trained arm's own attention",
+      "mean_in_lung_fraction": 0.25169403457241557,
+      "h8_value": 0.4883871550600398
+    }
+  },
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "b2e28bfb2e44ce71517020cef466e6dcf7e93a21",
+    "git_dirty": true
+  }
+}

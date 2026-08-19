@@ -1,0 +1,18 @@
+# LaTeX build products. The sources, the figures and figure_data.json are all
+# committed: the repository link in the abstract is load-bearing, and a reader
+# has to be able to check a plotted number against its artefact without a build.
+#
+# The two output PDFs are not committed. `make` rebuilds them in seconds, and a
+# committed PDF goes stale against its sources silently -- which is the exact
+# failure mode this repository spends its provenance machinery avoiding.
+main.pdf
+supplement.pdf
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz

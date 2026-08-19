@@ -1,0 +1,17 @@
+{
+  "analysis_role": "confirmatory",
+  "tag": "mh_abmil_seed1",
+  "split": "test",
+  "dtype": "float32",
+  "pooling": "mh_abmil",
+  "splits": "data/lidc/splits_malignancy_confirmatory.json",
+  "splits_file_sha256": "c4ed90d3a9afd42b",
+  "ckpt": "/fs/nexus-scratch/bthapar/SlotMIL/runs/lidc_malignancy_confirmatory/mh_abmil/seed1/best.pt",
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "24b113b54118972707f28bfa97511abd69622c88",
+    "git_dirty": false
+  }
+}
