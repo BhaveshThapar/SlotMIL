@@ -104,10 +104,11 @@ is `implemented` or `planned`; `tests/test_prereg.py` asserts every implemented
 arm is constructible and every planned arm is listed, so an arm can be unbuilt
 but never silently missing.
 
-Implemented today: `mean`, `abmil`, `gated_abmil`, `mh_abmil`, `slot:div=0.5`,
+Implemented: `mean`, `abmil`, `gated_abmil`, `mh_abmil`, `slot:div=0.5`,
 and — since the 2026-08-15 amendments — `centre_gaussian` and `normal_guidance`,
-the two Harvey et al. arms that carry H6, plus `clam_sb` and `dsmil`. Planned:
-`transmil`.
+the two Harvey et al. arms that carry H6, plus `clam_sb` and `dsmil`. `transmil`
+was `planned` until the 2026-08-17 amendment promoted it; **the arm set is now
+ten and nothing is planned.** The confirmatory sweep ran all ten.
 
 `clam_sb` and `dsmil` each departed from their paper in one respect that could
 not be avoided here, and both departures are recorded in `AMENDMENTS.md` rather
@@ -128,6 +129,22 @@ recorded in `AMENDMENTS.md`, and all of it was ruled before any arm was trained.
 order of magnitude beyond the whole-slide bags it was designed for. If it is not
 training by **22 September 2026** it is cut, and the paper reports the arm count
 achieved. The deadline does not move for an arm.
+
+*Outcome, recorded 2026-08-17 — the rule did not fire.* TransMIL trains at LIDC
+bag scale with headroom (3.86 GiB at the training shape; 7.97 GiB for a full-bag
+evaluation) and was promoted **after** that was measured, not before: promotion
+re-hashes this document and an amendment supersedes every stamp on disk, so
+declaring the arm implemented in order to find out whether it trains would have
+cost a full re-run to answer what a four-hour job answered. The paragraph above
+is left as written, because it is the commitment that was made and the point of
+a drop rule is that it was fixed in advance.
+
+Two corrections it earns. The "~43.8k instances" figure understates the cohort:
+the deepest LIDC series is **162,560** instances, and because `max_slices` is
+train-only, evaluation sees that full bag — which is what made TransMIL run out
+of memory at its first validation pass, not at training. And a bag's squaring
+side must come from its own instance count rather than the batch's padded width,
+or its attention depends on which bags it was batched with.
 
 ## Hypotheses and falsifiers
 
