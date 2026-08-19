@@ -11,7 +11,19 @@ __pycache__/
 # feature_cache.py, lidc.py, mosmed.py, medmnist3d.py were untracked for several
 # commits. Anchor these to the repo root so they only ever match the top-level
 # data/, runs/ and logs/ directories.
-/data/
+# data/ is excluded except for the split manifests. `prereg_freeze.py --check`
+# verifies every declared split's hash and exits 1 if it cannot find one, so
+# without these a fresh clone cannot run the check the paper points readers at.
+# They are ~472 KB of public series UIDs and patient grouping -- no image data --
+# and committing them also lets a reader confirm the test set was never trained
+# on, rather than take it on trust.
+/data/*
+!/data/lidc/
+/data/lidc/*
+!/data/lidc/splits*.json
+!/data/mosmed/
+/data/mosmed/*
+!/data/mosmed/splits*.json
 /logs/
 
 # runs/ is excluded except for the stamped analysis artefacts, which are the
