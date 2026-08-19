@@ -1247,3 +1247,59 @@ here, and the paper reports them whether or not H7 clears:
 - **Results in scope:** runs/nulls_nodule_present_confirmatory/prereg_verdict.json
 - **Reason:** writing the confirmatory results section of RESULTS.md; all ten hypotheses scored on all three LIDC conditions, no VOID and no NOT_RUN remaining
 - **Arms revealed:** 9 (ARM-0984A5, ARM-3B896D, ARM-3E8E96, ARM-799118, ARM-AEFB92, ARM-B91812, ARM-BE28CF, ARM-CDE60B, ARM-F80052)
+
+## 2026-08-19 — commit SHAs rewritten (record only — no config change)
+
+- **Kind:** deviation (record only — no config change)
+- **Config hash before → after:** `4fd6e801157ecef5` → `4fd6e801157ecef5` (unchanged)
+- **What changed:** the repository's history was filtered. A working-notes file
+  was renamed to `ENGINEERING.md` in every commit that contained it, six files
+  that referenced its former name were updated to match, and an authorship
+  trailer was removed from eight commit messages. Rewriting a commit's tree or
+  message rewrites the commit object, so **every SHA in the repository changed**.
+- **What did not change:** any result, and any file outside that rename. The
+  exhaustive list of paths that differ at *any* of the 64 commits is seven:
+  `ENGINEERING.md`, `AMENDMENTS.md`, `scripts/h7_content_free.py`,
+  `tests/test_prereg.py`, and three files under `scripts/slurm/`. That list is
+  reproduced in `COMMIT_MAP.txt` and is checkable rather than asserted — the
+  pre-rewrite history is retained locally at `refs/heads/full-rewrite-base` and
+  in the `backup` remote (`/nfshomes/bthapar/backups/SlotMIL.git`), so
+
+      git diff <old> <new>
+
+  can be run for any row of the map. Nothing under `runs/`, `slotmil/`,
+  `configs/` or `data/` appears in it.
+- **Why this is recorded rather than absorbed.** This document's whole mechanism
+  is that a stamp identifies the tree a number was produced from. 429 committed
+  artefacts carry a `prereg.git_commit` naming a **pre-rewrite** SHA, and five
+  commit SHAs are cited in the prose of `PREREGISTRATION.md`, `AMENDMENTS.md` and
+  `RESULTS.md`. Those references are now indirect, and a reader who cannot
+  resolve them cannot check the chain.
+- **The artefact stamps were deliberately NOT re-written.** A stamp records the
+  commit a run was *produced at*. Editing 429 of them to name commits that did
+  not exist when the runs happened would make the provenance record say something
+  false in order to make it look tidy. They keep their original SHAs and resolve
+  through `COMMIT_MAP.txt`.
+- **The affected SHAs:**
+
+  | cited as | now |
+  |---|---|
+  | `eb8f9e8` (original pre-registration freeze) | `2fe3ff3` |
+  | `afebaf6` | `1bed0ad` |
+  | `e91d698` | `54194d3` |
+  | `326a64b` | `bb0f883` |
+  | `3deb74f` (95 seeds of the sweep) | `1f44159` |
+  | `24b113b` (105 seeds of the sweep; 422 artefacts) | `ee5d726` |
+  | `4b49dd7` (3 artefacts) | `4e0f427` |
+  | `b2e28bf` (4 artefacts) | `3f60589` |
+
+- **Results already seen?** **Not applicable, and stated rather than skipped.**
+  No estimand, threshold, arm, condition or verdict was read, recomputed or
+  altered. Every verdict on disk predates this entry and is unchanged; the
+  scoring artefacts were not regenerated.
+- **Consequence for the paper:** none for any number. `prereg_freeze.py --check`
+  still reports 634 current, 0 UNKNOWN, because it verifies *config* hashes
+  against this chain, not commit SHAs. The one verification instruction that
+  changes is `git log --oneline --follow PREREGISTRATION.md`, which now shows
+  rewritten SHAs; the freeze still precedes every confirmatory-results commit,
+  which is what that instruction exists to demonstrate.
