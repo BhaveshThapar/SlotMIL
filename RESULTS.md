@@ -40,12 +40,19 @@ inits spanning 0.6433–0.7858 could not support a stated floor, which is what
 the earlier version of this file was doing.
 
 Provenance: `runs/untrained_floor{,_mh}_rehash2.json`, `analysis_role:
-confirmatory`, stamped `de43c8bcdc5053b6` — the current frozen hash, so these
-count under `PREREGISTRATION.md`'s "Verifying the chain" rather than being
-demoted to exploratory. Re-run three times as the config moved; both poolings
-came back bit-identical this time (0 of 30 inits differ). The honest
-reproducibility claim across nodes is "to 3e-9", not bit-for-bit — see
-`AMENDMENTS.md`.
+confirmatory`, stamped `de43c8bcdc5053b6` — which was the frozen hash **when
+this paragraph was written** and is now two amendments back. The current pair is
+`rehash5`, stamped `4fd6e801157ecef5`; see the confirmatory section below, where
+H3 is scored from it. Left uncorrected in place rather than silently updated,
+because a sentence that says "the current hash" ages into a false statement and
+the fix is to date it, not to keep rewriting it.
+
+The floor has now been re-run five times as the config moved, and has come back
+**bit-identical every time** — `rehash4` and `rehash5` agree on `floor` and
+`per_init` to the last digit (p95 0.7665760928 slot, 0.7678969515 mh_abmil),
+differing only in the stamp. It is a property of the initialisation distribution
+and the split, and no amendment has touched either. The honest cross-node
+reproducibility claim is "to 3e-9", not bit-for-bit — see `AMENDMENTS.md`.
 
 ## Axis gate (2026-08-12) — the "slice AUC 0.4822" framing was too strong; the finding underneath is stronger
 
@@ -537,3 +544,214 @@ warns, and `TestQueryGradientFlow` pins the behaviour.
 implementation gives implicit mode T+1 refinements against vanilla's T,
 confounding the planned vanilla-vs-implicit ablation with a difference in
 effective depth rather than gradient estimation.
+
+# Confirmatory results (2026-08-18, config hash `4fd6e801157ecef5`)
+
+Everything in this section was computed after `PREREGISTRATION.md` was committed,
+on the seed-2027 LIDC splits and MosMed's declared split, under
+`--role confirmatory`. Everything above it is exploratory and set the thresholds
+used here. Ten arms x three LIDC conditions x five seeds, plus MosMed for H9:
+**200 seed results, all `git_dirty: false`, all at one config hash.** The arm set
+closed when TransMIL was promoted; its drop date of 2026-09-22 did not fire.
+
+`nodule_present` is the only condition carrying the hypothesis family. The other
+two are consistency checks — `hypothesis_family_condition` was ruled on
+2026-08-15, before any confirmatory number existed, precisely so that choosing
+which condition leads is not available now.
+
+| | H1 | H2 | H3 | H4 | H5 | H6 | H7 | H8 | H9 | H10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **nodule_present** (carries family) | PASS | PASS | PASS | PASS | PASS | FAIL | PASS | RPT | FAIL | PASS |
+| malignancy | PASS | PASS | PASS | PASS | PASS | FAIL | PASS | RPT | FAIL | PASS |
+| balanced_presence | PASS | PASS | PASS | PASS | PASS | FAIL | FAIL | RPT | FAIL | FAIL |
+
+No VOID and no NOT_RUN: every hypothesis reached a verdict on evidence.
+
+## H1 (lead) — PASS, and the harness validated itself first
+
+One arm of eight exceeds the 0.02 bar; a majority is five.
+
+| arm | \|flat − within-slice\| |
+|---|---|
+| normal_guidance | **+0.0669** |
+| abmil | +0.0190 |
+| mh_abmil | +0.0179 |
+| clam_sb | +0.0166 |
+| gated_abmil | +0.0148 |
+| slot:div=0.5 | +0.0084 |
+| dsmil | +0.0064 |
+| transmil | +0.0058 |
+
+The lead claim stands: the reported 3D localisation metric is an in-plane metric
+wearing 3D clothing.
+
+H1's falsifier is an *absence* — small gaps — and an absence is also what a
+broken instrument reports, which is why the verdict is VOID rather than PASS when
+the positive controls fail. They did not: `masks:axial` 0.1064, `masks:separable`
+0.0234, `centre_prior` 0.0518 all cleared, and `mean`'s tie floor came out at
+**exactly 0.0**. The one arm over the bar is `normal_guidance`, the only arm that
+injects an axial prior by construction — the instrument separates what it should.
+
+## H4 — PASS, and more strongly than the hypothesis claims
+
+Threshold: every arm < 0.15, median < 0.10. Median is **−0.0466**, and five of
+eight arms are negative.
+
+| arm | patient-specific skill |
+|---|---|
+| abmil | −0.1076 |
+| gated_abmil | −0.1019 |
+| clam_sb | −0.0835 |
+| dsmil | −0.0484 |
+| mh_abmil | −0.0447 |
+| transmil | +0.0177 |
+| normal_guidance | +0.0490 |
+| slot:div=0.5 | +0.0740 |
+
+A negative value means scoring an arm's attention against a **different
+patient's** masks beats scoring it against the right ones. That is stronger than
+H4 asserts and is reported as such rather than folded into a PASS.
+
+## H2, H3, H5 — PASS
+
+**H2.** No arm reaches the model-free centre prior's slice AUC of 0.6427.
+
+**H3.** 95th-percentile untrained instance AUC **0.7666** against a 0.70 bar over
+30 inits, taking the weakest of the two poolings (slot 0.7666, mh_abmil 0.7679).
+An untrained network clears 0.70 on this metric.
+
+**H5.** No arm's prior-normalised skill exceeds 0.30; the maximum is
+`slot:div=0.5` at +0.1990 and five of eight arms are negative.
+
+## H6 — FAIL, and the failure is a finding
+
+Normal Guidance raised slice AUC by **+0.2075** and patient-specific skill by
+**+0.1509**, against a falsifier at ≥ 0.02 (base `gated_abmil` −0.1019 → NG
++0.0490). Per the config's own wording that means prior injection is adding real
+information and the critique fails *for that arm*. Reported as a result about
+Normal Guidance, not as damage to the thesis — and note H1 independently
+identifies NG as the one arm carrying axial content.
+
+## H7 (power gate) — PASS, after a correction to how it was measured
+
+**Probe half.** Prior-normalised skill **0.7305** against 0.50.
+
+**Content-free half, and the defect it exposed.** Before the 2026-08-17
+amendment each stochastic member was computed **once** per tag:
+`np.random.default_rng(cf_seed)` was rebuilt per tag with `cf_seed` fixed at 0,
+so every tag in a condition shared a single realisation — `roll_permutation`'s
+offsets were identical across all 35 tags — and draw-to-draw variance was never
+estimable.
+
+That is a defect in the construction, not the aggregation, and it bites because
+the gate is a **maximum** over tags: a maximum over one realisation cannot
+distinguish a member that sits above 0.05 from a member whose single draw did.
+Each member is now drawn 30 times per tag and each tag's value is the mean over
+its draws. **The aggregation is unchanged** — still the maximum over tags.
+
+| member | single draw (pre-amendment) | mean | median | **max (the unit)** |
+|---|---|---|---|---|
+| chance | 0.0000 | +0.00000 | +0.00000 | +0.00000 |
+| roll_permutation | +0.0467 | −0.00038 | −0.00073 | **+0.01048** |
+| entropy_matched_random | **+0.0784** | −0.00553 | −0.00497 | **−0.00007** |
+| fitted_template | 0.0000 | +0.00000 | +0.00000 | +0.00000 |
+
+The published +0.0784 that failed H7 was one draw near the top of a distribution
+whose mean is ≈ 0: the worst per-tag draw-to-draw sd is 0.0483 for
+`roll_permutation` and 0.0673 for `entropy_matched_random`, both at or above the
+0.05 threshold they were being compared to.
+
+**The aggregation choice no longer decides anything.** Pre-amendment, max gave
+FAIL while mean and median cleared, in all three conditions. Under replication
+all three agree with room to spare. The replication did not flip a knife-edge
+verdict; it removed the knife-edge.
+
+Stated plainly, because it matters for how this is read: the replication was
+added **after** the single-draw values were seen, and the full mean/median/max
+table was known when the maximum was left in force. `AMENDMENTS.md` 2026-08-17
+carries the disclosure and the verdict artefact carries
+`aggregation_sensitivity`, so the choice is checkable rather than assertable.
+
+`balanced_presence` fails H7 on the **probe** half (0.4772 < 0.50), independent
+of anything the content-free set does — a statement about 38 test bags, not about
+the estimand.
+
+## H8 — reported, and it is the actionable one
+
+`in_lung_auc` **0.4884** against 0.65, with `in_lung_stratified_auc` 0.4936
+beside it and no threshold attached to it. All three conditions agree
+(0.4884 / 0.5080 / 0.4940). H8 carries no falsifier by design: restricting to
+lung removes the positional prior, and the pre-registration says in advance that
+this becomes the paper's recommendation rather than a defeat.
+
+## H9 — FAIL, and the power block says why
+
+2 of 50 matched tags order MosMed's fitted-template AUC below LIDC's. The
+falsifier counts *indistinguishable* as a failure, so a FAIL could mean the
+ordering is absent or that 22 MosMed test scans could not resolve one. It is
+neither: **the ordering is reversed.**
+
+| | value |
+|---|---|
+| median observed separation (LIDC − MosMed) | **−0.2495** |
+| median required separation | +0.0560 |
+| median shortfall | +0.3039 |
+| clusters (MosMed / LIDC) | 22 / 129 |
+
+MosMed's fitted template scores *higher* than LIDC's, the opposite of the
+prediction that prior dominance tracks positional stereotypy. Tighter intervals
+would not rescue it — the sign is wrong. COVID ground-glass, peripheral and
+basal, is more positionally stereotyped than a lung nodule, not less.
+
+## H10 — PASS
+
+Per seed: `oracle_wins, indistinguishable, oracle_wins, indistinguishable,
+oracle_wins`. **trained_wins on 0 of 5 seeds**; only trained-wins withdraws
+anything. The content-free mask-fitted separable template ties or beats the
+trained network on every seed.
+
+## Multiplicity
+
+Holm across the declared family of 21, per seed: 15, 15, 15, 16, 14 rejected —
+with 15, 14, 10, 16, 13 of those p-values underflowed to exactly 0. At ~7.4M
+pooled paired instances the DeLong p underflows, so "n of 21 rejected" is not a
+statement about discrimination; the underflow count is emitted per seed so the
+reader can see why.
+
+## TransMIL, the tenth arm
+
+Promoted on 2026-08-17 after measuring rather than before, because promotion
+re-hashes the pre-registration and an amendment supersedes every stamp on disk.
+It trains at LIDC bag scale with headroom — 3.86 GiB at the training shape,
+7.97 GiB for a full-bag evaluation at the deepest series in the cohort
+(162,560 instances) — and it is the arm with the *smallest* H1 gap (+0.0058).
+
+Two departures, both in `AMENDMENTS.md`: `nystrom-attention` is a dependency (the
+opposite call to CLAM's, and for the opposite reason — linear attention is what
+lets the arm exist at this bag size, whereas CLAM's SVM margin was read by no
+estimand), and the squaring pad is masked rather than filled with the bag's
+repeated leading instances.
+
+One implementation note belongs here because it changed a number: the squaring
+side is taken from each bag's own instance count, not the batch's padded width.
+Taking it from the batch made a bag's attention depend on which bags it was
+batched with — 0.012 on attention and 0.64 on the pooled token for one bag — and
+fixing it moved the smoke AUC from 0.8441 to 0.8760.
+
+## Caveats that cut against us
+
+**H5's denominator sits below chance.** The pinned denominator is
+`attention:inplane`, the arm's own in-plane marginal, whose median is 0.4208 and
+which is below 0.5 for most dumps. `(AUC − AUC_t)/(1 − AUC_t)` is therefore not
+"the fraction of achievable gain over a prior" as the prose reads, and the
+arithmetic makes H5 *easier* to pass. Stated because it weakens our own result.
+
+**Two hypotheses carry units this document did not declare** — H1 and H4 as mean
+over seeds, H9 as every matched tag — recorded in the verdict artefact under
+`undeclared_units_taken` rather than left implicit.
+
+**The sweep spans two commits**, 95 seeds at `3deb74f` and 105 at `24b113b`, all
+clean and all at one config hash. The diff between them touches only
+`prereg_verdict.py` and its tests — no training-path file — so training is
+bit-identical across the two. Disclosed in `AMENDMENTS.md` 2026-08-18 rather than
+re-run.

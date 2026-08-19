@@ -1239,3 +1239,11 @@ here, and the paper reports them whether or not H7 clears:
 - **Procedural note, because this is now three times:** hold ALL repo edits while
   a training array is queued or running, not merely uncommitted ones. The stamp
   window is "any moment a task starts", which on an array is hours wide.
+
+## 2026-08-19 — unblinding
+
+- **Config hash at unblinding:** `4fd6e801157ecef5`
+- **Git commit:** `9d34952915b911797ba503a930a92297868b56e3`
+- **Results in scope:** runs/nulls_nodule_present_confirmatory/prereg_verdict.json
+- **Reason:** writing the confirmatory results section of RESULTS.md; all ten hypotheses scored on all three LIDC conditions, no VOID and no NOT_RUN remaining
+- **Arms revealed:** 9 (ARM-0984A5, ARM-3B896D, ARM-3E8E96, ARM-799118, ARM-AEFB92, ARM-B91812, ARM-BE28CF, ARM-CDE60B, ARM-F80052)
