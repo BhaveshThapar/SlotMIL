@@ -1189,3 +1189,53 @@ here, and the paper reports them whether or not H7 clears:
   mean/median/max sensitivity table beside the verdict, and the paper states
   plainly that the pre-registered form of this member was unreplicated and that
   the replication was added after its single-draw values were seen.
+
+## 2026-08-18 — the confirmatory sweep spans two commits, all clean
+
+- **Kind:** deviation (record only — no config change)
+- **Config hash before → after:** `4fd6e801157ecef5` → `4fd6e801157ecef5` (unchanged)
+- **What changed:** no declared parameter. Recorded because the sweep's 200 seeds
+  do not all carry one `git_commit`, and the 2026-08-16 entry treats a mixed
+  provenance block as a defect. This is not that defect, and the difference is
+  worth stating rather than leaving a reader to reconstruct.
+
+  Every one of the 200 seeds carries `git_dirty: false`, `prereg_hash
+  4fd6e801157ecef5` and `analysis_role: confirmatory`. What differs is the
+  commit — 95 at `3deb74f`, 105 at `24b113b` — because `train_cached.py` samples
+  git state once per task before its seed loop, and a 10-task array on a
+  preemptible partition starts tasks over a long stretch.
+
+  The distinction from 2026-08-16 is that there the affected seeds came from an
+  **uncommitted** tree: what they ran was not recoverable, so no argument about
+  what did or did not change was available and re-running was the only way to
+  know. Here both commits are in the log and the diff between them is exactly:
+
+      scripts/prereg_verdict.py | 70 ++++++
+      tests/test_verdict.py     | 67 ++++++
+
+  No file under `slotmil/`, no `scripts/train_cached.py`, no `configs/`.
+  `prereg_verdict.py` runs after every artefact exists and reads only stamped
+  inputs. Training is therefore bit-identical across the two commits — a
+  checkable claim, not an assurance.
+
+  **Five seeds did carry `git_dirty: true` and were re-run rather than
+  disclosed.** All five were one task, `lidc_malignancy_confirmatory/transmil`,
+  whose five seeds were stamped inside an editing window. They were deleted and
+  retrained from a clean tree; the sweep now reports 200 clean, 0 dirty.
+
+- **Why:** the commit spread is disclosed rather than re-run, because re-running
+  40 tasks to collapse a spread whose diff provably cannot reach the training
+  path would spend a day of scavenger time to change no number. The dirty seeds
+  were re-run, because that argument is not available for them.
+
+- **Results already seen?** No. This entry describes provenance. It was written
+  after the verdicts existed, but it asserts nothing about them and no verdict
+  depends on it.
+
+- **Consequence for the paper:** none. The seeds are confirmatory. The paper
+  states that the sweep spans two commits, all clean, all at one config hash,
+  and that the inter-commit diff touches only analysis code.
+
+- **Procedural note, because this is now three times:** hold ALL repo edits while
+  a training array is queued or running, not merely uncommitted ones. The stamp
+  window is "any moment a task starts", which on an array is hours wide.
