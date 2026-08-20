@@ -15,7 +15,9 @@
 
 \title{Position priors dominate instance-level localisation metrics for\\
 weakly-supervised multiple-instance learning in volumetric CT}
-\author{Bhavesh Thapar\\University of Maryland\\\texttt{bthapar@terpmail.umd.edu}}
+\author{Bhavesh Thapar \and Mohammad Nayeem Teli\\
+University of Maryland, College Park\\
+\texttt{bthapar@terpmail.umd.edu}}
 \date{}
 
 \begin{document}
@@ -59,7 +61,11 @@ evaluation time, to say \emph{where} the finding is. The standard evidence is an
 instance-level AUC: score every instance in a bag by its attention weight, label
 instances by whether they intersect an expert mask, and pool. On volumetric CT
 the instances are patch tokens over a stack of slices, and the resulting number
-is reported as three-dimensional localisation.
+is reported as three-dimensional localisation. That attention may be doing less
+work than assumed is already visible at the classification level, where mean
+pooling matches or beats attention MIL across seven 3D neuroimaging
+tasks~\citep{harvey2026benchmark}; we ask the corresponding question of the
+localisation number.
 
 This paper asks what that number is made of, and answers with three claims.
 
@@ -74,7 +80,7 @@ $0.5$ and a ceiling set by geometry.
 
 \paragraph{(ii) The one intervention that adds real localisation is explicit
 prior injection, and two tests that were not designed to agree both find it.}
-Harvey-style \armNG{}~\citep{harvey2026b} adds a KL term pulling the attention's
+Harvey-style \armNG{}~\citep{harvey2026normal} adds a KL term pulling the attention's
 slice marginal towards a moment-matched Normal. It is the only arm whose
 \pss{} is raised past its falsifier, and independently the only arm the axis
 gate flags as carrying axial content. Those are different statistics computed
@@ -124,7 +130,7 @@ seeing three verdict tables was not available.
 multi-head ABMIL, CLAM-SB~\citep{lu2021clam}, DSMIL~\citep{li2021dsmil},
 TransMIL~\citep{shao2021transmil}, slot attention~\citep{locatello2020slot} with
 a diversity term, and the two Harvey arms --- a fixed centre
-Gaussian~\citep{harvey2026a} and \armNG{}~\citep{harvey2026b}. Five seeds each.
+Gaussian and \armNG{}~\citep{harvey2026normal}. Five seeds each.
 Mean pooling and the centre Gaussian have attention fixed by construction and
 are reported but not scored, so the scored set is eight.
 
@@ -144,7 +150,7 @@ information-gain-over-a-baseline construction
 of~\citet{kummerer2015}, kept on the AUC scale so it reads against published
 tables. The reference $A_t$ is pre-registered as an in-plane template fit on
 validation --- tighter than an unfit average mask~\citep{arun2021saliency} and
-tighter than a fixed $\sigma{=}1$ Gaussian~\citep{harvey2026a}, so it shrinks the
+tighter than a fixed $\sigma{=}1$ Gaussian~\citep{harvey2026normal}, so it shrinks the
 denominator and lowers every reported skill, which is the honest direction.
 
 One property of that reference is worth stating in advance, because it is the
