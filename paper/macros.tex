@@ -6,6 +6,21 @@
 \newcommand{\Pns}{Prior-normalised skill}
 \newcommand{\Pss}{Patient-specific skill}
 
+% The two objects previously both called "fitted template". Never write either
+% phrase inline; renaming one edits these four lines and nothing else.
+\newcommand{\maskref}{mask-fitted reference}        % fit to validation lesion masks; the content-free ceiling
+\newcommand{\Maskref}{Mask-fitted reference}
+\newcommand{\attden}{attention-fitted denominator}  % reference_baselines.fitted_template; fit to the arm's own attention
+\newcommand{\Attden}{Attention-fitted denominator}
+
+% Numbers quoted more than once, from the confirmatory artefacts.
+\newcommand{\maskrefInplane}{0.8302}   % masks:inplane flat AUC
+\newcommand{\maskrefSep}{0.8543}       % masks:separable flat AUC
+\newcommand{\attdenMedian}{0.4208}     % median attention:inplane over the 40 H5 dumps
+\newcommand{\probeDen}{0.8358}         % the probe's attention-fitted denominator
+\newcommand{\centrePriorSlice}{0.6427} % model-free centre prior, slice AUC, \condA{}
+\newcommand{\armSlot}{slot arm}
+
 \newcommand{\preghash}{\texttt{4fd6e801157ecef5}}
 \newcommand{\repourl}{https://github.com/BhaveshThapar/SlotMIL}
 

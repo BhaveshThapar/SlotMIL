@@ -36,11 +36,13 @@ weakly-supervised multiple-instance learning in volumetric CT}
 Attention-based multiple-instance learning (MIL) is routinely credited with
 localising findings in volumetric CT on the strength of instance-level AUC
 against expert masks. We report a pre-registered evaluation of what that number
-measures. Across ten MIL architectures on LIDC-IDRI, five seeds each, no arm's
-flat (3D) instance AUC separates from its within-slice AUC by more than $0.02$,
-no arm reaches a model-free centre prior on the axial axis, the $95$th percentile
-over $30$ untrained initialisations is $0.7666$ --- so $0.5$ is not the floor ---
-and a content-free in-plane template fit on validation reaches $0.8543$, above
+measures. Across ten MIL architectures on LIDC-IDRI, five seeds each, flat (3D)
+instance AUC sits within $0.02$ of within-slice AUC for seven of eight scored
+arms, no arm exceeds a model-free centre prior on the axial axis (the best
+statistically ties it), the $95$th
+percentile over $30$ untrained initialisations is $0.7666$ --- so $0.5$ is not
+the floor --- and a content-free \maskref{} built from lesion masks alone
+reaches $\maskrefSep$ (separable member; in-plane $\maskrefInplane$), above
 every trained arm. Attention scored against a \emph{different} patient's masks
 beats scoring it against the right ones for five of eight arms.
 The single exception is the paper's second finding: an arm that injects an
@@ -82,9 +84,9 @@ This paper asks what that number is made of, and answers with three claims.
 anatomical position.} Flat instance AUC over a whole volume is statistically
 indistinguishable from within-slice AUC for seven of eight scored arms, so
 nothing is being measured across the axial axis. A content-free reference that
-reads no image at all --- a $256$-number in-plane template fit on validation ---
-scores above every trained arm, and an untrained network reaches $0.7666$ at the
-$95$th percentile. The apparent skill sits between a floor that is nowhere near
+reads no image at all --- a $256$-number in-plane template fit to validation
+\emph{lesion masks}, the \maskref{} of \S3 --- scores above every trained arm,
+and an untrained network reaches $0.7666$ at the $95$th percentile. The apparent skill sits between a floor that is nowhere near
 $0.5$ and a ceiling set by geometry.
 
 \paragraph{(ii) The one intervention that adds real localisation is explicit
@@ -130,8 +132,10 @@ in test to estimate anything.
 
 \paragraph{Conditions.} Four are declared. \condA{} carries the hypothesis
 family and the multiplicity correction; \condB{} and \condC{} are LIDC
-consistency checks; \condD{} runs the content-free template family only and
-supports the stereotypy contrast. Which condition leads was ruled on
+consistency checks; \condD{} runs the content-free template family only,
+carries H9 alone, and receives no verdict table. Where this paper says ``all
+three conditions'' it means the three LIDC conditions (the companion states the
+declared-versus-reported diff in full). Which condition leads was ruled on
 2026-08-15, before any confirmatory number existed, so that choosing after
 seeing three verdict tables was not available.
 
@@ -153,21 +157,33 @@ unit over seeds, we take the mean over seeds and record that we took it
 
 Two estimands are imported rather than invented.
 
+\paragraph{Two templates, two names.} Two distinct objects in this paper are
+each an in-plane template fit on validation, and a reader who conflates them
+will conclude that our denominator is the thing beating the trained arms. The
+\emph{\maskref{}} is fit to validation \emph{lesion masks}: it reads no image
+and no attention, it sets the content-free ceiling ($\maskrefInplane$
+in-plane, $\maskrefSep$ separable), and it appears in the figures as the
+starred references. The \emph{\attden{}} is the same fitting rule applied to
+\emph{the arm's own attention}: it is the pre-registered reference $A_t$
+below, and its median over the scored dumps is $\attdenMedian$. The first is
+an oracle no arm reaches; the second adapts to the arm being scored.
+
 \paragraph{\Pns{}} $\;s = (A - A_t)/(1 - A_t)$, the fraction of the headroom
 above a content-free reference that a method claims; structurally the
 information-gain-over-a-baseline construction
 of~\citet{kummerer2015}, kept on the AUC scale so it reads against published
-tables. The reference $A_t$ is pre-registered as an in-plane template fit on
-validation --- tighter than an unfit average mask~\citep{arun2021saliency} and
-tighter than a fixed $\sigma{=}1$ Gaussian~\citep{harvey2026normal}, so it shrinks the
-denominator and lowers every reported skill, which is the honest direction.
+tables. The reference $A_t$ is the \attden{} --- tighter than an unfit average
+mask~\citep{arun2021saliency} and tighter than a fixed $\sigma{=}1$
+Gaussian~\citep{harvey2026normal}, so it shrinks the denominator and lowers
+every reported skill, which is the honest direction.
 
 One property of that reference is worth stating in advance, because it is the
-mechanism and not a defect. The template is fit to \emph{the arm's own
-attention}. Fit to the supervised probe's output the identical rule scores
-$0.836$; fit to a MIL arm's attention its median over the scored dumps is
-$0.4208$, below chance, because their attention carries no in-plane structure to
-fit. A sub-chance denominator inflates $1 - A_t$ above $1$ and so shrinks the
+mechanism and not a defect. Because the \attden{} is fit to the arm's own
+attention, what it scores depends on whose attention it was fit to. Fit to the
+supervised probe's output the identical rule scores $\probeDen$; fit to a MIL
+arm's attention its median over the scored dumps is $\attdenMedian$, below
+chance, because their attention carries no in-plane structure to fit. A
+sub-chance denominator inflates $1 - A_t$ above $1$ and so shrinks the
 reported skill, which makes a hypothesis that passes by staying \emph{below} a
 bar easier to pass. We report the conservative recomputation in
 \S\ref{sec:h4h5}.
@@ -183,10 +199,11 @@ are held identical and only the target changes.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig1_reference_ladder.pdf}
-\caption{\textbf{Left:} the reference ladder on \condA{}. Starred references read
-no image features at all --- they are computed from lesion masks and patch
-geometry. The best trained arm sits below the content-free separable template
-and barely above an untrained network's $95$th percentile.
+\caption{\textbf{Left:} the reference ladder on \condA{}. Starred references
+are \maskref{}s: they read no image features at all and are computed from
+lesion masks and patch geometry. The best trained arm --- the \armSlot{}, at
+$0.8247$ --- sits below the separable \maskref{} and barely above an untrained
+network's $95$th percentile.
 \textbf{Right:} flat, within-slice and slice instance AUC per scored arm. Flat
 and within-slice coincide for every arm but \armNG{}, and no arm's slice AUC
 reaches the model-free centre prior.}
@@ -205,13 +222,21 @@ $0.0669$, next-highest ABMIL at $0.0190$: a $3.5\times$ separation.
 The reported 3D localisation metric is an in-plane metric wearing 3D clothing.
 
 \paragraph{H2, \PASS{}.} No trained arm reaches the model-free centre prior's
-slice AUC of $0.6427$; the best is \armNG{} at $0.6318$. A prior with no
-parameters and no fitting beats every trained arm on the axis.
+slice AUC of $\centrePriorSlice$; the best is \armNG{} at $0.6318$. That
+margin is $0.0109$ and deserves its interval stated rather than demanded: the
+paired per-bag difference (prior $-$ arm), patient-clustered over the arm's
+five seeds, is $+0.0109$ $[-0.0078, +0.0300]$ for \armNG{} ---
+statistically indistinguishable --- while every other arm's interval sits
+entirely on the prior's side, and on both consistency conditions the interval
+excludes zero even for \armNG{}. The claim, stated at the strength the data
+supports: no trained arm exceeds a prior with no parameters and no fitting on
+the axis, and the best arm, on the family condition alone, ties it.
 
 \paragraph{H3, \PASS{}.} The $95$th percentile instance AUC over $30$ untrained
 initialisations is $0.7666$, against a bar of $0.70$, taken as the weaker of two
-poolings. Chance is not the floor for this protocol, and a reported $0.79$--$0.82$
-is inside the untrained range.
+poolings. Chance is not the floor for this protocol: a reported $0.79$--$0.82$
+is inside or barely above the untrained range, and our own best arm clears the
+percentile by under $0.06$ (\S\ref{sec:slot}).
 
 \subsection{What survives normalisation (H4, H5)}
 \label{sec:h4h5}
@@ -227,7 +252,7 @@ the bar at $0.3432$ and is reported rather than absorbed, because the unit was
 declared before that seed existed.
 
 \paragraph{H5 under a floored denominator (not pre-registered).} Because the
-declared denominator sits below chance for $24$ of $40$ scored dumps
+declared \attden{} sits below chance for $24$ of $40$ scored dumps
 (\S3), we recompute the identical statistic --- floor per tag, mean over seeds,
 maximum over the arm set --- with the denominator floored at $0.5$, outside the
 confirmatory family and without amending the frozen configuration.
@@ -240,6 +265,40 @@ confirmatory family and without amending the frozen configuration.
 the maximum wherever it binds. The caveat cuts against us and the conservative
 recomputation removes it.
 
+\subsection{The best trained arm, read honestly}
+\label{sec:slot}
+
+The strongest trained result in this paper belongs to the \armSlot{} --- slot
+attention with a diversity term, the project's founding hypothesis --- and it
+is the cleanest single illustration of the critique. Four facts about one
+arm, each from a different artefact. Its flat instance AUC of $0.8247$ is the
+best of the eight, above the untrained $95$th percentile ($0.7666$) and below
+the separable \maskref{} ($\maskrefSep$). Its \attden{} suffers the largest
+in-lung collapse of any arm, $-0.300$ against a next-largest of $+0.005$
+(Figure~\ref{fig:lung}). H5's one over-bar seed ($0.3432$,
+\S\ref{sec:h4h5}) is a slot seed, and the arm holds H5's maximum
+($+0.1990$). And Table~\ref{tab:armlung} applies Recommendation~1 to the arms
+themselves rather than to their templates: restricted to the lung, the
+\armSlot{}'s own attention falls from $0.8247$ to $0.5560$ --- a loss of
+$0.2688$, far the largest of the eight, while the arms with no headroom drift
+toward chance from below.
+
+An ``interpretable'' pooling bottleneck looked best precisely because it had
+learned where lungs are. The arm our founding hypothesis picked is not an
+exception to the critique; it is its sharpest example.
+
+\begin{table}[t]
+\centering
+\input{tables/arm_in_lung}
+\caption{Raw and in-lung instance AUC of each arm's \emph{own} frozen-slot
+attention (mean over five seeds, \condA{}; patient-clustered bootstrap per
+seed). Recommendation~1 applied to this paper's own arms: the scored quantity
+here is the attention itself, not the \attden{} of Figure~\ref{fig:lung}.
+Raw values are verified against the confirmatory
+\texttt{template\_family.json} at generation time.}
+\label{tab:armlung}
+\end{table}
+
 \subsection{The power gate, and its scope (H7)}
 
 A critique whose estimands score zero for everything is not a fix, so the
@@ -248,14 +307,16 @@ patch probe must clear $0.50$ \pns{} while every content-free baseline stays
 below $0.05$.
 
 \paragraph{H7, \PASS{} on \condA{}.} The probe reaches $0.7305$
-($A = 0.9558$ against its own template at $0.8358$). The content-free set:
+($A = 0.9558$ against its own \attden{} at $\probeDen$). The content-free set:
 chance $0.0$, roll permutation $+0.0105$, entropy-matched random $-0.0001$,
-fitted template $0.0$ by construction. The estimands discriminate.
+the \texttt{fitted\_template} member (the \attden{} itself) $0.0$ by
+construction. The estimands discriminate.
 
 \paragraph{Scope, stated up front.} The gate is per condition, and it does not
 pass everywhere: \condA{} $0.7305$, \condB{} $0.7036$, \condC{}
-$\mathbf{0.4772}$ against the $0.50$ bar. On \condC{} the probe's own in-plane
-template is the strongest of the three ($0.8568$) while its AUC is the weakest
+$\mathbf{0.4772}$ against the $0.50$ bar --- the three LIDC conditions;
+\condD{} is out of the gate's scope by declaration. On \condC{} the probe's own
+\attden{} is the strongest of the three ($0.8568$) while its AUC is the weakest
 ($0.9252$), so the headroom the ratio measures is genuinely small --- a statement
 about $38$ test bags, not about the estimand. \textbf{We recommend the
 estimands only where the per-condition gate passes.} Where it fails, report the
@@ -313,7 +374,8 @@ Nothing in the architecture sweep adds localisation; a loss term that names the
 axial coordinate explicitly does.
 
 \paragraph{And what it does not show.} \armNG{}'s slice AUC of $0.6318$ still
-does not reach the model-free centre prior at $0.6427$, so H2 holds for it too.
+does not reach the model-free centre prior at $\centrePriorSlice$, so H2 holds
+for it too --- as a statistical tie, the only arm to manage even that.
 Prior injection is the only thing in this sweep that moves the measurement; it
 does not solve the problem.
 
@@ -322,22 +384,24 @@ does not solve the problem.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.86\textwidth]{figures/fig4_in_lung.pdf}
-\caption{The pre-registered in-plane template, scored on the whole bag and
-restricted to a lung segmentation. Note the scored quantity is the template fit
-to each arm's attention, not the arm's own attention: for most arms it is already
-at chance unrestricted, so only the arms whose template carried in-plane
-structure have anything to lose.}
+\includegraphics[width=0.86\textwidth]{figures/fig3_in_lung.pdf}
+\caption{The \attden{}, scored on the whole bag and restricted to a lung
+segmentation. Note the scored quantity is the template fit to each arm's
+attention, not the arm's own attention: for most arms it is already at chance
+unrestricted, so only the arms whose template carried in-plane structure have
+anything to lose. The arms' own attention under the identical restriction is
+Table~\ref{tab:armlung}.}
 \label{fig:lung}
 \end{figure}
 
 H8 was declared two-sided with no falsifier, and with it written in advance that
 if restricting to lung removed the prior, that would become the paper's
 recommendation rather than a defeat. It does. The lung is $25.2\%$ of a bag, and
-inside it the pre-registered template scores $0.4884$ against a bar of $0.65$,
-with the position-stratified variant at $0.4936$ beside it and all three
-conditions agreeing ($0.4884 / 0.5080 / 0.4940$). No arm's fitted template beats
-chance inside the lung.
+inside it the pre-registered \attden{} scores $0.4884$ against a bar of $0.65$
+--- a bar set, in the amendment of 2026-08-15, against the unrestricted
+\attden{}'s $0.786$ on the discovery split --- with the position-stratified
+variant at $0.4936$ beside it and all three LIDC conditions agreeing
+($0.4884 / 0.5080 / 0.4940$). No arm's \attden{} beats chance inside the lung.
 
 \paragraph{Recommended convention.} \textbf{Report raw and in-organ instance AUC
 side by side, and read the gap as that dataset's positional confound.} It costs
@@ -349,7 +413,7 @@ where the power gate fails.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/fig3_dataset_contrast.pdf}
+\includegraphics[width=\textwidth]{figures/fig4_dataset_contrast.pdf}
 \caption{Content-free templates fit to lesion masks, LIDC versus MosMed. The
 axial axis is empty on LIDC and dominant on MosMed. No training is involved in
 any bar.}
@@ -358,7 +422,7 @@ any bar.}
 
 \paragraph{H9, \FAIL{}, and reversed.} H9 predicted that prior dominance would
 track positional stereotypy, treating a lung nodule as the more stereotyped
-finding, and required MosMed's fitted-template AUC to sit below LIDC's with the
+finding, and required MosMed's \attden{} AUC to sit below LIDC's with the
 intervals separated. One of $50$ matched (arm, seed) pairs clears that; two order
 on the point estimate alone. The two counts are the artefact's \texttt{reason}
 and \texttt{power.n\_ordering} respectively and they measure different things.
@@ -406,8 +470,8 @@ size, and is never rejected.
 
 \paragraph{One backbone.} Every result uses frozen DINOv2 ViT-B/14, and a second
 backbone would strengthen the sweep. It would not change the central
-measurement. The references that set the ceiling --- the mask-fitted in-plane
-template at $0.8302$, the separable template at $0.8543$, the centre prior at
+measurement. The references that set the ceiling --- the in-plane \maskref{} at
+$\maskrefInplane$, the separable at $\maskrefSep$, the centre prior at
 $0.7833$ --- \emph{read no image features at all}; they are computed from lesion
 masks and patch geometry and are invariant to the encoder by construction. That a
 content-free positional reference reaches the level of trained attention-MIL
@@ -449,9 +513,9 @@ third dimension, and the reader can see it in one line.
 positional reference and an untrained-initialisation percentile for the protocol
 in use. Chance is not the floor.
 \item \textbf{Normalise against a fitted reference, and gate it.} Report \pns{}
-against an in-plane template fit on validation, and report the per-condition
-supervised-probe gate beside it. Where the gate fails, fall back to
-recommendation~1.
+against the \attden{} --- an in-plane template fit on validation to the
+method's own attention --- and report the per-condition supervised-probe gate
+beside it. Where the gate fails, fall back to recommendation~1.
 \end{enumerate}
 
 % ==========================================================================

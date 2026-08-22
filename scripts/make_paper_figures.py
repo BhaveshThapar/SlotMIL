@@ -187,13 +187,13 @@ def fig1(src: Sources, arms: ArmSet, out: Path) -> dict:
     trained = per_arm(scorer_means(tf, "trained"), arms)
     refs = [
         ("chance", 0.5, C_FLOOR, True),
-        ("Content-free, axial only", constant_scorer(tf, "masks:axial"), C_FREE, True),
-        ("Content-free, joint", constant_scorer(tf, "masks:joint"), C_FREE, True),
+        ("Mask-fitted, axial only", constant_scorer(tf, "masks:axial"), C_FREE, True),
+        ("Mask-fitted, joint", constant_scorer(tf, "masks:joint"), C_FREE, True),
         ("Untrained-init 95th pct", verdict(vd, "H3")["p95"], C_FLOOR, False),
         ("Centre prior (no model, no fit)",
          constant_scorer(tf, "centre_prior"), C_FREE, True),
-        ("Content-free, in-plane", constant_scorer(tf, "masks:inplane"), C_FREE, True),
-        ("Content-free, separable",
+        ("Mask-fitted, in-plane", constant_scorer(tf, "masks:inplane"), C_FREE, True),
+        ("Mask-fitted, separable",
          constant_scorer(tf, "masks:separable"), C_FREE, True),
         ("Supervised patch probe (ceiling)",
          pg["prior_normalised_skill"]["auc_probe"], C_CEILING, False),
@@ -358,8 +358,8 @@ def fig2(src: Sources, arms: ArmSet, inv: dict, out: Path) -> dict:
     }
 
 
-# ------------------------------------------------------------------ figure 3
-def fig3(src: Sources, out: Path) -> dict:
+# ------------------------------------- figure 4 (dataset contrast, renders 4th)
+def fig_contrast(src: Sources, out: Path) -> dict:
     """Which axis carries the prior is a property of the dataset."""
     lidc = src.cond(FAMILY, "template_family")
     mos = src.cond("mosmed_severity", "template_family")
@@ -398,17 +398,17 @@ def fig3(src: Sources, out: Path) -> dict:
         ax.set_title(name, fontsize=9.5)
         ax.set_ylim(0, 1.02)
         ax.spines[["top", "right"]].set_visible(False)
-    axs[0].set_ylabel("AUC of a content-free template\nfit to lesion masks")
+    axs[0].set_ylabel("AUC of a mask-fitted reference\n(fit to lesion masks)")
     axs[0].legend(loc="upper left", fontsize=7.6, frameon=False)
     fig.suptitle("The axial axis is empty on LIDC and dominant on MosMed",
                  fontsize=10, x=.01, ha="left")
     fig.tight_layout(rect=(0, 0, 1, .94))
-    save(fig, out / "fig3_dataset_contrast")
+    save(fig, out / "fig4_dataset_contrast")
     return data
 
 
-# ------------------------------------------------------------------ figure 4
-def fig4(src: Sources, arms: ArmSet, inv: dict, out: Path) -> dict:
+# ------------------------------------------- figure 3 (in-lung, renders 3rd)
+def fig_in_lung(src: Sources, arms: ArmSet, inv: dict, out: Path) -> dict:
     """H8 -- what survives inside the organ.
 
     The quantity H8 scores is the **attention-fitted** in-plane template, not the
@@ -456,18 +456,19 @@ def fig4(src: Sources, arms: ArmSet, inv: dict, out: Path) -> dict:
     ax.text(.5 + .006, -.55, "chance", fontsize=7, color=C_FLOOR)
     ax.set_yticks(ys)
     ax.set_yticklabels([arms.display(a) for a in order], fontsize=8.5)
-    ax.set_xlabel("instance AUC of the pre-registered in-plane template "
+    ax.set_xlabel("instance AUC of the attention-fitted denominator "
                   "(fit to the arm's own attention)")
     ax.set_xlim(lo - .06, hi + .09)
     ax.set_ylim(-.9, len(order) - .3)
-    ax.set_title("Inside the lung, no arm's fitted template beats chance\n"
+    ax.set_title("Inside the lung, no arm's attention-fitted denominator "
+                 "beats chance\n"
                  f"aggregate in-lung AUC {h8['value']:.4f} vs a bar of "
                  f"{h8['threshold']}; the lung is {frac:.1%} of a bag",
                  fontsize=9.5, loc="left")
     ax.legend(loc="upper right", fontsize=7.8, frameon=False)
     ax.spines[["top", "right"]].set_visible(False)
     fig.tight_layout()
-    save(fig, out / "fig4_in_lung")
+    save(fig, out / "fig3_in_lung")
     return {"unrestricted": unres, "in_lung": inl,
             "lost_to_lung_restriction": {a: unres[a] - inl[a] for a in order},
             "scored_quantity": "attention-fitted in-plane template, not the "
@@ -553,6 +554,32 @@ def table_falsifiers(src: Sources, pre) -> str:
     return "\n".join(lines)
 
 
+def table_arm_in_lung(src: Sources, arms: ArmSet, inv: dict) -> str | None:
+    """Recommendation 1 applied to the paper's own arms.
+
+    Reads ``arm_in_lung.json`` -- the arms' own frozen-slot attention, raw and
+    lung-restricted -- not ``h8_in_lung.json``, which scores the
+    attention-fitted denominator. Returns ``None`` when the artefact has not
+    been generated, so the table build fails loudly at \\input time rather
+    than silently emitting a stale file.
+    """
+    try:
+        doc = src.cond(FAMILY, "arm_in_lung")
+    except FileNotFoundError:
+        return None
+    per = unblind_keys(doc["per_arm"], inv)
+    order = sorted(per, key=lambda a: -per[a]["raw"])
+    lines = [r"\begin{tabular}{lccc}", r"\toprule",
+             r"Arm & raw AUC & in-lung AUC & $\Delta$ \\", r"\midrule"]
+    for a in order:
+        v = per[a]
+        name = arms.display(arms.key_to_name.get(a, a))
+        lines.append(f"{name} & {v['raw']:.4f} & {v['in_lung']:.4f} & "
+                     f"{v['raw'] - v['in_lung']:+.4f} " + r"\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
 def table_h5(src: Sources) -> str:
     lines = [r"\begin{tabular}{lccc}", r"\toprule",
              r"Condition & max skill, as published & denominator floored at 0.5 "
@@ -594,8 +621,8 @@ def main():
     data = {
         "fig1_reference_ladder": fig1(src, arms, out),
         "fig2_normal_guidance": fig2(src, arms, inv, out),
-        "fig3_dataset_contrast": fig3(src, out),
-        "fig4_in_lung": fig4(src, arms, inv, out),
+        "fig3_in_lung": fig_in_lung(src, arms, inv, out),
+        "fig4_dataset_contrast": fig_contrast(src, out),
     }
 
     if args.tables:
@@ -603,7 +630,12 @@ def main():
         tdir.mkdir(parents=True, exist_ok=True)
         for name, body in (("verdicts", table_verdicts(src)),
                            ("falsifiers", table_falsifiers(src, pre)),
-                           ("h5_sensitivity", table_h5(src))):
+                           ("h5_sensitivity", table_h5(src)),
+                           ("arm_in_lung", table_arm_in_lung(src, arms, inv))):
+            if body is None:
+                print(f"   [warn] {name}: artefact missing, table not written",
+                      flush=True)
+                continue
             (tdir / f"{name}.tex").write_text(body + "\n")
             print(f"   wrote {tdir / name}.tex", flush=True)
 

@@ -7,11 +7,15 @@
 TEX      := pdflatex -interaction=nonstopmode -halt-on-error
 PYTHON   := ../.venv/bin/python
 
-.PHONY: all clean figures veryclean
+.PHONY: all clean figures isbi veryclean
 
 all: main.pdf supplement.pdf
 
-main.pdf: main.tex macros.tex refs.bib tables/verdicts.tex tables/h5_sensitivity.tex
+isbi:
+	$(MAKE) -C isbi
+
+main.pdf: main.tex macros.tex refs.bib tables/verdicts.tex tables/h5_sensitivity.tex \
+          tables/arm_in_lung.tex
 	$(TEX) main
 	-bibtex main
 	$(TEX) main
