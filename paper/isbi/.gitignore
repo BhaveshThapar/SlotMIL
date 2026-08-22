@@ -1,0 +1,6 @@
+isbi.pdf
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
