@@ -50,6 +50,10 @@ __pycache__/
 !/runs/harvey_bridge/
 /runs/harvey_bridge/*
 !/runs/harvey_bridge/harvey_bridge.json
+# The confound atlas: exploratory per-dataset profiles, MELBA-version evidence.
+!/runs/confound_atlas/
+/runs/confound_atlas/*
+!/runs/confound_atlas/*.json
 /wandb/
 *.h5
 *.pt
