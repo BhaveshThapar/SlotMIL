@@ -45,6 +45,11 @@ __pycache__/
 # H3's two inputs, which live at the top level rather than under a condition.
 !/runs/untrained_floor_rehash5.json
 !/runs/untrained_floor_mh_rehash5.json
+# The Harvey bridge lives outside the confirmatory directories on purpose --
+# it carries exploratory MosMed rows -- but its artefact is paper evidence.
+!/runs/harvey_bridge/
+/runs/harvey_bridge/*
+!/runs/harvey_bridge/harvey_bridge.json
 /wandb/
 *.h5
 *.pt

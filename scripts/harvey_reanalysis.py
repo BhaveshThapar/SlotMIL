@@ -52,6 +52,10 @@ HARVEY_TABLE1 = {
 
 # This project, LIDC-IDRI nodule_present, 4-radiologist consensus voxel masks.
 # scripts/axis_gate.py, patient-level cluster bootstrap over 129 patients.
+# SUPERSEDED: these are discovery-era numbers (centre prior 0.6026 vs the
+# confirmatory 0.6427). scripts/harvey_bridge.py reads the confirmatory values
+# from the axis_gate.json artefacts at runtime and is what the paper cites;
+# HARVEY_TABLE1 above remains the single source for their published numbers.
 OURS = {
     "axial (slice AUC), centre prior": 0.6026,
     "axial (slice AUC), trained networks": (0.4822, 0.5565),
