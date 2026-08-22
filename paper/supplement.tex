@@ -205,6 +205,17 @@ only stamped JSON --- so all ten verdicts re-derive in seconds:
 python scripts/prereg\_verdict.py --dir runs/nulls\_nodule\_present\_confirmatory \ldots
 \end{quote}
 
+\noindent Two sensitivity analyses added for the paper's H2 interval and
+Table~3 follow the same contract:
+\texttt{scripts/h2\_paired\_slice.py} (the paired patient-clustered interval
+on the centre-prior margin) and \texttt{scripts/arm\_in\_lung.py} (the arms'
+own raw-versus-in-lung AUC), both stamped
+\texttt{sensitivity\_outside\_confirmatory\_family} and both refusing rather
+than proceeding when their recomputed values disagree with the stored
+confirmatory artefacts. \texttt{scripts/harvey\_bridge.py} and
+\texttt{scripts/confound\_atlas.py} carry the exploratory companion analyses
+and are stamped accordingly.
+
 \noindent Figures and tables in both documents regenerate from JSON alone with
 \texttt{scripts/make\_paper\_figures.py --out paper/figures --tables
 paper/tables}, which also writes \texttt{paper/figures/figure\_data.json}: every

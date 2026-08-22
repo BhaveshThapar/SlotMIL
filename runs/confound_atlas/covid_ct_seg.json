@@ -1,0 +1,148 @@
+{
+  "n_cases_fit": 8,
+  "n_cases_score": 12,
+  "n_cases_scored": 12,
+  "n_cases_dropped_no_lesion": 0,
+  "fit_case_ids": [
+    "coronacases_003",
+    "coronacases_004",
+    "coronacases_005",
+    "coronacases_007",
+    "coronacases_009",
+    "radiopaedia_10_85902_1",
+    "radiopaedia_14_85914_0",
+    "radiopaedia_7_85703_0"
+  ],
+  "scorers": {
+    "masks:inplane": {
+      "flat_auc": {
+        "mean": 0.8679811435876933,
+        "lo": 0.8398804382537858,
+        "hi": 0.8961709183068259,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "within_slice_auc": {
+        "mean": 0.8761179986417039,
+        "lo": 0.8482988134566141,
+        "hi": 0.9043817297636062,
+        "n": 12,
+        "n_clusters": 12
+      }
+    },
+    "masks:axial": {
+      "flat_auc": {
+        "mean": 0.7482447940575511,
+        "lo": 0.7114173506199747,
+        "hi": 0.7872892017626225,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "slice_auc": {
+        "mean": 0.8972346121151847,
+        "lo": 0.8265532314629462,
+        "hi": 0.9579563369972163,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "within_slice_auc": {
+        "mean": 0.5985837955504467,
+        "lo": 0.5736670634411614,
+        "hi": 0.6217365285341342,
+        "n": 12,
+        "n_clusters": 12
+      }
+    },
+    "masks:separable": {
+      "flat_auc": {
+        "mean": 0.9189568485320468,
+        "lo": 0.8934861664521159,
+        "hi": 0.942735284001184,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "slice_auc": {
+        "mean": 0.8972346121151847,
+        "lo": 0.8265532314629462,
+        "hi": 0.9579563369972163,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "within_slice_auc": {
+        "mean": 0.8890995976857369,
+        "lo": 0.8614350373181621,
+        "hi": 0.9159932339522765,
+        "n": 12,
+        "n_clusters": 12
+      }
+    },
+    "masks:joint": {
+      "flat_auc": {
+        "mean": 0.8693414187966022,
+        "lo": 0.8260998060234471,
+        "hi": 0.9067471956128348,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "slice_auc": {
+        "mean": 0.8972346121151847,
+        "lo": 0.8265532314629462,
+        "hi": 0.9579563369972163,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "within_slice_auc": {
+        "mean": 0.8424817007402366,
+        "lo": 0.7966446915381825,
+        "hi": 0.8831442767690839,
+        "n": 12,
+        "n_clusters": 12
+      }
+    },
+    "centre_prior": {
+      "flat_auc": {
+        "mean": 0.8766602353180476,
+        "lo": 0.8486924271780067,
+        "hi": 0.903716387738127,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "slice_auc": {
+        "mean": 0.8978531412811627,
+        "lo": 0.8304054008206011,
+        "hi": 0.9561114445015709,
+        "n": 12,
+        "n_clusters": 12
+      },
+      "within_slice_auc": {
+        "mean": 0.8242224895325966,
+        "lo": 0.7927930037287755,
+        "hi": 0.854263561702143,
+        "n": 12,
+        "n_clusters": 12
+      }
+    }
+  },
+  "dataset": "covid_ct_seg",
+  "declared_in_prereg": false,
+  "analysis_role": "exploratory_atlas",
+  "note": "Confound atlas: mask-fitted template family on a public dataset, no training, no images, no GPU. Not pre-registered; the split is a deterministic case-id hash declared as a convention. Geometry pinned to the paper's (16x16 patches, 32 depth bins) for comparability with the LIDC/MosMed columns.",
+  "grid": 16,
+  "n_bins": 32,
+  "reps": 10000,
+  "lesion_semantics": "lesion-only (organ labels excluded)",
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "4b02b162cc5d43d1a9cdc26b9c174b29eaa89d2e",
+    "git_dirty": true
+  }
+}

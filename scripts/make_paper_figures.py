@@ -580,6 +580,58 @@ def table_arm_in_lung(src: Sources, arms: ArmSet, inv: dict) -> str | None:
     return "\n".join(lines)
 
 
+ATLAS_DATASETS = ("covid_ct_seg", "kits19", "msd_task06", "lits")
+
+
+def table_confound_atlas(src: Sources) -> str | None:
+    """Per-dataset positional-confound profile, mask-fitted members only.
+
+    LIDC and MosMed rows come from the confirmatory ``template_family.json``
+    artefacts; the public-dataset rows from ``runs/confound_atlas/*.json``
+    (exploratory, and their rows say so in their own artefacts). Returns
+    ``None`` when no atlas artefact exists yet.
+    """
+    rows = []
+    for cond, label in ((FAMILY, "LIDC (nodules)"),
+                        ("mosmed_severity", "MosMed (COVID GGO)")):
+        doc = src.cond(cond, "template_family")
+        rows.append((label, {
+            f"masks:{m}": {a: constant_scorer(doc, f"masks:{m}", a)
+                           for a in ("flat_auc", "slice_auc")}
+            for m in ("inplane", "axial", "separable")}
+            | {"centre_prior": {a: constant_scorer(doc, "centre_prior", a)
+                                for a in ("flat_auc", "slice_auc")}}))
+    n_atlas = 0
+    for name in ATLAS_DATASETS:
+        try:
+            doc = src.load(f"confound_atlas/{name}.json")
+        except FileNotFoundError:
+            continue
+        n_atlas += 1
+        rows.append((f"{name} ({doc['n_cases_score']} cases)", {
+            k: {a: doc["scorers"][k][a]["mean"] for a in
+                ("flat_auc", "slice_auc")}
+            for k in ("masks:inplane", "masks:axial", "masks:separable",
+                      "centre_prior")}))
+    if not n_atlas:
+        return None
+    lines = [r"\begin{tabular}{lcccccccc}", r"\toprule",
+             r"& \multicolumn{2}{c}{in-plane} & \multicolumn{2}{c}{axial} & "
+             r"\multicolumn{2}{c}{separable} & \multicolumn{2}{c}{centre prior} \\",
+             r"Dataset & flat & slice & flat & slice & flat & slice & "
+             r"flat & slice \\", r"\midrule"]
+    for label, d in rows:
+        cells = []
+        for k in ("masks:inplane", "masks:axial", "masks:separable",
+                  "centre_prior"):
+            for a in ("flat_auc", "slice_auc"):
+                v = d[k][a]
+                cells.append("--" if v is None else f"{v:.3f}")
+        lines.append(_tex(label) + " & " + " & ".join(cells) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
 def table_h5(src: Sources) -> str:
     lines = [r"\begin{tabular}{lccc}", r"\toprule",
              r"Condition & max skill, as published & denominator floored at 0.5 "
@@ -631,7 +683,8 @@ def main():
         for name, body in (("verdicts", table_verdicts(src)),
                            ("falsifiers", table_falsifiers(src, pre)),
                            ("h5_sensitivity", table_h5(src)),
-                           ("arm_in_lung", table_arm_in_lung(src, arms, inv))):
+                           ("arm_in_lung", table_arm_in_lung(src, arms, inv)),
+                           ("confound_atlas", table_confound_atlas(src))):
             if body is None:
                 print(f"   [warn] {name}: artefact missing, table not written",
                       flush=True)

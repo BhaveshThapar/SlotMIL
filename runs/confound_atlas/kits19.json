@@ -1,0 +1,241 @@
+{
+  "n_cases_fit": 101,
+  "n_cases_score": 109,
+  "n_cases_scored": 109,
+  "n_cases_dropped_no_lesion": 0,
+  "fit_case_ids": [
+    "case_00001",
+    "case_00002",
+    "case_00003",
+    "case_00004",
+    "case_00008",
+    "case_00009",
+    "case_00010",
+    "case_00011",
+    "case_00012",
+    "case_00013",
+    "case_00016",
+    "case_00017",
+    "case_00020",
+    "case_00022",
+    "case_00023",
+    "case_00024",
+    "case_00025",
+    "case_00026",
+    "case_00028",
+    "case_00033",
+    "case_00037",
+    "case_00040",
+    "case_00041",
+    "case_00043",
+    "case_00044",
+    "case_00047",
+    "case_00051",
+    "case_00052",
+    "case_00053",
+    "case_00056",
+    "case_00058",
+    "case_00059",
+    "case_00060",
+    "case_00063",
+    "case_00067",
+    "case_00068",
+    "case_00071",
+    "case_00074",
+    "case_00076",
+    "case_00080",
+    "case_00081",
+    "case_00082",
+    "case_00083",
+    "case_00088",
+    "case_00090",
+    "case_00094",
+    "case_00097",
+    "case_00098",
+    "case_00100",
+    "case_00103",
+    "case_00104",
+    "case_00106",
+    "case_00108",
+    "case_00112",
+    "case_00114",
+    "case_00116",
+    "case_00120",
+    "case_00122",
+    "case_00124",
+    "case_00126",
+    "case_00127",
+    "case_00129",
+    "case_00130",
+    "case_00131",
+    "case_00134",
+    "case_00137",
+    "case_00139",
+    "case_00140",
+    "case_00141",
+    "case_00143",
+    "case_00148",
+    "case_00149",
+    "case_00150",
+    "case_00151",
+    "case_00152",
+    "case_00153",
+    "case_00154",
+    "case_00155",
+    "case_00156",
+    "case_00157",
+    "case_00160",
+    "case_00161",
+    "case_00162",
+    "case_00163",
+    "case_00168",
+    "case_00170",
+    "case_00171",
+    "case_00172",
+    "case_00174",
+    "case_00178",
+    "case_00179",
+    "case_00181",
+    "case_00182",
+    "case_00184",
+    "case_00185",
+    "case_00187",
+    "case_00188",
+    "case_00190",
+    "case_00193",
+    "case_00194",
+    "case_00206"
+  ],
+  "scorers": {
+    "masks:inplane": {
+      "flat_auc": {
+        "mean": 0.9160603131095737,
+        "lo": 0.9046237268961379,
+        "hi": 0.9264401084993793,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "slice_auc": {
+        "mean": 0.5,
+        "lo": 0.5,
+        "hi": 0.5,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "within_slice_auc": {
+        "mean": 0.9236795204442342,
+        "lo": 0.9122076925481551,
+        "hi": 0.9341196704453442,
+        "n": 109,
+        "n_clusters": 109
+      }
+    },
+    "masks:axial": {
+      "flat_auc": {
+        "mean": 0.653881750278307,
+        "lo": 0.619787589387081,
+        "hi": 0.6876966175872146,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "slice_auc": {
+        "mean": 0.6843787485676995,
+        "lo": 0.6441687455042888,
+        "hi": 0.7242760084336249,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "within_slice_auc": {
+        "mean": 0.5013799899373039,
+        "lo": 0.4925568976074004,
+        "hi": 0.5099446870463292,
+        "n": 109,
+        "n_clusters": 109
+      }
+    },
+    "masks:separable": {
+      "flat_auc": {
+        "mean": 0.934142397756193,
+        "lo": 0.9217210453663232,
+        "hi": 0.9449908515661156,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "slice_auc": {
+        "mean": 0.6843787485676995,
+        "lo": 0.6441687455042888,
+        "hi": 0.7242760084336249,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "within_slice_auc": {
+        "mean": 0.9223269596617765,
+        "lo": 0.9111242048781067,
+        "hi": 0.9325230485545861,
+        "n": 109,
+        "n_clusters": 109
+      }
+    },
+    "masks:joint": {
+      "flat_auc": {
+        "mean": 0.9200554415271501,
+        "lo": 0.9022511558190347,
+        "hi": 0.9347280146163003,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "slice_auc": {
+        "mean": 0.6843787485676995,
+        "lo": 0.6441687455042888,
+        "hi": 0.7242760084336249,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "within_slice_auc": {
+        "mean": 0.9096774591242873,
+        "lo": 0.8941012407316026,
+        "hi": 0.9232524658777991,
+        "n": 109,
+        "n_clusters": 109
+      }
+    },
+    "centre_prior": {
+      "flat_auc": {
+        "mean": 0.8912242028472542,
+        "lo": 0.8796628792422477,
+        "hi": 0.9018552881184894,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "slice_auc": {
+        "mean": 0.7530888436397475,
+        "lo": 0.7186822619310657,
+        "hi": 0.7858310612115982,
+        "n": 109,
+        "n_clusters": 109
+      },
+      "within_slice_auc": {
+        "mean": 0.8297616379998094,
+        "lo": 0.817735798864885,
+        "hi": 0.8419319571399012,
+        "n": 109,
+        "n_clusters": 109
+      }
+    }
+  },
+  "dataset": "kits19",
+  "declared_in_prereg": false,
+  "analysis_role": "exploratory_atlas",
+  "note": "Confound atlas: mask-fitted template family on a public dataset, no training, no images, no GPU. Not pre-registered; the split is a deterministic case-id hash declared as a convention. Geometry pinned to the paper's (16x16 patches, 32 depth bins) for comparability with the LIDC/MosMed columns.",
+  "grid": 16,
+  "n_bins": 32,
+  "reps": 10000,
+  "lesion_semantics": "lesion-only (organ labels excluded)",
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "2510504a2fc1e5338e1e8098ea7877bd2f46d416",
+    "git_dirty": true
+  }
+}

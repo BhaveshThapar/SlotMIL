@@ -73,6 +73,24 @@
       "prereg_hash": "4fd6e801157ecef5",
       "git_commit": "d91c7b824c0d6507850fc1728d33219db62198b0",
       "git_dirty": true
+    },
+    "confound_atlas/covid_ct_seg.json": {
+      "path": "runs/confound_atlas/covid_ct_seg.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "4b02b162cc5d43d1a9cdc26b9c174b29eaa89d2e",
+      "git_dirty": true
+    },
+    "confound_atlas/kits19.json": {
+      "path": "runs/confound_atlas/kits19.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "2510504a2fc1e5338e1e8098ea7877bd2f46d416",
+      "git_dirty": true
+    },
+    "confound_atlas/msd_task06.json": {
+      "path": "runs/confound_atlas/msd_task06.json",
+      "prereg_hash": "4fd6e801157ecef5",
+      "git_commit": "2510504a2fc1e5338e1e8098ea7877bd2f46d416",
+      "git_dirty": true
     }
   },
   "figures": {
@@ -243,7 +261,7 @@
     "prereg_version": "isbi2027.v1",
     "prereg_hash": "4fd6e801157ecef5",
     "prereg_config": "configs/prereg/isbi2027.yaml",
-    "git_commit": "d91c7b824c0d6507850fc1728d33219db62198b0",
+    "git_commit": "2510504a2fc1e5338e1e8098ea7877bd2f46d416",
     "git_dirty": true
   }
 }
