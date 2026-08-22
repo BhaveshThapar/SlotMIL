@@ -1,0 +1,750 @@
+{
+  "estimand": "paired_slice_auc_delta (centre_prior - arm)",
+  "declared_in_prereg": false,
+  "role": "sensitivity_outside_confirmatory_family",
+  "note": "Not a pre-registered analysis. The confirmatory H2 verdict is unchanged and is scored by scripts/prereg_verdict.py as a comparison of means. This file exists because that comparison passes on a 0.0109 point-estimate margin, and the paired patient-clustered interval is the honest thing to state next to an ordering that thin. Positive delta = prior above the arm.",
+  "sign_convention": "delta = centre_prior - arm; prior_wins when lo > 0",
+  "per_arm": {
+    "abmil": {
+      "per_seed": [
+        {
+          "tag": "abmil_seed0",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.12218814474307953,
+            "lo": 0.001313730779896318,
+            "hi": 0.2342704568828231,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.5208026389913614,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "abmil_seed1",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.09415118425711938,
+            "lo": -0.07263222512917188,
+            "hi": 0.2607584368831476,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5488395994773216,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "abmil_seed2",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.14468379520428423,
+            "lo": 0.04612901847054404,
+            "hi": 0.24306680536896436,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.49830698853015676,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "abmil_seed3",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.17503221928636015,
+            "lo": 0.018679893755005117,
+            "hi": 0.3298060450114355,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.46795856444808076,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "abmil_seed4",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.09006024668672868,
+            "lo": -0.03587035606125839,
+            "hi": 0.2132714461753449,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5529305370477122,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        }
+      ],
+      "n_seeds": 5,
+      "outcome_counts": {
+        "prior_wins": 3,
+        "arm_wins": 0,
+        "indistinguishable": 2
+      },
+      "arm_slice_auc_mean_over_seeds": 0.5177676656989265,
+      "pooled": {
+        "mean": 0.12522311803551442,
+        "lo": 0.003737817051871078,
+        "hi": 0.24477705229736768,
+        "n": 95,
+        "n_clusters": 19,
+        "outcome": "prior_wins",
+        "clusters": "patient (a patient's rows from every seed resample as one unit)"
+      }
+    },
+    "gated_abmil": {
+      "per_seed": [
+        {
+          "tag": "gated_abmil_seed0",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.10962215168387765,
+            "lo": -0.006475161561180616,
+            "hi": 0.2225808836620567,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5333686320505633,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "gated_abmil_seed1",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.08482539270830816,
+            "lo": -0.0791160880909348,
+            "hi": 0.24090099076852928,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5581653910261327,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "gated_abmil_seed2",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.06832674873199847,
+            "lo": -0.06548552111760925,
+            "hi": 0.19951983794711126,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5746640350024425,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "gated_abmil_seed3",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.05009457199490931,
+            "lo": -0.056019016468944825,
+            "hi": 0.15670839339592452,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5928962117395317,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "gated_abmil_seed4",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.10833731298837132,
+            "lo": -0.036833558749838534,
+            "hi": 0.2644120093293097,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5346534707460696,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        }
+      ],
+      "n_seeds": 5,
+      "outcome_counts": {
+        "prior_wins": 0,
+        "arm_wins": 0,
+        "indistinguishable": 5
+      },
+      "arm_slice_auc_mean_over_seeds": 0.558749548112948,
+      "pooled": {
+        "mean": 0.08424123562149298,
+        "lo": -0.04101245389206356,
+        "hi": 0.20586454301159862,
+        "n": 95,
+        "n_clusters": 19,
+        "outcome": "indistinguishable",
+        "clusters": "patient (a patient's rows from every seed resample as one unit)"
+      }
+    },
+    "mh_abmil": {
+      "per_seed": [
+        {
+          "tag": "mh_abmil_seed0",
+          "frozen_slot": 6,
+          "delta": {
+            "mean": 0.08740608338032543,
+            "lo": -0.030694444671211782,
+            "hi": 0.20208201863687103,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5555847003541154,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "mh_abmil_seed1",
+          "frozen_slot": 7,
+          "delta": {
+            "mean": 0.1861755794628072,
+            "lo": 0.05048462376636658,
+            "hi": 0.30513890306927677,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.4568152042716338,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "mh_abmil_seed2",
+          "frozen_slot": 4,
+          "delta": {
+            "mean": 0.13813093935602724,
+            "lo": 0.030640744073247437,
+            "hi": 0.253450059372454,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.5048598443784137,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "mh_abmil_seed3",
+          "frozen_slot": 3,
+          "delta": {
+            "mean": 0.08741025989856037,
+            "lo": -0.009049324024596671,
+            "hi": 0.1776458604295108,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5555805238358806,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "mh_abmil_seed4",
+          "frozen_slot": 6,
+          "delta": {
+            "mean": 0.13609274734322865,
+            "lo": -0.017385815845616406,
+            "hi": 0.2881791387193529,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5068980363912123,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        }
+      ],
+      "n_seeds": 5,
+      "outcome_counts": {
+        "prior_wins": 2,
+        "arm_wins": 0,
+        "indistinguishable": 3
+      },
+      "arm_slice_auc_mean_over_seeds": 0.5159476618462512,
+      "pooled": {
+        "mean": 0.12704312188818978,
+        "lo": 0.02536497014355111,
+        "hi": 0.22488132241018288,
+        "n": 95,
+        "n_clusters": 19,
+        "outcome": "prior_wins",
+        "clusters": "patient (a patient's rows from every seed resample as one unit)"
+      }
+    },
+    "slot_div0.5": {
+      "per_seed": [
+        {
+          "tag": "slot_div=0.5_seed0",
+          "frozen_slot": 4,
+          "delta": {
+            "mean": 0.14116845190772814,
+            "lo": 0.061801698969465815,
+            "hi": 0.2141133124275823,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.5018223318267129,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "slot_div=0.5_seed1",
+          "frozen_slot": 1,
+          "delta": {
+            "mean": 0.15364440165395715,
+            "lo": 0.06706307943260184,
+            "hi": 0.2456655729415349,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.4893463820804837,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "slot_div=0.5_seed2",
+          "frozen_slot": 2,
+          "delta": {
+            "mean": 0.17507456047350767,
+            "lo": 0.08154536978814284,
+            "hi": 0.2651756982993552,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.4679162232609333,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "slot_div=0.5_seed3",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.11751243455757132,
+            "lo": 0.04934861433492677,
+            "hi": 0.19282444799833062,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.5254783491768696,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "slot_div=0.5_seed4",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.19280068577811854,
+            "lo": 0.08776055792116823,
+            "hi": 0.29635778410808117,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.4501900979563224,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        }
+      ],
+      "n_seeds": 5,
+      "outcome_counts": {
+        "prior_wins": 5,
+        "arm_wins": 0,
+        "indistinguishable": 0
+      },
+      "arm_slice_auc_mean_over_seeds": 0.4869506768602644,
+      "pooled": {
+        "mean": 0.15604010687417655,
+        "lo": 0.07407218620607409,
+        "hi": 0.2377337733304092,
+        "n": 95,
+        "n_clusters": 19,
+        "outcome": "prior_wins",
+        "clusters": "patient (a patient's rows from every seed resample as one unit)"
+      }
+    },
+    "normal_guidance": {
+      "per_seed": [
+        {
+          "tag": "normal_guidance_lam=0.1_seed0",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.051529829568192256,
+            "lo": -0.004186172986549362,
+            "hi": 0.11310229207817696,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5914609541662487,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "normal_guidance_lam=0.1_seed1",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.04544284079867321,
+            "lo": -0.0003790735260930149,
+            "hi": 0.09468868084665462,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5975479429357676,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "normal_guidance_lam=0.1_seed2",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.05818391801319484,
+            "lo": 0.012340683618684713,
+            "hi": 0.10381667370168132,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.5848068657212461,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "normal_guidance_lam=0.1_seed3",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.14678681958220566,
+            "lo": 0.0851108890526862,
+            "hi": 0.21272312471705718,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.4962039641522353,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "normal_guidance_lam=0.1_seed4",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.03217018244722536,
+            "lo": -0.028249835712977137,
+            "hi": 0.09235163427618502,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.6108206012872156,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        }
+      ],
+      "n_seeds": 5,
+      "outcome_counts": {
+        "prior_wins": 2,
+        "arm_wins": 0,
+        "indistinguishable": 3
+      },
+      "arm_slice_auc_mean_over_seeds": 0.5761680656525426,
+      "pooled": {
+        "mean": 0.06682271808189828,
+        "lo": 0.025145981099594712,
+        "hi": 0.11190436424468239,
+        "n": 95,
+        "n_clusters": 19,
+        "outcome": "prior_wins",
+        "clusters": "patient (a patient's rows from every seed resample as one unit)"
+      }
+    },
+    "clam_sb": {
+      "per_seed": [
+        {
+          "tag": "clam_sb_seed0",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.046666534938392845,
+            "lo": -0.07558054051411421,
+            "hi": 0.16178715768470467,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5963242487960482,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "clam_sb_seed1",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.07032909235694328,
+            "lo": -0.06219885698106563,
+            "hi": 0.19825113648848045,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5726616913774977,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "clam_sb_seed2",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.11944704499333891,
+            "lo": 0.012191216309028093,
+            "hi": 0.22396469412969455,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.5235437387411018,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "clam_sb_seed3",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.22190822166965946,
+            "lo": 0.06548989468773508,
+            "hi": 0.3727143776048033,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.4210825620647814,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "clam_sb_seed4",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.03452173917178857,
+            "lo": -0.08448803685396362,
+            "hi": 0.14640207370261388,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.6084690445626524,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        }
+      ],
+      "n_seeds": 5,
+      "outcome_counts": {
+        "prior_wins": 2,
+        "arm_wins": 0,
+        "indistinguishable": 3
+      },
+      "arm_slice_auc_mean_over_seeds": 0.5444162571084162,
+      "pooled": {
+        "mean": 0.0985745266260246,
+        "lo": -0.013012768457565249,
+        "hi": 0.20370595711677922,
+        "n": 95,
+        "n_clusters": 19,
+        "outcome": "indistinguishable",
+        "clusters": "patient (a patient's rows from every seed resample as one unit)"
+      }
+    },
+    "dsmil": {
+      "per_seed": [
+        {
+          "tag": "dsmil_seed0",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.11093797826719738,
+            "lo": -0.042429016902184404,
+            "hi": 0.2595580467355603,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5320528054672437,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "dsmil_seed1",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.05700931415763147,
+            "lo": -0.03402345978430606,
+            "hi": 0.14741484334344046,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5859814695768094,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "dsmil_seed2",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.18580045633244993,
+            "lo": 0.042838685214395315,
+            "hi": 0.3233603234189223,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.457190327401991,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "dsmil_seed3",
+          "frozen_slot": 1,
+          "delta": {
+            "mean": 0.09944857723136509,
+            "lo": -0.020095006077566414,
+            "hi": 0.2091609702909124,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5435422065030758,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "dsmil_seed4",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.10249570157443207,
+            "lo": -0.04546963554653162,
+            "hi": 0.2477421731467303,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5404950821600089,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        }
+      ],
+      "n_seeds": 5,
+      "outcome_counts": {
+        "prior_wins": 1,
+        "arm_wins": 0,
+        "indistinguishable": 4
+      },
+      "arm_slice_auc_mean_over_seeds": 0.5318523782218257,
+      "pooled": {
+        "mean": 0.11113840551261515,
+        "lo": 0.001066172258821597,
+        "hi": 0.2171007315520141,
+        "n": 95,
+        "n_clusters": 19,
+        "outcome": "prior_wins",
+        "clusters": "patient (a patient's rows from every seed resample as one unit)"
+      }
+    },
+    "transmil": {
+      "per_seed": [
+        {
+          "tag": "transmil_seed0",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.06242579850703629,
+            "lo": -0.07175602824157311,
+            "hi": 0.2041004916398714,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5805649852274047,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "transmil_seed1",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.16619544950780207,
+            "lo": 0.015874070118525454,
+            "hi": 0.3085448873759812,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.47679533422663883,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "transmil_seed2",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.1600237373583675,
+            "lo": 0.05149234938635921,
+            "hi": 0.255538124550185,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.4829670463760734,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "transmil_seed3",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.22732604662099967,
+            "lo": 0.09773662987163749,
+            "hi": 0.35544018141032796,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "prior_wins",
+          "arm_slice_auc_mean": 0.4156647371134413,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        },
+        {
+          "tag": "transmil_seed4",
+          "frozen_slot": 0,
+          "delta": {
+            "mean": 0.054530021224978666,
+            "lo": -0.09941447599757194,
+            "hi": 0.21595672441249267,
+            "n": 19,
+            "n_clusters": 19
+          },
+          "outcome": "indistinguishable",
+          "arm_slice_auc_mean": 0.5884607625094622,
+          "centre_prior_slice_auc_mean": 0.642990783734441
+        }
+      ],
+      "n_seeds": 5,
+      "outcome_counts": {
+        "prior_wins": 3,
+        "arm_wins": 0,
+        "indistinguishable": 2
+      },
+      "arm_slice_auc_mean_over_seeds": 0.5088905730906041,
+      "pooled": {
+        "mean": 0.13410021064383684,
+        "lo": 0.02937947105647166,
+        "hi": 0.24054877178732037,
+        "n": 95,
+        "n_clusters": 19,
+        "outcome": "prior_wins",
+        "clusters": "patient (a patient's rows from every seed resample as one unit)"
+      }
+    }
+  },
+  "best_arm_by_slice_auc": "normal_guidance",
+  "best_arm_pooled_delta": {
+    "mean": 0.06682271808189828,
+    "lo": 0.025145981099594712,
+    "hi": 0.11190436424468239,
+    "n": 95,
+    "n_clusters": 19,
+    "outcome": "prior_wins",
+    "clusters": "patient (a patient's rows from every seed resample as one unit)"
+  },
+  "analysis_role": "confirmatory",
+  "condition": "balanced_presence",
+  "reps": 10000,
+  "marginals_checked_against": "runs/nulls_balanced_presence_confirmatory/axis_gate.json",
+  "prereg": {
+    "prereg_version": "isbi2027.v1",
+    "prereg_hash": "4fd6e801157ecef5",
+    "prereg_config": "configs/prereg/isbi2027.yaml",
+    "git_commit": "d91c7b824c0d6507850fc1728d33219db62198b0",
+    "git_dirty": true
+  }
+}
