@@ -13,9 +13,12 @@ abstract: >-
 authors:
   - family-names: "Thapar"
     given-names: "Bhavesh"
-    affiliation: "University of Maryland"
-version: "0.1.0"
-date-released: "2026-08-15"
+    affiliation: "University of Maryland, College Park"
+  - family-names: "Teli"
+    given-names: "Mohammad Nayeem"
+    affiliation: "University of Maryland, College Park"
+version: "1.0.0"
+date-released: "2026-08-22"
 license: MIT
 url: "https://github.com/BhaveshThapar/SlotMIL"
 repository-code: "https://github.com/BhaveshThapar/SlotMIL"

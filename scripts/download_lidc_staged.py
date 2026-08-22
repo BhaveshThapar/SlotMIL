@@ -36,6 +36,8 @@ def main():
     ap.add_argument("--out", default="/fs/nexus-scratch/bthapar/SlotMIL/data/lidc")
     ap.add_argument("--cache", default="/fs/nexus-scratch/bthapar/SlotMIL/data/lidc/features_dinov2_vitb14.h5")
     ap.add_argument("--backbone", default="dinov2_vitb14")
+    ap.add_argument("--weights-path", default=None,
+                    help="checkpoint for backbones with a local-weights option (RadImageNet)")
     ap.add_argument("--image-size", type=int, default=224)
     ap.add_argument("--batch-series", type=int, default=25, help="series per download/delete cycle")
     ap.add_argument("--extract-batch", type=int, default=32, help="slices per GPU forward")
@@ -87,7 +89,9 @@ def main():
 
     device = args.device if torch.cuda.is_available() else "cpu"
     print(f"[lidc] loading {args.backbone} on {device} ...", flush=True)
-    backbone = build_backbone(args.backbone, image_size=args.image_size).to(device).eval()
+    backbone = build_backbone(
+        args.backbone, image_size=args.image_size, weights_path=args.weights_path
+    ).to(device).eval()
     grid = backbone.grid
     print(f"[lidc] patch grid {grid}x{grid}, dim {backbone.dim}", flush=True)
 
@@ -152,6 +156,7 @@ def main():
                         "slice_thickness": meta["slice_thickness"],
                         "pixel_spacing": meta["pixel_spacing"],
                         "backbone": args.backbone,
+                        "weights_source": getattr(backbone, "weights_source", "pretrained_default"),
                         "label_mode": args.label_mode,
                     },
                 )

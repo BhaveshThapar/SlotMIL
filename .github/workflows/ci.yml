@@ -74,7 +74,7 @@ jobs:
           slotmil/data/feature_cache.py
 
       # A runner has no HDF5 feature caches and no checkpoints. Every test in the suite is built
-      # to run without them -- 340 pass on a fresh clone with no data at all. A skip here means an
+      # to run without them -- 544 pass on a fresh clone with no data at all. A skip here means an
       # environment gate started firing that should not have, which is a regression, not noise.
       #
       # Bare `pytest`, not `python -m pytest`: tests/test_lung_mask_io.py imports from scripts/,

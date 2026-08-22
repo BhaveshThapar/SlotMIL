@@ -151,13 +151,15 @@ ablation with a difference in effective depth. Tested by
 contours into a volume requires per-slice z positions from the DICOM headers,
 which are not in pylidc's bundled annotation database. The staged pipeline must
 therefore extract masks *before* deleting each batch. Getting this order wrong
-costs a 124 GB re-download — and, since the DICOM was deleted by design, that is
-exactly what a second feature cache would now cost.
+costs a 124 GB re-download. That cost is real but measured: the lung-mask array
+(job 7249296, 2026-08-14) re-downloaded all 999 series in ~55 minutes at 8-way
+parallelism, and the staged single-stream pipeline does it inside one 24 h GPU
+job. A second feature cache is a queued job, not a blocker.
 
 ## Storage
 
 LIDC is 1,018 CT series / 243,958 slices / **~124 GB of DICOM** (measured via the
-TCIA API), against ~150 GB of scratch. `scripts/download_lidc_staged.py`
+TCIA API), against a 200 GB scratch quota. `scripts/download_lidc_staged.py`
 downloads in batches and deletes each batch's DICOM once features and masks are
 cached, holding peak transient usage near 15 GB. It aborts if free space drops
 below `--min-free-gb`, and skips series already cached so preemption costs one
@@ -174,4 +176,4 @@ Steady state: LIDC features ~78 GB + MosMed ~17 GB + masks and run outputs
 | MosMed | **Cached.** 1110 studies; only 50 carry masks, all CT-1 — which is why it supports one hypothesis |
 | MedMNIST3D | Present. Public, auto-downloads. Splits verified 1158/165/310 |
 | COV19D | Deferred; needs challenge access and a storage decision |
-| RadImageNet DenseNet-121 | **Weights present** at `data/weights/RadImageNet_pytorch/`, never run. A second feature cache is blocked on the deleted source DICOM, not on the weights |
+| RadImageNet DenseNet-121 | **Extraction in progress** (2026-08-22, job 7312418): `data/lidc/features_densenet121_radimagenet.h5`, DenseNet-121 @ 512 px → 16×16 grid, dim 1024, projected ~24 GiB. Weights at `data/weights/RadImageNet_pytorch/` |
